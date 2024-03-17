@@ -6,20 +6,23 @@ RUN go mod download
 COPY . .
 
 FROM base AS build
-RUN --mount=type=cache,target=/root/.cache/go-build \
-    go build -o /out/example .
+RUN --mount=target=. \
+    --mount=type=cache,target=/root/.cache/go-build \
+    go build -o /out/app .
 
 FROM base AS test
-RUN --mount=type=cache,target=/root/.cache/go-build \
+RUN --mount=target=. \
+    --mount=type=cache,target=/root/.cache/go-build \
     go test -v .
 
 FROM golangci/golangci-lint:v1.56.2-alpine AS lint-base
 
 FROM base AS lint
-COPY --from=lint-base /usr/bin/golangci-lint /usr/bin/golangci-lint
-RUN --mount=type=cache,target=/root/.cache/go-build \
+RUN --mount=target=. \
+    --mount=from=lint-base,src=/usr/bin/golangci-lint,target=/usr/bin/golangci-lint \
+    --mount=type=cache,target=/root/.cache/go-build \
     --mount=type=cache,target=/root/.cache/golangci-lint \
     golangci-lint run --timeout 1m0s ./...
 
 FROM scratch AS bin
-COPY --from=build /out/example /
+COPY --from=build /out/app /
