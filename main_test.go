@@ -15,7 +15,3 @@ func TestEchoNoArgsError(t *testing.T) {
 		t.Error("Expected error, but found nil")
 	}
 }
-
-func TestFailsOnPurpose(t *testing.T) {
-	t.Error("Makefile test")
-}
