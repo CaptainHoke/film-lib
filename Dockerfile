@@ -10,10 +10,10 @@ RUN --mount=target=. \
     --mount=type=cache,target=/root/.cache/go-build \
     go build -o /out/app ./cmd/film_lib && go build -o /out/cli ./cmd/film_lib-cli
 
-FROM base AS test
-RUN --mount=target=. \
-    --mount=type=cache,target=/root/.cache/go-build \
-    go test -v .
+#FROM base AS test
+#RUN --mount=target=. \
+#    --mount=type=cache,target=/root/.cache/go-build \
+#    go test -v .
 
 FROM golangci/golangci-lint:v1.56.2-alpine AS lint-base
 

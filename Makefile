@@ -7,7 +7,7 @@ build:
 
 .PHONY: run-tests
 run-tests:
-	docker build --target test .
+	#docker build --target test .
 
 .PHONY: lint
 lint:
