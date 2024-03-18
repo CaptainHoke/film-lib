@@ -3,6 +3,9 @@
 - Using Goa to "generate docs faster" was a terrible mistake
 - OpenAPI 3 docs are at gen/http/openapi3.json
 - It barely works, it's ugly, but it was fun
+  - You can add and get all actors at least duh
+
+## Launch Instructions
 
 ## TODO
 - [x] Goa API for Actors + JWT Auth
