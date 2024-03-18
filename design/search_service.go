@@ -45,7 +45,7 @@ var _ = Service("SearchService", func() {
 			Scope("api:read")
 		})
 
-		Result(CollectionOf(ActorResult))
+		Result(CollectionOf(ActorWithFilmsResult))
 
 		Error("invalid-scopes", String, "Token scopes are invalid")
 
@@ -79,4 +79,39 @@ var _ = Service("SearchService", func() {
 			Response(StatusOK)
 		})
 	})
+})
+
+var ActorWithFilmsResult = ResultType("application/vnd.actorswithfilms", func() {
+	Reference(ActorWithFilms)
+	TypeName("ActorWithFilmsResult")
+
+	Attributes(func() {
+		Attribute("ActorID")
+		Attribute("ActorName")
+		Attribute("ActorSex")
+		Attribute("ActorBirthdate")
+		Attribute("FilmIDs")
+	})
+
+	View("default", func() {
+		Attribute("ActorID")
+		Attribute("ActorName")
+		Attribute("ActorSex")
+		Attribute("ActorBirthdate")
+		Attribute("FilmIDs")
+	})
+
+	Required("ActorID")
+})
+
+var ActorWithFilms = Type("ActorWithFilms", func() {
+	Description("Actor + ID")
+
+	Attribute("ActorID", UInt64, "Unique ID of an Actor", func() {
+		Example(239)
+	})
+	Attribute("ActorInfo", ActorInfo, "Actor Info")
+	Attribute("FilmIDs", ArrayOf(UInt64))
+
+	Required("ActorID", "ActorInfo")
 })

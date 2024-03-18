@@ -29,9 +29,9 @@ type SearchLibraryResponseBody struct {
 	FilmInfo *FilmInfoResponseBody `form:"FilmInfo" json:"FilmInfo" xml:"FilmInfo"`
 }
 
-// ActorResultResponseCollection is the type of the "SearchService" service
-// "getAllActors" endpoint HTTP response body.
-type ActorResultResponseCollection []*ActorResultResponse
+// ActorWithFilmsResultResponseCollection is the type of the "SearchService"
+// service "getAllActors" endpoint HTTP response body.
+type ActorWithFilmsResultResponseCollection []*ActorWithFilmsResultResponse
 
 // FilmResultResponseCollection is the type of the "SearchService" service
 // "getAllFilms" endpoint HTTP response body.
@@ -51,13 +51,14 @@ type FilmInfoResponseBody struct {
 	Actors []uint64 `form:"Actors" json:"Actors" xml:"Actors"`
 }
 
-// ActorResultResponse is used to define fields on response body types.
-type ActorResultResponse struct {
+// ActorWithFilmsResultResponse is used to define fields on response body types.
+type ActorWithFilmsResultResponse struct {
 	// Unique ID of an Actor
-	ActorID        uint64  `form:"ActorID" json:"ActorID" xml:"ActorID"`
-	ActorName      *string `form:"ActorName,omitempty" json:"ActorName,omitempty" xml:"ActorName,omitempty"`
-	ActorSex       *string `form:"ActorSex,omitempty" json:"ActorSex,omitempty" xml:"ActorSex,omitempty"`
-	ActorBirthdate *string `form:"ActorBirthdate,omitempty" json:"ActorBirthdate,omitempty" xml:"ActorBirthdate,omitempty"`
+	ActorID        uint64   `form:"ActorID" json:"ActorID" xml:"ActorID"`
+	ActorName      *string  `form:"ActorName,omitempty" json:"ActorName,omitempty" xml:"ActorName,omitempty"`
+	ActorSex       *string  `form:"ActorSex,omitempty" json:"ActorSex,omitempty" xml:"ActorSex,omitempty"`
+	ActorBirthdate *string  `form:"ActorBirthdate,omitempty" json:"ActorBirthdate,omitempty" xml:"ActorBirthdate,omitempty"`
+	FilmIDs        []uint64 `form:"FilmIDs,omitempty" json:"FilmIDs,omitempty" xml:"FilmIDs,omitempty"`
 }
 
 // FilmResultResponse is used to define fields on response body types.
@@ -91,12 +92,12 @@ func NewSearchLibraryResponseBody(res *searchservice.Film) *SearchLibraryRespons
 	return body
 }
 
-// NewActorResultResponseCollection builds the HTTP response body from the
-// result of the "getAllActors" endpoint of the "SearchService" service.
-func NewActorResultResponseCollection(res searchserviceviews.ActorResultCollectionView) ActorResultResponseCollection {
-	body := make([]*ActorResultResponse, len(res))
+// NewActorWithFilmsResultResponseCollection builds the HTTP response body from
+// the result of the "getAllActors" endpoint of the "SearchService" service.
+func NewActorWithFilmsResultResponseCollection(res searchserviceviews.ActorWithFilmsResultCollectionView) ActorWithFilmsResultResponseCollection {
+	body := make([]*ActorWithFilmsResultResponse, len(res))
 	for i, val := range res {
-		body[i] = marshalSearchserviceviewsActorResultViewToActorResultResponse(val)
+		body[i] = marshalSearchserviceviewsActorWithFilmsResultViewToActorWithFilmsResultResponse(val)
 	}
 	return body
 }

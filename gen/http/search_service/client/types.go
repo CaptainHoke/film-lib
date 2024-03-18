@@ -32,7 +32,7 @@ type SearchLibraryResponseBody struct {
 
 // GetAllActorsResponseBody is the type of the "SearchService" service
 // "getAllActors" endpoint HTTP response body.
-type GetAllActorsResponseBody []*ActorResultResponse
+type GetAllActorsResponseBody []*ActorWithFilmsResultResponse
 
 // GetAllFilmsResponseBody is the type of the "SearchService" service
 // "getAllFilms" endpoint HTTP response body.
@@ -52,13 +52,14 @@ type FilmInfoResponseBody struct {
 	Actors []uint64 `form:"Actors,omitempty" json:"Actors,omitempty" xml:"Actors,omitempty"`
 }
 
-// ActorResultResponse is used to define fields on response body types.
-type ActorResultResponse struct {
+// ActorWithFilmsResultResponse is used to define fields on response body types.
+type ActorWithFilmsResultResponse struct {
 	// Unique ID of an Actor
-	ActorID        *uint64 `form:"ActorID,omitempty" json:"ActorID,omitempty" xml:"ActorID,omitempty"`
-	ActorName      *string `form:"ActorName,omitempty" json:"ActorName,omitempty" xml:"ActorName,omitempty"`
-	ActorSex       *string `form:"ActorSex,omitempty" json:"ActorSex,omitempty" xml:"ActorSex,omitempty"`
-	ActorBirthdate *string `form:"ActorBirthdate,omitempty" json:"ActorBirthdate,omitempty" xml:"ActorBirthdate,omitempty"`
+	ActorID        *uint64  `form:"ActorID,omitempty" json:"ActorID,omitempty" xml:"ActorID,omitempty"`
+	ActorName      *string  `form:"ActorName,omitempty" json:"ActorName,omitempty" xml:"ActorName,omitempty"`
+	ActorSex       *string  `form:"ActorSex,omitempty" json:"ActorSex,omitempty" xml:"ActorSex,omitempty"`
+	ActorBirthdate *string  `form:"ActorBirthdate,omitempty" json:"ActorBirthdate,omitempty" xml:"ActorBirthdate,omitempty"`
+	FilmIDs        []uint64 `form:"FilmIDs,omitempty" json:"FilmIDs,omitempty" xml:"FilmIDs,omitempty"`
 }
 
 // SortByRequestBody is used to define fields on request body types.
@@ -117,12 +118,12 @@ func NewSearchLibraryUnauthorized(body string) searchservice.Unauthorized {
 	return v
 }
 
-// NewGetAllActorsActorResultCollectionOK builds a "SearchService" service
-// "getAllActors" endpoint result from a HTTP "OK" response.
-func NewGetAllActorsActorResultCollectionOK(body GetAllActorsResponseBody) searchserviceviews.ActorResultCollectionView {
-	v := make([]*searchserviceviews.ActorResultView, len(body))
+// NewGetAllActorsActorWithFilmsResultCollectionOK builds a "SearchService"
+// service "getAllActors" endpoint result from a HTTP "OK" response.
+func NewGetAllActorsActorWithFilmsResultCollectionOK(body GetAllActorsResponseBody) searchserviceviews.ActorWithFilmsResultCollectionView {
+	v := make([]*searchserviceviews.ActorWithFilmsResultView, len(body))
 	for i, val := range body {
-		v[i] = unmarshalActorResultResponseToSearchserviceviewsActorResultView(val)
+		v[i] = unmarshalActorWithFilmsResultResponseToSearchserviceviewsActorWithFilmsResultView(val)
 	}
 
 	return v
@@ -237,9 +238,9 @@ func ValidateFilmInfoResponseBody(body *FilmInfoResponseBody) (err error) {
 	return
 }
 
-// ValidateActorResultResponse runs the validations defined on
-// ActorResultResponse
-func ValidateActorResultResponse(body *ActorResultResponse) (err error) {
+// ValidateActorWithFilmsResultResponse runs the validations defined on
+// ActorWithFilmsResultResponse
+func ValidateActorWithFilmsResultResponse(body *ActorWithFilmsResultResponse) (err error) {
 	if body.ActorID == nil {
 		err = goa.MergeErrors(err, goa.MissingFieldError("ActorID", "body"))
 	}

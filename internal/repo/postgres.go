@@ -7,7 +7,9 @@ import (
 	searchservice "film-lib/gen/search_service"
 	"fmt"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"log"
 	"sync"
 )
 
@@ -67,27 +69,38 @@ func (pg *Postgres) TableExists(ctx context.Context, tableName string) (bool, er
 	return exists, nil
 }
 
-type ActorWithFilms struct {
-	ActorResult searchservice.ActorResult
-	FilmIds     []uint64
-}
+func (pg *Postgres) GetAllActors(ctx context.Context, logger *log.Logger) []searchservice.ActorWithFilmsResult {
+	//query := `
+	//	SELECT actor_id, name, sex, birthdate, array_agg(f.film_id) AS film_ids
+	//	FROM
+	//		actors a LEFT JOIN actor_film af ON a.actor_id = af.actor_id
+	//	GROUP BY actor_id;`
+	query := `SELECT * FROM actors`
+	rows, err := pg.Db.Query(ctx, query)
 
-func (pg *Postgres) GetAllActors(ctx context.Context) []ActorWithFilms {
-	query := `
-		SELECT actor_id, name, sex, birthdate, array_agg(f.film_id) AS film_ids
-		FROM
-			actors a INNER JOIN actor_film af ON a.actor_id = af.actor_id
-		GROUP BY a.name;`
-	rows, _ := pg.Db.Query(ctx, query)
+	if err != nil {
+		logger.Println("failed to get all actors")
+		return nil
+	}
+
 	defer rows.Close()
 
-	var actors []ActorWithFilms
+	var actors []searchservice.ActorWithFilmsResult
 	for rows.Next() {
-		a := ActorWithFilms{}
+		a := searchservice.ActorWithFilmsResult{}
 
-		err := rows.Scan(&a.ActorResult.ActorID, &a.ActorResult.ActorName, &a.ActorResult.ActorSex, &a.ActorResult.ActorBirthdate, &a.FilmIds)
+		var name string
+		var sex string
+		var date pgtype.Date
+		err := rows.Scan(&a.ActorID, &name, &sex, &date)
+
+		a.ActorName = &name
+		a.ActorSex = &sex
+		formattedDate := date.Time.Format("2006-01-02")
+		a.ActorBirthdate = &formattedDate
+
 		if err != nil {
-			fmt.Errorf("failed to scan row: %w", err)
+			logger.Printf("failed to scan row: %w", err)
 			return nil
 		}
 		actors = append(actors, a)

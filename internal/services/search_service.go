@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	searchservice "film-lib/gen/search_service"
+	"film-lib/internal/repo"
 	"film-lib/internal/utils"
 	"log"
 
@@ -34,8 +35,23 @@ func (s *searchServicesrvc) SearchLibrary(ctx context.Context, p *searchservice.
 }
 
 // GetAllActors implements getAllActors.
-func (s *searchServicesrvc) GetAllActors(ctx context.Context, p *searchservice.GetAllActorsPayload) (res searchservice.ActorResultCollection, err error) {
+func (s *searchServicesrvc) GetAllActors(ctx context.Context, p *searchservice.GetAllActorsPayload) (res searchservice.ActorWithFilmsResultCollection, err error) {
 	s.logger.Print("searchService.getAllActors")
+
+	actors := repo.PgInstance.GetAllActors(ctx, s.logger)
+
+	for _, actor := range actors {
+		s.logger.Printf("Actor: %v\n", actor)
+		res = append(res, &searchservice.ActorWithFilmsResult{
+			ActorID:        actor.ActorID,
+			ActorName:      actor.ActorName,
+			ActorSex:       actor.ActorSex,
+			ActorBirthdate: actor.ActorBirthdate,
+			FilmIDs:        actor.FilmIDs,
+		})
+	}
+	err = nil
+
 	return
 }
 

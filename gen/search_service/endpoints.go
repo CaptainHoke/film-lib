@@ -86,7 +86,7 @@ func NewGetAllActorsEndpoint(s Service, authJWTFn security.AuthJWTFunc) goa.Endp
 		if err != nil {
 			return nil, err
 		}
-		vres := NewViewedActorResultCollection(res, "default")
+		vres := NewViewedActorWithFilmsResultCollection(res, "default")
 		return vres, nil
 	}
 }

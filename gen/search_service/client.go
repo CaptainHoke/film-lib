@@ -50,13 +50,13 @@ func (c *Client) SearchLibrary(ctx context.Context, p *SearchLibraryPayload) (re
 //   - "invalid-scopes" (type InvalidScopes)
 //   - "unauthorized" (type Unauthorized)
 //   - error: internal error
-func (c *Client) GetAllActors(ctx context.Context, p *GetAllActorsPayload) (res ActorResultCollection, err error) {
+func (c *Client) GetAllActors(ctx context.Context, p *GetAllActorsPayload) (res ActorWithFilmsResultCollection, err error) {
 	var ires any
 	ires, err = c.GetAllActorsEndpoint(ctx, p)
 	if err != nil {
 		return
 	}
-	return ires.(ActorResultCollection), nil
+	return ires.(ActorWithFilmsResultCollection), nil
 }
 
 // GetAllFilms calls the "getAllFilms" endpoint of the "SearchService" service.

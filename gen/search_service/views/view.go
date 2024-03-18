@@ -11,11 +11,11 @@ import (
 	goa "goa.design/goa/v3/pkg"
 )
 
-// ActorResultCollection is the viewed result type that is projected based on a
-// view.
-type ActorResultCollection struct {
+// ActorWithFilmsResultCollection is the viewed result type that is projected
+// based on a view.
+type ActorWithFilmsResultCollection struct {
 	// Type to project
-	Projected ActorResultCollectionView
+	Projected ActorWithFilmsResultCollectionView
 	// View to render
 	View string
 }
@@ -29,17 +29,18 @@ type FilmResultCollection struct {
 	View string
 }
 
-// ActorResultCollectionView is a type that runs validations on a projected
-// type.
-type ActorResultCollectionView []*ActorResultView
+// ActorWithFilmsResultCollectionView is a type that runs validations on a
+// projected type.
+type ActorWithFilmsResultCollectionView []*ActorWithFilmsResultView
 
-// ActorResultView is a type that runs validations on a projected type.
-type ActorResultView struct {
+// ActorWithFilmsResultView is a type that runs validations on a projected type.
+type ActorWithFilmsResultView struct {
 	// Unique ID of an Actor
 	ActorID        *uint64
 	ActorName      *string
 	ActorSex       *string
 	ActorBirthdate *string
+	FilmIDs        []uint64
 }
 
 // FilmResultCollectionView is a type that runs validations on a projected type.
@@ -57,14 +58,15 @@ type FilmResultView struct {
 }
 
 var (
-	// ActorResultCollectionMap is a map indexing the attribute names of
-	// ActorResultCollection by view name.
-	ActorResultCollectionMap = map[string][]string{
+	// ActorWithFilmsResultCollectionMap is a map indexing the attribute names of
+	// ActorWithFilmsResultCollection by view name.
+	ActorWithFilmsResultCollectionMap = map[string][]string{
 		"default": {
 			"ActorID",
 			"ActorName",
 			"ActorSex",
 			"ActorBirthdate",
+			"FilmIDs",
 		},
 	}
 	// FilmResultCollectionMap is a map indexing the attribute names of
@@ -79,14 +81,15 @@ var (
 			"Actors",
 		},
 	}
-	// ActorResultMap is a map indexing the attribute names of ActorResult by view
-	// name.
-	ActorResultMap = map[string][]string{
+	// ActorWithFilmsResultMap is a map indexing the attribute names of
+	// ActorWithFilmsResult by view name.
+	ActorWithFilmsResultMap = map[string][]string{
 		"default": {
 			"ActorID",
 			"ActorName",
 			"ActorSex",
 			"ActorBirthdate",
+			"FilmIDs",
 		},
 	}
 	// FilmResultMap is a map indexing the attribute names of FilmResult by view
@@ -103,12 +106,12 @@ var (
 	}
 )
 
-// ValidateActorResultCollection runs the validations defined on the viewed
-// result type ActorResultCollection.
-func ValidateActorResultCollection(result ActorResultCollection) (err error) {
+// ValidateActorWithFilmsResultCollection runs the validations defined on the
+// viewed result type ActorWithFilmsResultCollection.
+func ValidateActorWithFilmsResultCollection(result ActorWithFilmsResultCollection) (err error) {
 	switch result.View {
 	case "default", "":
-		err = ValidateActorResultCollectionView(result.Projected)
+		err = ValidateActorWithFilmsResultCollectionView(result.Projected)
 	default:
 		err = goa.InvalidEnumValueError("view", result.View, []any{"default"})
 	}
@@ -127,20 +130,20 @@ func ValidateFilmResultCollection(result FilmResultCollection) (err error) {
 	return
 }
 
-// ValidateActorResultCollectionView runs the validations defined on
-// ActorResultCollectionView using the "default" view.
-func ValidateActorResultCollectionView(result ActorResultCollectionView) (err error) {
+// ValidateActorWithFilmsResultCollectionView runs the validations defined on
+// ActorWithFilmsResultCollectionView using the "default" view.
+func ValidateActorWithFilmsResultCollectionView(result ActorWithFilmsResultCollectionView) (err error) {
 	for _, item := range result {
-		if err2 := ValidateActorResultView(item); err2 != nil {
+		if err2 := ValidateActorWithFilmsResultView(item); err2 != nil {
 			err = goa.MergeErrors(err, err2)
 		}
 	}
 	return
 }
 
-// ValidateActorResultView runs the validations defined on ActorResultView
-// using the "default" view.
-func ValidateActorResultView(result *ActorResultView) (err error) {
+// ValidateActorWithFilmsResultView runs the validations defined on
+// ActorWithFilmsResultView using the "default" view.
+func ValidateActorWithFilmsResultView(result *ActorWithFilmsResultView) (err error) {
 	if result.ActorID == nil {
 		err = goa.MergeErrors(err, goa.MissingFieldError("ActorID", "result"))
 	}

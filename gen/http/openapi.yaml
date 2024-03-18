@@ -70,7 +70,7 @@ paths:
                 "200":
                     description: OK response.
                     schema:
-                        $ref: '#/definitions/SearchServiceActorResultResponseCollection'
+                        $ref: '#/definitions/SearchServiceActorWithFilmsResultResponseCollection'
                 "401":
                     description: Unauthorized response.
                     schema:
@@ -447,32 +447,6 @@ definitions:
             - ActorName
             - ActorSex
             - ActorBirthdate
-    ActorResultResponse:
-        title: 'Mediatype identifier: application/vnd.actor; view=default'
-        type: object
-        properties:
-            ActorBirthdate:
-                type: string
-                example: Repellendus cum unde ipsa unde est omnis.
-            ActorID:
-                type: integer
-                description: Unique ID of an Actor
-                example: 239
-                format: int64
-            ActorName:
-                type: string
-                example: Vel vel.
-            ActorSex:
-                type: string
-                example: Distinctio optio laboriosam.
-        description: ActorResultResponse result type (default view)
-        example:
-            ActorBirthdate: Ut praesentium necessitatibus eius autem.
-            ActorID: 239
-            ActorName: Sed omnis laudantium aut et repellendus accusamus.
-            ActorSex: Voluptas accusantium neque.
-        required:
-            - ActorID
     ActorServiceAddActorAlreadyExistsResponseBody:
         title: ActorServiceAddActorAlreadyExistsResponseBody
         type: object
@@ -480,14 +454,14 @@ definitions:
             id:
                 type: string
                 description: ID of existing data
-                example: Ullam repudiandae.
+                example: Facere sunt.
             message:
                 type: string
                 description: Error message
                 example: Entity already exists
         description: Actor already exists
         example:
-            id: Facere sunt.
+            id: Non praesentium ipsam tenetur ex cumque.
             message: Entity already exists
         required:
             - message
@@ -512,14 +486,14 @@ definitions:
             id:
                 type: string
                 description: ID of missing data
-                example: Non praesentium ipsam tenetur ex cumque.
+                example: Et hic hic iusto.
             message:
                 type: string
                 description: Message of error
                 example: Client ABCDEF12356890 not found
         description: Actor not found
         example:
-            id: Et hic hic iusto.
+            id: Rerum error eaque.
             message: Client ABCDEF12356890 not found
         required:
             - message
@@ -537,6 +511,47 @@ definitions:
                 ActorSex: F
         required:
             - ActorInfo
+    ActorWithFilmsResultResponse:
+        title: 'Mediatype identifier: application/vnd.actorswithfilms; view=default'
+        type: object
+        properties:
+            ActorBirthdate:
+                type: string
+                example: Et repellendus accusamus ex voluptas accusantium neque.
+            ActorID:
+                type: integer
+                description: Unique ID of an Actor
+                example: 239
+                format: int64
+            ActorName:
+                type: string
+                example: Optio laboriosam voluptatem repellendus cum unde ipsa.
+            ActorSex:
+                type: string
+                example: Est omnis eum sed omnis laudantium.
+            FilmIDs:
+                type: array
+                items:
+                    type: integer
+                    example: 6670258600303192959
+                    format: int64
+                example:
+                    - 14034487754572228821
+                    - 14243536199180829651
+                    - 12472233111166789259
+        description: ActorWithFilmsResultResponse result type (default view)
+        example:
+            ActorBirthdate: Et facere adipisci et consectetur soluta unde.
+            ActorID: 239
+            ActorName: Cupiditate et voluptate ipsam.
+            ActorSex: Eos voluptatem quia dolorem cupiditate voluptate quaerat.
+            FilmIDs:
+                - 9289552697547796017
+                - 6912886722285150252
+                - 13385741547961377941
+                - 11571406538028425543
+        required:
+            - ActorID
     FilmInfoRequestBody:
         title: FilmInfoRequestBody
         type: object
@@ -545,21 +560,21 @@ definitions:
                 type: array
                 items:
                     type: integer
-                    example: 14724541625667649527
+                    example: 17211999011601716714
                     format: int64
                 description: Actors' Ids
                 example:
-                    - 12277847267345935890
-                    - 17211999011601716714
+                    - 591059688015386234
+                    - 15309272393167340369
             Description:
                 type: string
                 description: Description of a film
-                example: zp4
+                example: pv9
                 maxLength: 1000
             Rating:
                 type: number
                 description: Rating (0.0 - 10.0)
-                example: 1.2662305
+                example: 3.3116686
                 format: float
                 minimum: 0
                 maximum: 10
@@ -571,18 +586,20 @@ definitions:
             Title:
                 type: string
                 description: Title of a film
-                example: 0yj
+                example: zp
                 minLength: 1
                 maxLength: 150
         description: Describes a Film to be added
         example:
             Actors:
-                - 8044734744562614373
-                - 17300372241044375866
-            Description: g2t
-            Rating: 9.174186
+                - 256226242677052128
+                - 6069674707912513360
+                - 16058999633344477409
+                - 9977196769645006279
+            Description: i12
+            Rating: 7.492313
             ReleaseDate: "2024-03-18"
-            Title: "2"
+            Title: 2t
         required:
             - Title
             - Description
@@ -597,22 +614,21 @@ definitions:
                 type: array
                 items:
                     type: integer
-                    example: 8539374046890078904
+                    example: 7284659792350194605
                     format: int64
                 description: Actors' Ids
                 example:
-                    - 16704686714883336506
-                    - 16737958835097719900
-                    - 17910709566949878210
+                    - 15078087281337922466
+                    - 4212000223268197036
             Description:
                 type: string
                 description: Description of a film
-                example: hzm
+                example: uoa
                 maxLength: 1000
             Rating:
                 type: number
                 description: Rating (0.0 - 10.0)
-                example: 0.13972357
+                example: 9.141454
                 format: float
                 minimum: 0
                 maximum: 10
@@ -624,20 +640,18 @@ definitions:
             Title:
                 type: string
                 description: Title of a film
-                example: jw
+                example: t4
                 minLength: 1
                 maxLength: 150
         description: Describes a Film to be added
         example:
             Actors:
-                - 17869893584155138827
-                - 11092319194190606518
-                - 9847067923172721707
-                - 15165575508118866501
-            Description: i4j
-            Rating: 9.6321125
+                - 1071768427826821808
+                - 5145449821909991153
+            Description: erd
+            Rating: 2.7280653
             ReleaseDate: "2024-03-18"
-            Title: t
+            Title: xn
         required:
             - Title
             - Description
@@ -650,10 +664,10 @@ definitions:
         properties:
             Actors:
                 type: string
-                example: Delectus alias est dolore nihil vero.
+                example: Enim officiis vel perspiciatis.
             Description:
                 type: string
-                example: Eos voluptatem quia dolorem cupiditate voluptate quaerat.
+                example: Similique dolores rem magnam nemo.
             FilmID:
                 type: integer
                 description: Unique ID of a Film
@@ -661,21 +675,21 @@ definitions:
                 format: int64
             Rating:
                 type: string
-                example: Architecto qui repellat omnis.
+                example: Doloremque officiis et.
             ReleaseDate:
                 type: string
-                example: Et facere adipisci et consectetur soluta unde.
+                example: Soluta molestiae natus occaecati.
             Title:
                 type: string
-                example: Voluptate ipsam.
+                example: Alias est dolore nihil vero.
         description: FilmResultResponse result type (default view)
         example:
-            Actors: Occaecati officiis.
-            Description: Soluta molestiae natus occaecati.
+            Actors: Iusto libero ipsam quibusdam voluptatem.
+            Description: Doloribus facilis impedit quos saepe nulla odio.
             FilmID: 239
-            Rating: Enim officiis vel perspiciatis.
-            ReleaseDate: Doloremque officiis et.
-            Title: Similique dolores rem magnam nemo.
+            Rating: Molestiae labore et aut natus tenetur.
+            ReleaseDate: Quis quae.
+            Title: Occaecati officiis.
         required:
             - FilmID
     FilmServiceAddFilmAlreadyExistsResponseBody:
@@ -685,14 +699,14 @@ definitions:
             id:
                 type: string
                 description: ID of existing data
-                example: Qui doloremque nostrum.
+                example: Culpa eos.
             message:
                 type: string
                 description: Error message
                 example: Entity already exists
         description: Film already exists
         example:
-            id: Culpa eos.
+            id: Facere cupiditate consequuntur.
             message: Entity already exists
         required:
             - message
@@ -706,12 +720,12 @@ definitions:
         example:
             FilmInfo:
                 Actors:
-                    - 3308568187084537867
-                    - 1675299544092327479
-                Description: udq
-                Rating: 7.013173
+                    - 17646642687867833120
+                    - 7977177035577617004
+                Description: ma6
+                Rating: 1.4821174
                 ReleaseDate: "2024-03-18"
-                Title: o
+                Title: "7"
         required:
             - FilmInfo
     FilmServiceAddFilmResponseBody:
@@ -720,10 +734,10 @@ definitions:
         properties:
             Actors:
                 type: string
-                example: Vel qui fugiat cumque.
+                example: Est molestiae.
             Description:
                 type: string
-                example: In unde quibusdam facere consequatur.
+                example: Autem et rem.
             FilmID:
                 type: integer
                 description: Unique ID of a Film
@@ -731,21 +745,21 @@ definitions:
                 format: int64
             Rating:
                 type: string
-                example: Enim sunt ab.
+                example: Vel qui fugiat cumque.
             ReleaseDate:
                 type: string
-                example: Autem et rem.
+                example: Enim sunt ab.
             Title:
                 type: string
-                example: Rerum error eaque.
+                example: In unde quibusdam facere consequatur.
         description: AddFilmResponseBody result type (default view)
         example:
-            Actors: Magnam aliquam non.
-            Description: Sed ullam dolorum.
+            Actors: Qui doloremque nostrum.
+            Description: Non est ut qui.
             FilmID: 239
-            Rating: Consequatur maiores.
-            ReleaseDate: Non est ut qui.
-            Title: Est molestiae.
+            Rating: Magnam aliquam non.
+            ReleaseDate: Consequatur maiores.
+            Title: Sed ullam dolorum.
         required:
             - FilmID
     FilmServiceUpdateFilmInfoNotFoundResponseBody:
@@ -755,14 +769,14 @@ definitions:
             id:
                 type: string
                 description: ID of missing data
-                example: Facere quidem amet quaerat atque sapiente.
+                example: Deleniti quae voluptas iure exercitationem reiciendis et.
             message:
                 type: string
                 description: Message of error
                 example: Client ABCDEF12356890 not found
         description: Film not found
         example:
-            id: Quae voluptas iure exercitationem.
+            id: Inventore molestias assumenda.
             message: Client ABCDEF12356890 not found
         required:
             - message
@@ -776,29 +790,57 @@ definitions:
         example:
             FilmInfo:
                 Actors:
-                    - 3308568187084537867
-                    - 1675299544092327479
-                Description: udq
-                Rating: 7.013173
+                    - 17646642687867833120
+                    - 7977177035577617004
+                Description: ma6
+                Rating: 1.4821174
                 ReleaseDate: "2024-03-18"
-                Title: o
+                Title: "7"
         required:
             - FilmInfo
-    SearchServiceActorResultResponseCollection:
-        title: 'Mediatype identifier: application/vnd.actor; type=collection; view=default'
+    SearchServiceActorWithFilmsResultResponseCollection:
+        title: 'Mediatype identifier: application/vnd.actorswithfilms; type=collection; view=default'
         type: array
         items:
-            $ref: '#/definitions/ActorResultResponse'
-        description: GetAllActorsResponseBody is the result type for an array of ActorResultResponse (default view)
+            $ref: '#/definitions/ActorWithFilmsResultResponse'
+        description: GetAllActorsResponseBody is the result type for an array of ActorWithFilmsResultResponse (default view)
         example:
             - ActorBirthdate: Aperiam voluptatem nulla quas possimus delectus.
               ActorID: 239
               ActorName: Vitae perferendis voluptatem tempore eaque.
               ActorSex: Consequatur nihil culpa at laborum voluptas.
+              FilmIDs:
+                - 15545805742250923126
+                - 10239178497635015235
+                - 2001544341802948896
+                - 16417173746725055219
             - ActorBirthdate: Aperiam voluptatem nulla quas possimus delectus.
               ActorID: 239
               ActorName: Vitae perferendis voluptatem tempore eaque.
               ActorSex: Consequatur nihil culpa at laborum voluptas.
+              FilmIDs:
+                - 15545805742250923126
+                - 10239178497635015235
+                - 2001544341802948896
+                - 16417173746725055219
+            - ActorBirthdate: Aperiam voluptatem nulla quas possimus delectus.
+              ActorID: 239
+              ActorName: Vitae perferendis voluptatem tempore eaque.
+              ActorSex: Consequatur nihil culpa at laborum voluptas.
+              FilmIDs:
+                - 15545805742250923126
+                - 10239178497635015235
+                - 2001544341802948896
+                - 16417173746725055219
+            - ActorBirthdate: Aperiam voluptatem nulla quas possimus delectus.
+              ActorID: 239
+              ActorName: Vitae perferendis voluptatem tempore eaque.
+              ActorSex: Consequatur nihil culpa at laborum voluptas.
+              FilmIDs:
+                - 15545805742250923126
+                - 10239178497635015235
+                - 2001544341802948896
+                - 16417173746725055219
     SearchServiceFilmResultResponseCollection:
         title: 'Mediatype identifier: application/vnd.film; type=collection; view=default'
         type: array
@@ -806,30 +848,30 @@ definitions:
             $ref: '#/definitions/FilmResultResponse'
         description: GetAllFilmsResponseBody is the result type for an array of FilmResultResponse (default view)
         example:
-            - Actors: Enim ea.
-              Description: Et ut aut dignissimos nobis ex.
+            - Actors: Ipsa atque culpa possimus quia.
+              Description: Velit beatae sed voluptatem.
               FilmID: 239
-              Rating: Et amet maxime.
-              ReleaseDate: Velit beatae sed voluptatem.
-              Title: Suscipit non distinctio non unde.
-            - Actors: Enim ea.
-              Description: Et ut aut dignissimos nobis ex.
+              Rating: Enim ea.
+              ReleaseDate: Et amet maxime.
+              Title: Et ut aut dignissimos nobis ex.
+            - Actors: Ipsa atque culpa possimus quia.
+              Description: Velit beatae sed voluptatem.
               FilmID: 239
-              Rating: Et amet maxime.
-              ReleaseDate: Velit beatae sed voluptatem.
-              Title: Suscipit non distinctio non unde.
-            - Actors: Enim ea.
-              Description: Et ut aut dignissimos nobis ex.
+              Rating: Enim ea.
+              ReleaseDate: Et amet maxime.
+              Title: Et ut aut dignissimos nobis ex.
+            - Actors: Ipsa atque culpa possimus quia.
+              Description: Velit beatae sed voluptatem.
               FilmID: 239
-              Rating: Et amet maxime.
-              ReleaseDate: Velit beatae sed voluptatem.
-              Title: Suscipit non distinctio non unde.
-            - Actors: Enim ea.
-              Description: Et ut aut dignissimos nobis ex.
+              Rating: Enim ea.
+              ReleaseDate: Et amet maxime.
+              Title: Et ut aut dignissimos nobis ex.
+            - Actors: Ipsa atque culpa possimus quia.
+              Description: Velit beatae sed voluptatem.
               FilmID: 239
-              Rating: Et amet maxime.
-              ReleaseDate: Velit beatae sed voluptatem.
-              Title: Suscipit non distinctio non unde.
+              Rating: Enim ea.
+              ReleaseDate: Et amet maxime.
+              Title: Et ut aut dignissimos nobis ex.
     SearchServiceGetAllFilmsRequestBody:
         title: SearchServiceGetAllFilmsRequestBody
         type: object

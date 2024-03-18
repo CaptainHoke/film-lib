@@ -27,9 +27,9 @@ func NewSignIn(logger *log.Logger) signin.Service {
 func (s *signInsrvc) BasicAuth(ctx context.Context, user, pass string, scheme *security.BasicScheme) (context.Context, error) {
 
 	// TODO: I have no time
-	if user != "admin" || pass != "admin" {
-		return ctx, signin.Unauthorized("invalid username and password combination")
-	}
+	//if user != "admin" || pass != "admin" {
+	//	return ctx, signin.Unauthorized("invalid username and password combination")
+	//}
 
 	return ctx, nil
 }

@@ -24,7 +24,7 @@ func BuildAddFilmPayload(filmServiceAddFilmBody string, filmServiceAddFilmToken 
 	{
 		err = json.Unmarshal([]byte(filmServiceAddFilmBody), &body)
 		if err != nil {
-			return nil, fmt.Errorf("invalid JSON for body, \nerror: %s, \nexample of valid JSON:\n%s", err, "'{\n      \"FilmInfo\": {\n         \"Actors\": [\n            3308568187084537867,\n            1675299544092327479\n         ],\n         \"Description\": \"udq\",\n         \"Rating\": 7.013173,\n         \"ReleaseDate\": \"2024-03-18\",\n         \"Title\": \"o\"\n      }\n   }'")
+			return nil, fmt.Errorf("invalid JSON for body, \nerror: %s, \nexample of valid JSON:\n%s", err, "'{\n      \"FilmInfo\": {\n         \"Actors\": [\n            17646642687867833120,\n            7977177035577617004\n         ],\n         \"Description\": \"ma6\",\n         \"Rating\": 1.4821174,\n         \"ReleaseDate\": \"2024-03-18\",\n         \"Title\": \"7\"\n      }\n   }'")
 		}
 		if body.FilmInfo == nil {
 			err = goa.MergeErrors(err, goa.MissingFieldError("FilmInfo", "body"))
@@ -61,7 +61,7 @@ func BuildUpdateFilmInfoPayload(filmServiceUpdateFilmInfoBody string, filmServic
 	{
 		err = json.Unmarshal([]byte(filmServiceUpdateFilmInfoBody), &body)
 		if err != nil {
-			return nil, fmt.Errorf("invalid JSON for body, \nerror: %s, \nexample of valid JSON:\n%s", err, "'{\n      \"FilmInfo\": {\n         \"Actors\": [\n            3308568187084537867,\n            1675299544092327479\n         ],\n         \"Description\": \"udq\",\n         \"Rating\": 7.013173,\n         \"ReleaseDate\": \"2024-03-18\",\n         \"Title\": \"o\"\n      }\n   }'")
+			return nil, fmt.Errorf("invalid JSON for body, \nerror: %s, \nexample of valid JSON:\n%s", err, "'{\n      \"FilmInfo\": {\n         \"Actors\": [\n            17646642687867833120,\n            7977177035577617004\n         ],\n         \"Description\": \"ma6\",\n         \"Rating\": 1.4821174,\n         \"ReleaseDate\": \"2024-03-18\",\n         \"Title\": \"7\"\n      }\n   }'")
 		}
 		if body.FilmInfo == nil {
 			err = goa.MergeErrors(err, goa.MissingFieldError("FilmInfo", "body"))

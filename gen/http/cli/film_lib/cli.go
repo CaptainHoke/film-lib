@@ -43,19 +43,19 @@ func UsageExamples() string {
          "ActorName": "Margo Robbie",
          "ActorSex": "F"
       }
-   }' --token "Nulla accusamus ut."` + "\n" +
+   }' --token "Natus omnis."` + "\n" +
 		os.Args[0] + ` film-service add-film --body '{
       "FilmInfo": {
          "Actors": [
-            3308568187084537867,
-            1675299544092327479
+            17646642687867833120,
+            7977177035577617004
          ],
-         "Description": "udq",
-         "Rating": 7.013173,
+         "Description": "ma6",
+         "Rating": 1.4821174,
          "ReleaseDate": "2024-03-18",
-         "Title": "o"
+         "Title": "7"
       }
-   }' --token "Ullam aliquam non ut quaerat."` + "\n" +
+   }' --token "Non distinctio non unde."` + "\n" +
 		os.Args[0] + ` search-service search-library --query-string "Laudantium magnam temporibus enim tenetur." --token "Distinctio cumque exercitationem dolore saepe."` + "\n" +
 		os.Args[0] + ` sign-in auth --username "user" --password "password"` + "\n" +
 		""
@@ -373,7 +373,7 @@ Example:
          "ActorName": "Margo Robbie",
          "ActorSex": "F"
       }
-   }' --token "Nulla accusamus ut."
+   }' --token "Natus omnis."
 `, os.Args[0])
 }
 
@@ -392,7 +392,7 @@ Example:
          "ActorName": "Margo Robbie",
          "ActorSex": "F"
       }
-   }' --actor-id 13132072769901544627 --token "Eos quod nulla at aspernatur ad."
+   }' --actor-id 1944386314985900307 --token "Fuga veritatis et quia neque."
 `, os.Args[0])
 }
 
@@ -404,7 +404,7 @@ DeleteActor implements deleteActor.
     -token STRING: 
 
 Example:
-    %[1]s actor-service delete-actor --actor-id 14673405560132858109 --token "Unde dicta voluptatem quis consectetur."
+    %[1]s actor-service delete-actor --actor-id 5312385337935781535 --token "Molestiae repellendus quae."
 `, os.Args[0])
 }
 
@@ -435,15 +435,15 @@ Example:
     %[1]s film-service add-film --body '{
       "FilmInfo": {
          "Actors": [
-            3308568187084537867,
-            1675299544092327479
+            17646642687867833120,
+            7977177035577617004
          ],
-         "Description": "udq",
-         "Rating": 7.013173,
+         "Description": "ma6",
+         "Rating": 1.4821174,
          "ReleaseDate": "2024-03-18",
-         "Title": "o"
+         "Title": "7"
       }
-   }' --token "Ullam aliquam non ut quaerat."
+   }' --token "Non distinctio non unde."
 `, os.Args[0])
 }
 
@@ -459,15 +459,15 @@ Example:
     %[1]s film-service update-film-info --body '{
       "FilmInfo": {
          "Actors": [
-            3308568187084537867,
-            1675299544092327479
+            17646642687867833120,
+            7977177035577617004
          ],
-         "Description": "udq",
-         "Rating": 7.013173,
+         "Description": "ma6",
+         "Rating": 1.4821174,
          "ReleaseDate": "2024-03-18",
-         "Title": "o"
+         "Title": "7"
       }
-   }' --film-id 2702259953446013370 --token "Ab nostrum est."
+   }' --film-id 994602997695807275 --token "Omnis modi ab totam."
 `, os.Args[0])
 }
 
@@ -535,7 +535,7 @@ Example:
          "Field": "Rating",
          "Ordering": "Descending"
       }
-   }' --token "In nulla iure."
+   }' --token "Dolores ipsa odio."
 `, os.Args[0])
 }
 

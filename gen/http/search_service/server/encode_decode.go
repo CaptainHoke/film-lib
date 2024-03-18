@@ -97,9 +97,9 @@ func EncodeSearchLibraryError(encoder func(context.Context, http.ResponseWriter)
 // SearchService getAllActors endpoint.
 func EncodeGetAllActorsResponse(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) func(context.Context, http.ResponseWriter, any) error {
 	return func(ctx context.Context, w http.ResponseWriter, v any) error {
-		res := v.(searchserviceviews.ActorResultCollection)
+		res := v.(searchserviceviews.ActorWithFilmsResultCollection)
 		enc := encoder(ctx, w)
-		body := NewActorResultResponseCollection(res.Projected)
+		body := NewActorWithFilmsResultResponseCollection(res.Projected)
 		w.WriteHeader(http.StatusOK)
 		return enc.Encode(body)
 	}
@@ -266,15 +266,21 @@ func marshalSearchserviceFilmInfoToFilmInfoResponseBody(v *searchservice.FilmInf
 	return res
 }
 
-// marshalSearchserviceviewsActorResultViewToActorResultResponse builds a value
-// of type *ActorResultResponse from a value of type
-// *searchserviceviews.ActorResultView.
-func marshalSearchserviceviewsActorResultViewToActorResultResponse(v *searchserviceviews.ActorResultView) *ActorResultResponse {
-	res := &ActorResultResponse{
+// marshalSearchserviceviewsActorWithFilmsResultViewToActorWithFilmsResultResponse
+// builds a value of type *ActorWithFilmsResultResponse from a value of type
+// *searchserviceviews.ActorWithFilmsResultView.
+func marshalSearchserviceviewsActorWithFilmsResultViewToActorWithFilmsResultResponse(v *searchserviceviews.ActorWithFilmsResultView) *ActorWithFilmsResultResponse {
+	res := &ActorWithFilmsResultResponse{
 		ActorID:        *v.ActorID,
 		ActorName:      v.ActorName,
 		ActorSex:       v.ActorSex,
 		ActorBirthdate: v.ActorBirthdate,
+	}
+	if v.FilmIDs != nil {
+		res.FilmIDs = make([]uint64, len(v.FilmIDs))
+		for i, val := range v.FilmIDs {
+			res.FilmIDs[i] = val
+		}
 	}
 
 	return res

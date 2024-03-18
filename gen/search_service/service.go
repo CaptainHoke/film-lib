@@ -19,7 +19,7 @@ type Service interface {
 	// SearchLibrary implements searchLibrary.
 	SearchLibrary(context.Context, *SearchLibraryPayload) (res *Film, err error)
 	// GetAllActors implements getAllActors.
-	GetAllActors(context.Context, *GetAllActorsPayload) (res ActorResultCollection, err error)
+	GetAllActors(context.Context, *GetAllActorsPayload) (res ActorWithFilmsResultCollection, err error)
 	// GetAllFilms implements getAllFilms.
 	GetAllFilms(context.Context, *GetAllFilmsPayload) (res FilmResultCollection, err error)
 }
@@ -46,17 +46,18 @@ const ServiceName = "SearchService"
 // MethodKey key.
 var MethodNames = [3]string{"searchLibrary", "getAllActors", "getAllFilms"}
 
-type ActorResult struct {
+type ActorWithFilmsResult struct {
 	// Unique ID of an Actor
 	ActorID        uint64
 	ActorName      *string
 	ActorSex       *string
 	ActorBirthdate *string
+	FilmIDs        []uint64
 }
 
-// ActorResultCollection is the result type of the SearchService service
-// getAllActors method.
-type ActorResultCollection []*ActorResult
+// ActorWithFilmsResultCollection is the result type of the SearchService
+// service getAllActors method.
+type ActorWithFilmsResultCollection []*ActorWithFilmsResult
 
 // Film is the result type of the SearchService service searchLibrary method.
 type Film struct {
@@ -166,18 +167,19 @@ func (e Unauthorized) GoaErrorName() string {
 	return "unauthorized"
 }
 
-// NewActorResultCollection initializes result type ActorResultCollection from
-// viewed result type ActorResultCollection.
-func NewActorResultCollection(vres searchserviceviews.ActorResultCollection) ActorResultCollection {
-	return newActorResultCollection(vres.Projected)
+// NewActorWithFilmsResultCollection initializes result type
+// ActorWithFilmsResultCollection from viewed result type
+// ActorWithFilmsResultCollection.
+func NewActorWithFilmsResultCollection(vres searchserviceviews.ActorWithFilmsResultCollection) ActorWithFilmsResultCollection {
+	return newActorWithFilmsResultCollection(vres.Projected)
 }
 
-// NewViewedActorResultCollection initializes viewed result type
-// ActorResultCollection from result type ActorResultCollection using the given
-// view.
-func NewViewedActorResultCollection(res ActorResultCollection, view string) searchserviceviews.ActorResultCollection {
-	p := newActorResultCollectionView(res)
-	return searchserviceviews.ActorResultCollection{Projected: p, View: "default"}
+// NewViewedActorWithFilmsResultCollection initializes viewed result type
+// ActorWithFilmsResultCollection from result type
+// ActorWithFilmsResultCollection using the given view.
+func NewViewedActorWithFilmsResultCollection(res ActorWithFilmsResultCollection, view string) searchserviceviews.ActorWithFilmsResultCollection {
+	p := newActorWithFilmsResultCollectionView(res)
+	return searchserviceviews.ActorWithFilmsResultCollection{Projected: p, View: "default"}
 }
 
 // NewFilmResultCollection initializes result type FilmResultCollection from
@@ -194,30 +196,32 @@ func NewViewedFilmResultCollection(res FilmResultCollection, view string) search
 	return searchserviceviews.FilmResultCollection{Projected: p, View: "default"}
 }
 
-// newActorResultCollection converts projected type ActorResultCollection to
-// service type ActorResultCollection.
-func newActorResultCollection(vres searchserviceviews.ActorResultCollectionView) ActorResultCollection {
-	res := make(ActorResultCollection, len(vres))
+// newActorWithFilmsResultCollection converts projected type
+// ActorWithFilmsResultCollection to service type
+// ActorWithFilmsResultCollection.
+func newActorWithFilmsResultCollection(vres searchserviceviews.ActorWithFilmsResultCollectionView) ActorWithFilmsResultCollection {
+	res := make(ActorWithFilmsResultCollection, len(vres))
 	for i, n := range vres {
-		res[i] = newActorResult(n)
+		res[i] = newActorWithFilmsResult(n)
 	}
 	return res
 }
 
-// newActorResultCollectionView projects result type ActorResultCollection to
-// projected type ActorResultCollectionView using the "default" view.
-func newActorResultCollectionView(res ActorResultCollection) searchserviceviews.ActorResultCollectionView {
-	vres := make(searchserviceviews.ActorResultCollectionView, len(res))
+// newActorWithFilmsResultCollectionView projects result type
+// ActorWithFilmsResultCollection to projected type
+// ActorWithFilmsResultCollectionView using the "default" view.
+func newActorWithFilmsResultCollectionView(res ActorWithFilmsResultCollection) searchserviceviews.ActorWithFilmsResultCollectionView {
+	vres := make(searchserviceviews.ActorWithFilmsResultCollectionView, len(res))
 	for i, n := range res {
-		vres[i] = newActorResultView(n)
+		vres[i] = newActorWithFilmsResultView(n)
 	}
 	return vres
 }
 
-// newActorResult converts projected type ActorResult to service type
-// ActorResult.
-func newActorResult(vres *searchserviceviews.ActorResultView) *ActorResult {
-	res := &ActorResult{
+// newActorWithFilmsResult converts projected type ActorWithFilmsResult to
+// service type ActorWithFilmsResult.
+func newActorWithFilmsResult(vres *searchserviceviews.ActorWithFilmsResultView) *ActorWithFilmsResult {
+	res := &ActorWithFilmsResult{
 		ActorName:      vres.ActorName,
 		ActorSex:       vres.ActorSex,
 		ActorBirthdate: vres.ActorBirthdate,
@@ -225,17 +229,29 @@ func newActorResult(vres *searchserviceviews.ActorResultView) *ActorResult {
 	if vres.ActorID != nil {
 		res.ActorID = *vres.ActorID
 	}
+	if vres.FilmIDs != nil {
+		res.FilmIDs = make([]uint64, len(vres.FilmIDs))
+		for i, val := range vres.FilmIDs {
+			res.FilmIDs[i] = val
+		}
+	}
 	return res
 }
 
-// newActorResultView projects result type ActorResult to projected type
-// ActorResultView using the "default" view.
-func newActorResultView(res *ActorResult) *searchserviceviews.ActorResultView {
-	vres := &searchserviceviews.ActorResultView{
+// newActorWithFilmsResultView projects result type ActorWithFilmsResult to
+// projected type ActorWithFilmsResultView using the "default" view.
+func newActorWithFilmsResultView(res *ActorWithFilmsResult) *searchserviceviews.ActorWithFilmsResultView {
+	vres := &searchserviceviews.ActorWithFilmsResultView{
 		ActorID:        &res.ActorID,
 		ActorName:      res.ActorName,
 		ActorSex:       res.ActorSex,
 		ActorBirthdate: res.ActorBirthdate,
+	}
+	if res.FilmIDs != nil {
+		vres.FilmIDs = make([]uint64, len(res.FilmIDs))
+		for i, val := range res.FilmIDs {
+			vres.FilmIDs[i] = val
+		}
 	}
 	return vres
 }

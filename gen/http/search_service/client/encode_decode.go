@@ -190,13 +190,13 @@ func DecodeGetAllActorsResponse(decoder func(*http.Response) goahttp.Decoder, re
 			if err != nil {
 				return nil, goahttp.ErrDecodingError("SearchService", "getAllActors", err)
 			}
-			p := NewGetAllActorsActorResultCollectionOK(body)
+			p := NewGetAllActorsActorWithFilmsResultCollectionOK(body)
 			view := "default"
-			vres := searchserviceviews.ActorResultCollection{Projected: p, View: view}
-			if err = searchserviceviews.ValidateActorResultCollection(vres); err != nil {
+			vres := searchserviceviews.ActorWithFilmsResultCollection{Projected: p, View: view}
+			if err = searchserviceviews.ValidateActorWithFilmsResultCollection(vres); err != nil {
 				return nil, goahttp.ErrValidationError("SearchService", "getAllActors", err)
 			}
-			res := searchservice.NewActorResultCollection(vres)
+			res := searchservice.NewActorWithFilmsResultCollection(vres)
 			return res, nil
 		case http.StatusForbidden:
 			var (
@@ -347,15 +347,21 @@ func unmarshalFilmInfoResponseBodyToSearchserviceFilmInfo(v *FilmInfoResponseBod
 	return res
 }
 
-// unmarshalActorResultResponseToSearchserviceviewsActorResultView builds a
-// value of type *searchserviceviews.ActorResultView from a value of type
-// *ActorResultResponse.
-func unmarshalActorResultResponseToSearchserviceviewsActorResultView(v *ActorResultResponse) *searchserviceviews.ActorResultView {
-	res := &searchserviceviews.ActorResultView{
+// unmarshalActorWithFilmsResultResponseToSearchserviceviewsActorWithFilmsResultView
+// builds a value of type *searchserviceviews.ActorWithFilmsResultView from a
+// value of type *ActorWithFilmsResultResponse.
+func unmarshalActorWithFilmsResultResponseToSearchserviceviewsActorWithFilmsResultView(v *ActorWithFilmsResultResponse) *searchserviceviews.ActorWithFilmsResultView {
+	res := &searchserviceviews.ActorWithFilmsResultView{
 		ActorID:        v.ActorID,
 		ActorName:      v.ActorName,
 		ActorSex:       v.ActorSex,
 		ActorBirthdate: v.ActorBirthdate,
+	}
+	if v.FilmIDs != nil {
+		res.FilmIDs = make([]uint64, len(v.FilmIDs))
+		for i, val := range v.FilmIDs {
+			res.FilmIDs[i] = val
+		}
 	}
 
 	return res

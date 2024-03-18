@@ -36,8 +36,8 @@ paths:
                         application/json:
                             schema:
                                 type: string
-                                example: Odit expedita unde.
-                            example: Quo nulla delectus fugiat aut qui.
+                                example: Distinctio quia quidem illum.
+                            example: Quos ab dolorem odit aut et et.
             security:
                 - basic_header_Authorization: []
     /actors:
@@ -52,40 +52,56 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/ActorResultCollection'
+                                $ref: '#/components/schemas/ActorWithFilmsResultCollection'
                             example:
                                 - ActorBirthdate: Ut aut perferendis voluptas cupiditate officia.
                                   ActorID: 239
                                   ActorName: Omnis ut.
                                   ActorSex: Cum doloremque ut.
+                                  FilmIDs:
+                                    - 9754958736926990373
+                                    - 12602653633321655729
+                                    - 5236009577129987924
                                 - ActorBirthdate: Ut aut perferendis voluptas cupiditate officia.
                                   ActorID: 239
                                   ActorName: Omnis ut.
                                   ActorSex: Cum doloremque ut.
+                                  FilmIDs:
+                                    - 9754958736926990373
+                                    - 12602653633321655729
+                                    - 5236009577129987924
                                 - ActorBirthdate: Ut aut perferendis voluptas cupiditate officia.
                                   ActorID: 239
                                   ActorName: Omnis ut.
                                   ActorSex: Cum doloremque ut.
+                                  FilmIDs:
+                                    - 9754958736926990373
+                                    - 12602653633321655729
+                                    - 5236009577129987924
                                 - ActorBirthdate: Ut aut perferendis voluptas cupiditate officia.
                                   ActorID: 239
                                   ActorName: Omnis ut.
                                   ActorSex: Cum doloremque ut.
+                                  FilmIDs:
+                                    - 9754958736926990373
+                                    - 12602653633321655729
+                                    - 5236009577129987924
                 "401":
                     description: 'unauthorized: Unauthorized response.'
                     content:
                         application/json:
                             schema:
                                 type: string
-                                example: Et dolor.
-                            example: Sed error aut aspernatur.
+                                example: Eos repellat qui ad assumenda impedit.
+                            example: Fugit commodi et.
                 "403":
                     description: 'invalid-scopes: Forbidden response.'
                     content:
                         application/json:
                             schema:
                                 type: string
-                                example: Incidunt saepe atque.
-                            example: Et quo ea quam consequatur.
+                                example: Illum officiis dicta repudiandae minima doloribus.
+                            example: Quo debitis eaque suscipit totam tempore aut.
             security:
                 - jwt_header_Authorization:
                     - api:read
@@ -112,9 +128,9 @@ paths:
                         application/json:
                             schema:
                                 type: integer
-                                example: 4266440585065375174
+                                example: 4080741364663395557
                                 format: int64
-                            example: 12806185530860612552
+                            example: 6041875434698296035
                 "400":
                     description: 'already-exists: Actor already exists'
                     content:
@@ -122,7 +138,7 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/AlreadyExists'
                             example:
-                                id: Dolores sed architecto est et est perferendis.
+                                id: Sapiente officiis rerum laudantium cupiditate.
                                 message: Entity already exists
                 "401":
                     description: 'unauthorized: Unauthorized response.'
@@ -130,16 +146,16 @@ paths:
                         application/json:
                             schema:
                                 type: string
-                                example: Libero ipsam quibusdam voluptatem ut.
-                            example: Officiis dicta repudiandae minima doloribus quod eos.
+                                example: Laborum delectus placeat perspiciatis accusantium et ut.
+                            example: Dicta unde ut.
                 "403":
                     description: 'invalid-scopes: Forbidden response.'
                     content:
                         application/json:
                             schema:
                                 type: string
-                                example: Impedit quos saepe nulla odio iure.
-                            example: Dolore reiciendis sapiente error porro ut quod.
+                                example: Quidem consequatur.
+                            example: Sunt quis quibusdam quos.
             security:
                 - jwt_header_Authorization:
                     - api:write
@@ -157,9 +173,9 @@ paths:
                   schema:
                     type: integer
                     description: Actor ID
-                    example: 14281544407677784669
+                    example: 6586647725540130212
                     format: int64
-                  example: 18042374471419002306
+                  example: 11586002522416701343
             responses:
                 "204":
                     description: No Content response.
@@ -169,16 +185,16 @@ paths:
                         application/json:
                             schema:
                                 type: string
-                                example: Placeat perspiciatis.
-                            example: Quia quidem illum sed.
+                                example: Veritatis consequuntur consequuntur aut numquam voluptatem.
+                            example: Harum molestiae repudiandae numquam ut temporibus dolores.
                 "403":
                     description: 'invalid-scopes: Forbidden response.'
                     content:
                         application/json:
                             schema:
                                 type: string
-                                example: Eos harum error aut et laborum.
-                            example: Laborum dolorum eum.
+                                example: Consequuntur odio tempore itaque.
+                            example: Ullam ut et.
             security:
                 - jwt_header_Authorization:
                     - api:write
@@ -193,9 +209,9 @@ paths:
                   required: true
                   schema:
                     type: integer
-                    example: 3471957077666651514
+                    example: 16817759785930486940
                     format: int64
-                  example: 16382842648948398767
+                  example: 9303740970506523028
             requestBody:
                 required: true
                 content:
@@ -217,7 +233,7 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/AlreadyExists'
                             example:
-                                id: Sed provident expedita ullam similique dolores.
+                                id: Fugiat quia et.
                                 message: Client ABCDEF12356890 not found
                 "401":
                     description: 'unauthorized: Unauthorized response.'
@@ -225,16 +241,16 @@ paths:
                         application/json:
                             schema:
                                 type: string
-                                example: Incidunt voluptatibus sunt sed mollitia.
-                            example: Facere et.
+                                example: Maxime ex cum perspiciatis nihil.
+                            example: Excepturi natus molestiae.
                 "403":
                     description: 'invalid-scopes: Forbidden response.'
                     content:
                         application/json:
                             schema:
                                 type: string
-                                example: Architecto quidem consequatur ut.
-                            example: Assumenda impedit dolorum sed sequi nihil omnis.
+                                example: Est occaecati architecto doloremque.
+                            example: Voluptas alias nam enim voluptatem aut.
             security:
                 - jwt_header_Authorization:
                     - api:write
@@ -274,34 +290,22 @@ paths:
                                   Rating: Nostrum dolorum quo libero quia.
                                   ReleaseDate: Nemo et voluptatem esse.
                                   Title: Sunt necessitatibus et qui tenetur non nostrum.
-                                - Actors: Debitis harum sed quas vel.
-                                  Description: Voluptatem reiciendis impedit.
-                                  FilmID: 239
-                                  Rating: Nostrum dolorum quo libero quia.
-                                  ReleaseDate: Nemo et voluptatem esse.
-                                  Title: Sunt necessitatibus et qui tenetur non nostrum.
-                                - Actors: Debitis harum sed quas vel.
-                                  Description: Voluptatem reiciendis impedit.
-                                  FilmID: 239
-                                  Rating: Nostrum dolorum quo libero quia.
-                                  ReleaseDate: Nemo et voluptatem esse.
-                                  Title: Sunt necessitatibus et qui tenetur non nostrum.
                 "401":
                     description: 'unauthorized: Unauthorized response.'
                     content:
                         application/json:
                             schema:
                                 type: string
-                                example: Voluptas rerum et repudiandae quod.
-                            example: Explicabo id iste ducimus nihil et.
+                                example: Laboriosam quia laborum dolorum.
+                            example: Fugit et asperiores explicabo ut.
                 "403":
                     description: 'invalid-scopes: Forbidden response.'
                     content:
                         application/json:
                             schema:
                                 type: string
-                                example: Consectetur corporis voluptas.
-                            example: Reprehenderit quos eum quaerat unde.
+                                example: Sequi nihil omnis culpa facere et.
+                            example: Sed id veniam.
             security:
                 - jwt_header_Authorization:
                     - api:read
@@ -319,12 +323,12 @@ paths:
                         example:
                             FilmInfo:
                                 Actors:
-                                    - 3308568187084537867
-                                    - 1675299544092327479
-                                Description: udq
-                                Rating: 7.013173
+                                    - 17646642687867833120
+                                    - 7977177035577617004
+                                Description: ma6
+                                Rating: 1.4821174
                                 ReleaseDate: "2024-03-18"
-                                Title: o
+                                Title: "7"
             responses:
                 "201":
                     description: Created response.
@@ -333,12 +337,12 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/FilmResult'
                             example:
-                                Actors: Non totam minus magnam non.
-                                Description: Voluptatem labore unde voluptatem dignissimos eveniet molestiae.
+                                Actors: Est id laudantium enim at consectetur.
+                                Description: Similique neque fugiat libero unde.
                                 FilmID: 239
-                                Rating: Maiores temporibus.
-                                ReleaseDate: Similique neque fugiat libero unde.
-                                Title: Ipsa atque culpa possimus quia.
+                                Rating: Non totam minus magnam non.
+                                ReleaseDate: Maiores temporibus.
+                                Title: Voluptatem labore unde voluptatem dignissimos eveniet molestiae.
                 "400":
                     description: 'already-exists: Film already exists'
                     content:
@@ -346,7 +350,7 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/AlreadyExists'
                             example:
-                                id: Dolorem aperiam.
+                                id: Autem voluptatem sequi consequatur laboriosam omnis.
                                 message: Entity already exists
                 "401":
                     description: 'unauthorized: Unauthorized response.'
@@ -354,16 +358,16 @@ paths:
                         application/json:
                             schema:
                                 type: string
-                                example: Quos ut ducimus.
-                            example: Dicta unde ut.
+                                example: Unde consequatur quia totam quis.
+                            example: Commodi fuga ipsa consequuntur numquam nam.
                 "403":
                     description: 'invalid-scopes: Forbidden response.'
                     content:
                         application/json:
                             schema:
                                 type: string
-                                example: Rerum natus.
-                            example: Sunt quis quibusdam quos.
+                                example: Velit in non sed dicta adipisci.
+                            example: Est dolorem sed quam vel tenetur.
             security:
                 - jwt_header_Authorization:
                     - api:write
@@ -381,9 +385,9 @@ paths:
                   schema:
                     type: integer
                     description: Film ID
-                    example: 6586647725540130212
+                    example: 17934321687953674878
                     format: int64
-                  example: 11586002522416701343
+                  example: 13601416166524488225
             responses:
                 "204":
                     description: No Content response.
@@ -393,16 +397,16 @@ paths:
                         application/json:
                             schema:
                                 type: string
-                                example: Velit in non sed dicta adipisci.
-                            example: Harum molestiae repudiandae numquam ut temporibus dolores.
+                                example: Nulla ipsam non vero.
+                            example: Sed error aut aspernatur.
                 "403":
                     description: 'invalid-scopes: Forbidden response.'
                     content:
                         application/json:
                             schema:
                                 type: string
-                                example: Rerum ipsum est.
-                            example: Ullam ut et.
+                                example: Maiores quisquam aut quaerat molestiae.
+                            example: Eius et quo ea quam consequatur.
             security:
                 - jwt_header_Authorization:
                     - api:write
@@ -417,9 +421,9 @@ paths:
                   required: true
                   schema:
                     type: integer
-                    example: 16817759785930486940
+                    example: 17572295250627788015
                     format: int64
-                  example: 9303740970506523028
+                  example: 14282796277583967547
             requestBody:
                 required: true
                 content:
@@ -429,12 +433,12 @@ paths:
                         example:
                             FilmInfo:
                                 Actors:
-                                    - 3308568187084537867
-                                    - 1675299544092327479
-                                Description: udq
-                                Rating: 7.013173
+                                    - 17646642687867833120
+                                    - 7977177035577617004
+                                Description: ma6
+                                Rating: 1.4821174
                                 ReleaseDate: "2024-03-18"
-                                Title: o
+                                Title: "7"
             responses:
                 "201":
                     description: Created response.
@@ -445,7 +449,7 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/AlreadyExists'
                             example:
-                                id: Rerum repellendus voluptas.
+                                id: Voluptas error qui ut sunt.
                                 message: Client ABCDEF12356890 not found
                 "401":
                     description: 'unauthorized: Unauthorized response.'
@@ -453,16 +457,16 @@ paths:
                         application/json:
                             schema:
                                 type: string
-                                example: Rem dolores in qui numquam ipsam quia.
-                            example: Excepturi natus molestiae.
+                                example: A repellendus nobis porro voluptas aut voluptatem.
+                            example: Dolor quaerat maxime ad et.
                 "403":
                     description: 'invalid-scopes: Forbidden response.'
                     content:
                         application/json:
                             schema:
                                 type: string
-                                example: Tenetur excepturi dolor et quod voluptatibus.
-                            example: Voluptas alias nam enim voluptatem aut.
+                                example: Aut voluptatibus eveniet fugit rerum ipsum.
+                            example: Quis eius eaque.
             security:
                 - jwt_header_Authorization:
                     - api:write
@@ -480,8 +484,8 @@ paths:
                   schema:
                     type: string
                     description: Actor or Film Name
-                    example: Est dolorem sed quam vel tenetur.
-                  example: Commodi fuga ipsa consequuntur numquam nam.
+                    example: Reprehenderit quos eum quaerat unde.
+                  example: Explicabo id iste ducimus nihil et.
             responses:
                 "200":
                     description: OK response.
@@ -507,46 +511,21 @@ paths:
                         application/json:
                             schema:
                                 type: string
-                                example: Aut voluptatibus eveniet fugit rerum ipsum.
-                            example: Maxime ad et velit ipsam eveniet.
+                                example: Quos voluptate dolorem ut ut pariatur.
+                            example: Consequatur incidunt vel quia.
                 "403":
                     description: 'invalid-scopes: Forbidden response.'
                     content:
                         application/json:
                             schema:
                                 type: string
-                                example: Unde consequatur quia totam quis.
-                            example: Non quia quis eius eaque quia dolor.
+                                example: Rerum quia nemo consequuntur magni.
+                            example: Quo nulla delectus fugiat aut qui.
             security:
                 - jwt_header_Authorization:
                     - api:read
 components:
     schemas:
-        Actor:
-            type: object
-            properties:
-                ActorBirthdate:
-                    type: string
-                    example: Nulla ipsam non vero.
-                ActorID:
-                    type: integer
-                    description: Unique ID of an Actor
-                    example: 239
-                    format: int64
-                ActorName:
-                    type: string
-                    example: A repellendus nobis porro voluptas aut voluptatem.
-                ActorSex:
-                    type: string
-                    example: Maiores quisquam aut quaerat molestiae.
-            example:
-                ActorBirthdate: Autem minus accusantium fugiat laboriosam non.
-                ActorID: 239
-                ActorName: Rerum quia nemo consequuntur magni.
-                ActorSex: Quos voluptate dolorem ut ut pariatur.
-            required:
-                - ActorID
-                - ActorInfo
         ActorInfo:
             type: object
             properties:
@@ -575,23 +554,82 @@ components:
                 - ActorName
                 - ActorSex
                 - ActorBirthdate
-        ActorResultCollection:
+        ActorWithFilmsResultCollection:
             type: array
             items:
-                $ref: '#/components/schemas/Actor'
+                $ref: '#/components/schemas/Actorswithfilms'
             example:
                 - ActorBirthdate: Ut aut perferendis voluptas cupiditate officia.
                   ActorID: 239
                   ActorName: Omnis ut.
                   ActorSex: Cum doloremque ut.
+                  FilmIDs:
+                    - 9754958736926990373
+                    - 12602653633321655729
+                    - 5236009577129987924
                 - ActorBirthdate: Ut aut perferendis voluptas cupiditate officia.
                   ActorID: 239
                   ActorName: Omnis ut.
                   ActorSex: Cum doloremque ut.
+                  FilmIDs:
+                    - 9754958736926990373
+                    - 12602653633321655729
+                    - 5236009577129987924
                 - ActorBirthdate: Ut aut perferendis voluptas cupiditate officia.
                   ActorID: 239
                   ActorName: Omnis ut.
                   ActorSex: Cum doloremque ut.
+                  FilmIDs:
+                    - 9754958736926990373
+                    - 12602653633321655729
+                    - 5236009577129987924
+                - ActorBirthdate: Ut aut perferendis voluptas cupiditate officia.
+                  ActorID: 239
+                  ActorName: Omnis ut.
+                  ActorSex: Cum doloremque ut.
+                  FilmIDs:
+                    - 9754958736926990373
+                    - 12602653633321655729
+                    - 5236009577129987924
+        Actorswithfilms:
+            type: object
+            properties:
+                ActorBirthdate:
+                    type: string
+                    example: Atque et et dolor amet.
+                ActorID:
+                    type: integer
+                    description: Unique ID of an Actor
+                    example: 239
+                    format: int64
+                ActorName:
+                    type: string
+                    example: Autem minus accusantium fugiat laboriosam non.
+                ActorSex:
+                    type: string
+                    example: Cupiditate incidunt.
+                FilmIDs:
+                    type: array
+                    items:
+                        type: integer
+                        example: 7167919502201239152
+                        format: int64
+                    example:
+                        - 7880902865247041114
+                        - 6246452838536438785
+                        - 8176794058554984974
+            example:
+                ActorBirthdate: Impedit illum dolore.
+                ActorID: 239
+                ActorName: Rerum et.
+                ActorSex: Quod modi odit expedita.
+                FilmIDs:
+                    - 3877520164561121669
+                    - 15602138683019610826
+                    - 14352156525644089832
+            required:
+                - ActorID
+                - ActorInfo
         AddActorRequestBody:
             type: object
             properties:
@@ -612,12 +650,12 @@ components:
             example:
                 FilmInfo:
                     Actors:
-                        - 3308568187084537867
-                        - 1675299544092327479
-                    Description: udq
-                    Rating: 7.013173
+                        - 17646642687867833120
+                        - 7977177035577617004
+                    Description: ma6
+                    Rating: 1.4821174
                     ReleaseDate: "2024-03-18"
-                    Title: o
+                    Title: "7"
             required:
                 - FilmInfo
         AlreadyExists:
@@ -626,14 +664,14 @@ components:
                 id:
                     type: string
                     description: ID of existing data
-                    example: Quae ut molestiae labore.
+                    example: Quia incidunt voluptatibus sunt.
                 message:
                     type: string
                     description: Error message
                     example: Entity already exists
             description: Actor already exists
             example:
-                id: Aut natus tenetur occaecati.
+                id: Mollitia vel eos harum error aut.
                 message: Entity already exists
             required:
                 - message
@@ -681,23 +719,23 @@ components:
                     type: array
                     items:
                         type: integer
-                        example: 1529032048611253130
+                        example: 10972205940351651615
                         format: int64
                     description: Actors' Ids
                     example:
-                        - 17730271813820760227
-                        - 12083879675191710079
-                        - 13040520549395663426
-                        - 4614977118626452765
+                        - 2985022391880540844
+                        - 15221403856108194516
+                        - 7623845798825847098
+                        - 11242062946640612490
                 Description:
                     type: string
                     description: Description of a film
-                    example: dhy
+                    example: rke
                     maxLength: 1000
                 Rating:
                     type: number
                     description: Rating (0.0 - 10.0)
-                    example: 7.0286126
+                    example: 6.7537637
                     format: float
                     minimum: 0
                     maximum: 10
@@ -709,20 +747,20 @@ components:
                 Title:
                     type: string
                     description: Title of a film
-                    example: l
+                    example: o1
                     minLength: 1
                     maxLength: 150
             description: Describes a Film to be added
             example:
                 Actors:
-                    - 14973514143931416721
-                    - 14873273817073537133
-                    - 5756286053347834308
-                    - 695137477327123839
-                Description: lr8
-                Rating: 7.6571565
+                    - 2349430194062845029
+                    - 8133848865947118847
+                    - 5903766304384970708
+                    - 10613298873512116777
+                Description: p8n
+                Rating: 4.6818285
                 ReleaseDate: "2024-03-18"
-                Title: "7"
+                Title: "4"
             required:
                 - Title
                 - Description
@@ -734,10 +772,10 @@ components:
             properties:
                 Actors:
                     type: string
-                    example: Quo nihil ea sint.
+                    example: Consequatur animi eligendi quas ut cumque.
                 Description:
                     type: string
-                    example: Porro alias fugiat sunt in rem qui.
+                    example: Qui consequatur et voluptatem.
                 FilmID:
                     type: integer
                     description: Unique ID of a Film
@@ -745,20 +783,20 @@ components:
                     format: int64
                 Rating:
                     type: string
-                    example: Modi sit consectetur praesentium voluptatum.
+                    example: Ut adipisci.
                 ReleaseDate:
                     type: string
-                    example: Dolorem voluptates.
+                    example: Assumenda omnis voluptas voluptatibus et.
                 Title:
                     type: string
-                    example: Consequatur et repudiandae fuga.
+                    example: Consequatur qui commodi est.
             example:
-                Actors: Consequatur animi eligendi quas ut cumque.
-                Description: Qui consequatur et voluptatem.
+                Actors: Rerum ipsum est.
+                Description: Quos ut ducimus.
                 FilmID: 239
-                Rating: Ut adipisci.
-                ReleaseDate: Assumenda omnis voluptas voluptatibus et.
-                Title: Consequatur qui commodi est.
+                Rating: Rem dolores in qui numquam ipsam quia.
+                ReleaseDate: Tenetur excepturi dolor et quod voluptatibus.
+                Title: Rerum natus.
             required:
                 - FilmID
                 - FilmInfo
@@ -767,12 +805,6 @@ components:
             items:
                 $ref: '#/components/schemas/FilmResult'
             example:
-                - Actors: Debitis harum sed quas vel.
-                  Description: Voluptatem reiciendis impedit.
-                  FilmID: 239
-                  Rating: Nostrum dolorum quo libero quia.
-                  ReleaseDate: Nemo et voluptatem esse.
-                  Title: Sunt necessitatibus et qui tenetur non nostrum.
                 - Actors: Debitis harum sed quas vel.
                   Description: Voluptatem reiciendis impedit.
                   FilmID: 239
