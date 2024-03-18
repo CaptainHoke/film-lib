@@ -3,13 +3,10 @@
 ## TODO
 - [ ] Create the app lul
 - [ ] Write launch instructions
-- [ ] Setup golangci as a separate gh action
+- [ ] Roll out std-http-based server
 
 ## Milestones
-- [ ] Goa API for Actors + JWT Auth
-  - GET /actors
-  - POST /actors/{actor-id}?name=...sex=...birthdate=...
-  - PUT /actors/{actor-id}?name=...sex=...birthdate=...
+- [x] Goa API for Actors + JWT Auth
 - [ ] API for Films
 - [ ] API for Querying
 
@@ -20,17 +17,14 @@ Auth:
 - POST users/sign-in
 
 Role >= User:
-- GET /actors
-- GET /films?sort=title/rating/release-date
-- GET /search?query=search-query
+- [x] GET /actors
+- [ ] GET /films?sort=title/rating/release-date
+- [ ] GET /search?query=search-query
 
 Admin-only:
-- POST /actors?name=...sex=...birthdate=...
-- PUT /actors/{actor-id}?name=...sex=...birthdate=...
-- DELETE /actors/{actor-id}
+- [x] POST /actors?name=...sex=...birthdate=...
+- [x] PUT /actors/{actor-id}?name=...sex=...birthdate=...
+- [x] DELETE /actors/{actor-id}
 - POST /films?title=...desc=...release-date=...rating=...actors=[id1, id2, ...]
 - PUT /films?title=...desc=...release-date=...rating=...actors=[id1, id2, ...]
 - DELETE /films/{film-id}
-
-
-
