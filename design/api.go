@@ -17,8 +17,8 @@ var ActorResult = ResultType("application/vnd.actor", func() {
 	TypeName("ActorResult")
 
 	Attributes(func() {
-		Attribute("ActorID", String, "Unique ID of an Actor", func() {
-			Example("239")
+		Attribute("ActorID", UInt64, "Unique ID of an Actor", func() {
+			Example(239)
 		})
 		Field(2, "ActorName")
 		Field(3, "ActorSex")
@@ -40,7 +40,7 @@ var ActorResult = ResultType("application/vnd.actor", func() {
 var Actor = Type("Actor", func() {
 	Description("Actor + ID")
 
-	Attribute("ActorID", UInt32, "Unique ID of an Actor", func() {
+	Attribute("ActorID", UInt64, "Unique ID of an Actor", func() {
 		Example(239)
 	})
 	Field(2, "ActorInfo", ActorInfo, "Actor Info")
@@ -52,9 +52,12 @@ var ActorInfo = Type("ActorInfo", func() {
 	Description("Describes an Actor to be added")
 
 	Attribute("ActorName", String, "Name of an Actor", func() {
+		MaxLength(32)
+		Pattern("^(?!\\s*$).+")
 		Example("Margo Robbie")
 	})
 	Attribute("ActorSex", String, "Sex of an Actor", func() {
+		Pattern(`^(M|F)$`)
 		Example("F")
 	})
 	Attribute("ActorBirthdate", String, "YYYY-MM-DD", func() {

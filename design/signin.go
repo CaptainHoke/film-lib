@@ -16,7 +16,7 @@ var JWTAuth = JWTSecurity("jwt", func() {
 })
 
 // Sign-In Service is the service used to authenticate users and assign JWT tokens for their sessions
-var _ = Service("SignInService", func() {
+var _ = Service("SignIn", func() {
 	Description("The Sign-In service authenticates users and validates tokens")
 
 	Error("unauthorized", String, "Credentials are invalid")
