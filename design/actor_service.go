@@ -39,12 +39,9 @@ var _ = Service("ActorService", func() {
 			TokenField(1, "token", String, func() {
 				Description("JWT used for authentication")
 			})
-			//Field(2, "ActorID", String, "Actor ID")
-			Field(2, "ActorName", String, "Actor Name")
-			Field(3, "ActorSex", String, "Actor Sex M/F")
-			Field(4, "ActorBirthdate", String, "Actor Birthdate YYYY-MM-DD")
+			Attribute("ActorInfo", ActorInfo)
 
-			Required("token", "ActorName", "ActorSex", "ActorBirthdate")
+			Required("token", "ActorInfo")
 		})
 
 		Security(JWTAuth, func() {
@@ -71,12 +68,10 @@ var _ = Service("ActorService", func() {
 			TokenField(1, "token", String, func() {
 				Description("JWT used for authentication")
 			})
-			Field(2, "ActorID", String, "Actor ID")
-			Field(3, "ActorName", String, "Actor Name")
-			Field(4, "ActorSex", String, "Actor Sex M/F")
-			Field(5, "ActorBirthdate", String, "Actor Birthdate YYYY-MM-DD")
+			Attribute("ActorID", UInt64)
+			Attribute("ActorInfo", ActorInfo)
 
-			Required("token", "ActorID", "ActorName", "ActorSex", "ActorBirthdate")
+			Required("token", "ActorID", "ActorInfo")
 		})
 
 		Security(JWTAuth, func() {
@@ -99,7 +94,7 @@ var _ = Service("ActorService", func() {
 			TokenField(1, "token", String, func() {
 				Description("JWT used for authentication")
 			})
-			Field(2, "ActorID", String, "Actor ID")
+			Attribute("ActorID", UInt64, "Actor ID")
 
 			Required("token", "ActorID")
 		})
@@ -118,4 +113,56 @@ var _ = Service("ActorService", func() {
 			Response(StatusNoContent)
 		})
 	})
+})
+
+var ActorResult = ResultType("application/vnd.actor", func() {
+	Reference(Actor)
+	TypeName("ActorResult")
+
+	Attributes(func() {
+		Attribute("ActorID")
+		Attribute("ActorName")
+		Attribute("ActorSex")
+		Attribute("ActorBirthdate")
+	})
+
+	View("default", func() {
+		Attribute("ActorID")
+		Attribute("ActorName")
+		Attribute("ActorSex")
+		Attribute("ActorBirthdate")
+	})
+
+	Required("ActorID")
+})
+
+var Actor = Type("Actor", func() {
+	Description("Actor + ID")
+
+	Attribute("ActorID", UInt64, "Unique ID of an Actor", func() {
+		Example(239)
+	})
+	Attribute("ActorInfo", ActorInfo, "Actor Info")
+
+	Required("ActorID", "ActorInfo")
+})
+
+var ActorInfo = Type("ActorInfo", func() {
+	Description("Describes an Actor to be added")
+
+	Attribute("ActorName", String, "Name of an Actor", func() {
+		Pattern(`^.*\S.*$`)
+		MaxLength(32)
+		Example("Margo Robbie")
+	})
+	Attribute("ActorSex", String, "Sex of an Actor", func() {
+		Pattern(`^(M|F)$`)
+		Example("F")
+	})
+	Attribute("ActorBirthdate", String, "YYYY-MM-DD", func() {
+		Pattern(`^\d{4}\-(0[1-9]|1[012])\-(0[1-9]|[12][0-9]|3[01])$`)
+		Example("2024-03-18")
+	})
+
+	Required("ActorName", "ActorSex", "ActorBirthdate")
 })

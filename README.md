@@ -13,18 +13,17 @@
 ### API Reference:
 
 Auth:
-- POST admins/sign-in
-- POST users/sign-in
+- POST sign-in/auth?username=...password=...
 
 Role >= User:
 - [x] GET /actors
-- [ ] GET /films?sort=title/rating/release-date
+- [x] GET /films?sort=title/rating/release-date
 - [ ] GET /search?query=search-query
 
 Admin-only:
 - [x] POST /actors?name=...sex=...birthdate=...
 - [x] PUT /actors/{actor-id}?name=...sex=...birthdate=...
 - [x] DELETE /actors/{actor-id}
-- POST /films?title=...desc=...release-date=...rating=...actors=[id1, id2, ...]
-- PUT /films?title=...desc=...release-date=...rating=...actors=[id1, id2, ...]
-- DELETE /films/{film-id}
+- [x] POST /films?title=...desc=...release-date=...rating=...actors=[id1, id2, ...]
+- [x] PUT /films?title=...desc=...release-date=...rating=...actors=[id1, id2, ...]
+- [x] DELETE /films/{film-id}
