@@ -2,13 +2,15 @@ package repo
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"sync"
 )
 
 type Postgres struct {
-	db *pgxpool.Pool
+	Db *pgxpool.Pool
 }
 
 var (
@@ -31,9 +33,35 @@ func NewPostgresDB(ctx context.Context, connString string) (*Postgres, error) {
 }
 
 func (pg *Postgres) Ping(ctx context.Context) error {
-	return pg.db.Ping(ctx)
+	return pg.Db.Ping(ctx)
+}
+
+func (pg *Postgres) TableExists(ctx context.Context, tableName string) (bool, error) {
+	exists := false
+
+	query := `
+		SELECT EXISTS (
+			SELECT FROM information_schema.tables 
+			WHERE table_schema = 'public'
+			AND table_name = @table
+		);`
+	args := pgx.NamedArgs{"table": tableName}
+	rows, err := pg.Db.Query(ctx, query, args)
+	defer rows.Close()
+
+	if err != nil {
+		return false, errors.New("failed to check for table existence")
+	}
+
+	err = rows.Scan(&exists)
+
+	if err != nil {
+		return false, errors.New("failed to scan row while checking for table existence")
+	}
+
+	return exists, nil
 }
 
 func (pg *Postgres) Close() {
-	pg.db.Close()
+	pg.Db.Close()
 }

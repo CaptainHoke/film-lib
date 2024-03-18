@@ -28,5 +28,6 @@ FROM scratch AS bin
 COPY --from=build /out/app /
 
 FROM gcr.io/distroless/base-debian12:latest-amd64
+COPY ./db/migrations ./db/migrations
 COPY --from=build /out/app /
 CMD ["./app", "--debug=true", "--host=docker"]

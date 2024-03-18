@@ -16,6 +16,7 @@ import (
 	"net/url"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"sync"
 	"syscall"
 )
@@ -50,8 +51,30 @@ func main() {
 
 	if err := pg.Ping(context.Background()); err != nil {
 		logger.Fatal("Failed to ping db")
-	} else {
-		logger.Fatal("Fuck it works")
+	}
+
+	actorsTableExists, _ := pg.TableExists(context.Background(), "actors")
+	filmsTableExists, _ := pg.TableExists(context.Background(), "films")
+	actorFilmTableExists, _ := pg.TableExists(context.Background(), "actor_film")
+	shouldCreateTables := !actorsTableExists || !filmsTableExists || !actorFilmTableExists
+
+	// TODO: migrate package or smth, this is broken
+	if shouldCreateTables {
+		migrationsDir := "./db/migrations"
+		items, _ := os.ReadDir(migrationsDir)
+
+		for _, item := range items {
+			if !item.IsDir() {
+				path := filepath.Join(migrationsDir, item.Name())
+				m, _ := os.ReadFile(path)
+				sql := string(m)
+				logger.Println(sql)
+				_, err := pg.Db.Exec(context.Background(), sql)
+				if err != nil {
+					logger.Fatal("Failed to set up db")
+				}
+			}
+		}
 	}
 
 	// Initialize the services.
@@ -105,6 +128,7 @@ func main() {
 	// Start the servers and send errors (if any) to the error channel.
 	addr := ""
 	switch *hostF {
+	// TODO: Should've been fixed in api.go
 	case "docker":
 		{
 			addr = "http://0.0.0.0:3239/api/v1"
