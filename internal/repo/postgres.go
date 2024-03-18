@@ -47,6 +47,9 @@ func (pg *Postgres) TableExists(ctx context.Context, tableName string) (bool, er
 		);`
 	args := pgx.NamedArgs{"table": tableName}
 	rows, err := pg.Db.Query(ctx, query, args)
+	if err != nil {
+		return false, errors.New("table existence query failed")
+	}
 	defer rows.Close()
 
 	if err != nil {
