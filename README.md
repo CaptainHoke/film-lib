@@ -1,6 +1,6 @@
 # film-lib
 
-## Milestones
+## TODO
 - [x] Goa API for Actors + JWT Auth
 - [x] API for Films
 - [x] API for Querying
@@ -14,4 +14,8 @@
 - [ ] Server config setup idk where to put it yet
 - [ ] Make project structure less ugly
 - [ ] Make auth less retarded
+  - Store users in-memory for now
 - [ ] Fix linter errors
+- [ ] Make sure that the project is eventually test-covered (idk when maybe a day or two after deadline)
+- [ ] getAllFilms => getFilms + limit
+- [ ] Users table

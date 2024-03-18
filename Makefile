@@ -19,3 +19,7 @@ run-tests:
 .PHONY: lint
 lint:
 	docker build --target lint .
+
+.PHONY: db
+db:
+	docker run --name=film-db -e POSTGRES_PASSWORD="pass" -d --rm postgres:16.2
