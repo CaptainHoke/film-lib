@@ -1,16 +1,9 @@
-all: rebuild
+all: build launch
 test: lint run-tests
-
-.PHONY: clean
-clean:
-	rm -rf ./bin
 
 .PHONY: build
 build:
-	docker build --target bin --output bin/ .
-
-.PHONY: rebuild
-rebuild: clean build
+	docker build -t film_db .
 
 .PHONY: run-tests
 run-tests:
@@ -20,10 +13,6 @@ run-tests:
 lint:
 	docker build --target lint .
 
-.PHONY: db
-db:
-	docker run --name=film-db -e POSTGRES_PASSWORD="film-db" -d --rm postgres:16.2
-
 .PHONY: launch
 launch:
-	docker build -t film_db .
+	docker compose up

@@ -38,12 +38,17 @@ func (s *signInsrvc) BasicAuth(ctx context.Context, user, pass string, scheme *s
 func (s *signInsrvc) Auth(ctx context.Context, p *signin.AuthPayload) (res *signin.Creds, err error) {
 	s.logger.Print("signIn.auth")
 
+	scopes := []string{"api:read"}
+	if *p.Username == "admin" && *p.Password == "admin" {
+		scopes = append(scopes, "api:write")
+	}
+
 	// create JWT token
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"nbf":    time.Date(2015, 10, 10, 12, 0, 0, 0, time.UTC).Unix(),
 		"iat":    time.Now().Unix(),
 		"exp":    time.Now().Add(time.Duration(9) * time.Minute).Unix(),
-		"scopes": []string{"api:read", "api:write"},
+		"scopes": scopes,
 	})
 
 	s.logger.Printf("user '%s' logged in", *p.Username)

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	actorservice "film-lib/gen/actor_service"
+	searchservice "film-lib/gen/search_service"
 	"fmt"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -66,29 +67,34 @@ func (pg *Postgres) TableExists(ctx context.Context, tableName string) (bool, er
 	return exists, nil
 }
 
-//func (pg *Postgres) GetAllActors(ctx context.Context) []*actorservice.ActorWithFilms {
-//	query := `
-//		SELECT actor_id, name, sex, birthdate, array_agg(f.film_id) AS film_ids
-//		FROM
-//			actors a INNER JOIN actor_film af ON a.actor_id = af.actor_id
-//		GROUP BY a.name;`
-//	rows, _ := pg.Db.Query(ctx, query)
-//	defer rows.Close()
-//
-//	var actors []*actorservice.ActorWithFilms
-//	for rows.Next() {
-//		a := actorservice.ActorWithFilms{}
-//
-//		err := rows.Scan(&a.ActorResult.ActorID, &a.ActorResult.ActorName, &a.ActorResult.ActorSex, &a.ActorResult.ActorBirthdate, &a.FilmIds)
-//		if err != nil {
-//			fmt.Errorf("failed to scan row: %w", err)
-//			return nil
-//		}
-//		actors = append(actors, &a)
-//	}
-//
-//	return actors
-//}
+type ActorWithFilms struct {
+	ActorResult searchservice.ActorResult
+	FilmIds     []uint64
+}
+
+func (pg *Postgres) GetAllActors(ctx context.Context) []ActorWithFilms {
+	query := `
+		SELECT actor_id, name, sex, birthdate, array_agg(f.film_id) AS film_ids
+		FROM
+			actors a INNER JOIN actor_film af ON a.actor_id = af.actor_id
+		GROUP BY a.name;`
+	rows, _ := pg.Db.Query(ctx, query)
+	defer rows.Close()
+
+	var actors []ActorWithFilms
+	for rows.Next() {
+		a := ActorWithFilms{}
+
+		err := rows.Scan(&a.ActorResult.ActorID, &a.ActorResult.ActorName, &a.ActorResult.ActorSex, &a.ActorResult.ActorBirthdate, &a.FilmIds)
+		if err != nil {
+			fmt.Errorf("failed to scan row: %w", err)
+			return nil
+		}
+		actors = append(actors, a)
+	}
+
+	return actors
+}
 
 func (pg *Postgres) AddActor(ctx context.Context, info actorservice.ActorInfo) uint64 {
 	query := `
@@ -101,7 +107,7 @@ func (pg *Postgres) AddActor(ctx context.Context, info actorservice.ActorInfo) u
 		"actorDate": info.ActorBirthdate,
 	}
 	res := pg.Db.QueryRow(ctx, query, args)
-	var actorId uint64
+	actorId := ^uint64(0)
 	_ = res.Scan(&actorId)
 
 	return actorId
