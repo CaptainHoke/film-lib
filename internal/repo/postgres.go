@@ -100,7 +100,7 @@ func (pg *Postgres) GetAllActors(ctx context.Context, logger *log.Logger) []sear
 		a.ActorBirthdate = &formattedDate
 
 		if err != nil {
-			logger.Printf("failed to scan row: %w", err)
+			logger.Printf("failed to scan row: %v", err)
 			return nil
 		}
 		actors = append(actors, a)
