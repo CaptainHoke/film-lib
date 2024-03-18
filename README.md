@@ -21,3 +21,4 @@ Using Goa to "generate docs faster" was a fucking mistake
 - [ ] Make sure that the project is "eventually test-covered" (idk when maybe a day or two after deadline)
 - [ ] getAllFilms => getFilms + limit
 - [ ] Users table
+- [ ] Fix bullshit docs not working as intended, probably will need to regenerate the whole fucking thing
