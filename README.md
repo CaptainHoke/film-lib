@@ -7,18 +7,18 @@
 
 ## Milestones
 - [x] Goa API for Actors + JWT Auth
-- [ ] API for Films
-- [ ] API for Querying
+- [x] API for Films
+- [x] API for Querying
 
 ### API Reference:
 
 Auth:
-- POST sign-in/auth?username=...password=...
+- [x] POST sign-in/auth?username=...password=...
 
 Role >= User:
 - [x] GET /actors
 - [x] GET /films?sort=title/rating/release-date
-- [ ] GET /search?query=search-query
+- [x] GET /search?query=search-query
 
 Admin-only:
 - [x] POST /actors?name=...sex=...birthdate=...
