@@ -45,10 +45,9 @@ func EncodeSearchLibraryRequest(encoder func(*http.Request) goahttp.Encoder) fun
 			head := p.Token
 			req.Header.Set("X-Authorization", head)
 		}
-		body := NewSearchLibraryRequestBody(p)
-		if err := encoder(req).Encode(&body); err != nil {
-			return goahttp.ErrEncodingError("SearchService", "searchLibrary", err)
-		}
+		values := req.URL.Query()
+		values.Add("QueryString", p.QueryString)
+		req.URL.RawQuery = values.Encode()
 		return nil
 	}
 }

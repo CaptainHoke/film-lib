@@ -8,29 +8,22 @@
 package client
 
 import (
-	"encoding/json"
 	searchservice "film-lib/gen/search_service"
-	"fmt"
 )
 
 // BuildSearchLibraryPayload builds the payload for the SearchService
 // searchLibrary endpoint from CLI flags.
-func BuildSearchLibraryPayload(searchServiceSearchLibraryBody string, searchServiceSearchLibraryToken string) (*searchservice.SearchLibraryPayload, error) {
-	var err error
-	var body SearchLibraryRequestBody
+func BuildSearchLibraryPayload(searchServiceSearchLibraryQueryString string, searchServiceSearchLibraryToken string) (*searchservice.SearchLibraryPayload, error) {
+	var queryString string
 	{
-		err = json.Unmarshal([]byte(searchServiceSearchLibraryBody), &body)
-		if err != nil {
-			return nil, fmt.Errorf("invalid JSON for body, \nerror: %s, \nexample of valid JSON:\n%s", err, "'{\n      \"QueryString\": \"In nulla iure.\"\n   }'")
-		}
+		queryString = searchServiceSearchLibraryQueryString
 	}
 	var token string
 	{
 		token = searchServiceSearchLibraryToken
 	}
-	v := &searchservice.SearchLibraryPayload{
-		QueryString: body.QueryString,
-	}
+	v := &searchservice.SearchLibraryPayload{}
+	v.QueryString = queryString
 	v.Token = token
 
 	return v, nil

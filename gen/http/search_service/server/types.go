@@ -9,16 +9,7 @@ package server
 
 import (
 	searchservice "film-lib/gen/search_service"
-
-	goa "goa.design/goa/v3/pkg"
 )
-
-// SearchLibraryRequestBody is the type of the "SearchService" service
-// "searchLibrary" endpoint HTTP request body.
-type SearchLibraryRequestBody struct {
-	// Actor or Film Name
-	QueryString *string `form:"QueryString,omitempty" json:"QueryString,omitempty" xml:"QueryString,omitempty"`
-}
 
 // SearchLibraryResponseBody is the type of the "SearchService" service
 // "searchLibrary" endpoint HTTP response body.
@@ -75,20 +66,10 @@ func NewSearchLibraryResponseBody(res *searchservice.Film) *SearchLibraryRespons
 
 // NewSearchLibraryPayload builds a SearchService service searchLibrary
 // endpoint payload.
-func NewSearchLibraryPayload(body *SearchLibraryRequestBody, token string) *searchservice.SearchLibraryPayload {
-	v := &searchservice.SearchLibraryPayload{
-		QueryString: *body.QueryString,
-	}
+func NewSearchLibraryPayload(queryString string, token string) *searchservice.SearchLibraryPayload {
+	v := &searchservice.SearchLibraryPayload{}
+	v.QueryString = queryString
 	v.Token = token
 
 	return v
-}
-
-// ValidateSearchLibraryRequestBody runs the validations defined on
-// SearchLibraryRequestBody
-func ValidateSearchLibraryRequestBody(body *SearchLibraryRequestBody) (err error) {
-	if body.QueryString == nil {
-		err = goa.MergeErrors(err, goa.MissingFieldError("QueryString", "body"))
-	}
-	return
 }

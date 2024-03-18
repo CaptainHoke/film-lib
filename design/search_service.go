@@ -31,6 +31,7 @@ var _ = Service("SearchService", func() {
 		HTTP(func() {
 			GET("/search")
 			Header("token:X-Authorization")
+			Param("QueryString")
 			Response("invalid-scopes", StatusForbidden)
 			Response(StatusOK)
 		})

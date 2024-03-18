@@ -4,6 +4,7 @@ import (
 	"context"
 	actorservice "film-lib/gen/actor_service"
 	filmservice "film-lib/gen/film_service"
+	isalive "film-lib/gen/is_alive"
 	searchservice "film-lib/gen/search_service"
 	signin "film-lib/gen/sign_in"
 	services2 "film-lib/internal/services"
@@ -44,12 +45,14 @@ func main() {
 		filmServiceSvc   filmservice.Service
 		searchServiceSvc searchservice.Service
 		signInSvc        signin.Service
+		isAliveSvc       isalive.Service
 	)
 	{
 		actorServiceSvc = services2.NewActorService(logger)
 		filmServiceSvc = services2.NewFilmService(logger)
 		searchServiceSvc = services2.NewSearchService(logger)
 		signInSvc = services2.NewSignIn(logger)
+		isAliveSvc = services2.NewIsAliveService(logger)
 	}
 
 	// Wrap the services in endpoints that can be invoked from other services
@@ -59,12 +62,14 @@ func main() {
 		filmServiceEndpoints   *filmservice.Endpoints
 		searchServiceEndpoints *searchservice.Endpoints
 		signInEndpoints        *signin.Endpoints
+		isAliveEndPoints       *isalive.Endpoints
 	)
 	{
 		actorServiceEndpoints = actorservice.NewEndpoints(actorServiceSvc)
 		filmServiceEndpoints = filmservice.NewEndpoints(filmServiceSvc)
 		searchServiceEndpoints = searchservice.NewEndpoints(searchServiceSvc)
 		signInEndpoints = signin.NewEndpoints(signInSvc)
+		isAliveEndPoints = isalive.NewEndpoints(isAliveSvc)
 	}
 
 	// Create channel used by both the signal handler and server goroutines
@@ -86,7 +91,7 @@ func main() {
 	switch *hostF {
 	case "localhost":
 		{
-			addr := "http://localhost:3239/api/v1"
+			addr := "http://0.0.0.0:3239/api/v1"
 			u, err := url.Parse(addr)
 			if err != nil {
 				logger.Fatalf("invalid URL %#v: %s\n", addr, err)
@@ -106,7 +111,7 @@ func main() {
 			} else if u.Port() == "" {
 				u.Host = net.JoinHostPort(u.Host, "80")
 			}
-			handleHTTPServer(ctx, u, actorServiceEndpoints, filmServiceEndpoints, searchServiceEndpoints, signInEndpoints, &wg, errc, logger, *dbgF)
+			handleHTTPServer(ctx, u, actorServiceEndpoints, filmServiceEndpoints, searchServiceEndpoints, signInEndpoints, isAliveEndPoints, &wg, errc, logger, *dbgF)
 		}
 
 	default:

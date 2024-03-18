@@ -1,0 +1,35 @@
+version: '3'
+
+services:
+  db:
+    image: film_db
+    container_name: db
+    volumes:
+      - film_db:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: film_db
+      POSTGRES_USER: film_db
+      POSTGRES_PASSWORD: film_db
+    networks:
+      - film_net
+    ports:
+      - "5432:5432"
+  backend:
+    image: film_backend
+    container_name: backend
+    environment:
+      HOST: db
+      PORT: 5432
+      DB: film_db
+      DB_USER: film_db
+      DB_PASSWORD: film_db
+    networks:
+      - film_net
+
+volumes:
+  film_db:
+    name: film_db
+
+networks:
+  film_net:
+    name: film_net

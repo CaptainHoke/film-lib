@@ -21,10 +21,13 @@ type HTTPServer struct {
 
 // DbConfig TODO: fancy stuff
 type DbConfig struct {
-	Host     string
-	Port     string
-	user     string
-	Password string
+	Host         string
+	Port         string
+	User         string
+	Password     string
+	DBName       string
+	SSLMode      string
+	PoolMaxConns int
 }
 
 func MustLoadCfg(cfgPath string) Config {

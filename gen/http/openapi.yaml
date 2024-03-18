@@ -13,6 +13,17 @@ produces:
     - application/xml
     - application/gob
 paths:
+    /:
+        get:
+            tags:
+                - IsAlive
+            summary: check IsAlive
+            operationId: IsAlive#check
+            responses:
+                "200":
+                    description: OK response.
+            schemes:
+                - http
     /actors:
         get:
             tags:
@@ -334,18 +345,16 @@ paths:
                   * `api:read`
             operationId: SearchService#searchLibrary
             parameters:
+                - name: QueryString
+                  in: query
+                  description: Actor or Film Name
+                  required: true
+                  type: string
                 - name: X-Authorization
                   in: header
                   description: JWT used for authentication
                   required: true
                   type: string
-                - name: SearchLibraryRequestBody
-                  in: body
-                  required: true
-                  schema:
-                    $ref: '#/definitions/SearchServiceSearchLibraryRequestBody'
-                    required:
-                        - QueryString
             responses:
                 "200":
                     description: OK response.
@@ -922,18 +931,6 @@ definitions:
                 Title: 3y
         required:
             - FilmInfo
-    SearchServiceSearchLibraryRequestBody:
-        title: SearchServiceSearchLibraryRequestBody
-        type: object
-        properties:
-            QueryString:
-                type: string
-                description: Actor or Film Name
-                example: Et ut.
-        example:
-            QueryString: Est occaecati architecto doloremque.
-        required:
-            - QueryString
     SearchServiceSearchLibraryResponseBody:
         title: SearchServiceSearchLibraryResponseBody
         type: object

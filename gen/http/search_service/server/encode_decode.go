@@ -11,7 +11,6 @@ import (
 	"context"
 	"errors"
 	searchservice "film-lib/gen/search_service"
-	"io"
 	"net/http"
 	"strings"
 
@@ -36,24 +35,14 @@ func EncodeSearchLibraryResponse(encoder func(context.Context, http.ResponseWrit
 func DecodeSearchLibraryRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.Decoder) func(*http.Request) (any, error) {
 	return func(r *http.Request) (any, error) {
 		var (
-			body SearchLibraryRequestBody
-			err  error
+			queryString string
+			token       string
+			err         error
 		)
-		err = decoder(r).Decode(&body)
-		if err != nil {
-			if err == io.EOF {
-				return nil, goa.MissingPayloadError()
-			}
-			return nil, goa.DecodePayloadError(err.Error())
+		queryString = r.URL.Query().Get("QueryString")
+		if queryString == "" {
+			err = goa.MergeErrors(err, goa.MissingFieldError("QueryString", "query string"))
 		}
-		err = ValidateSearchLibraryRequestBody(&body)
-		if err != nil {
-			return nil, err
-		}
-
-		var (
-			token string
-		)
 		token = r.Header.Get("X-Authorization")
 		if token == "" {
 			err = goa.MergeErrors(err, goa.MissingFieldError("token", "header"))
@@ -61,7 +50,7 @@ func DecodeSearchLibraryRequest(mux goahttp.Muxer, decoder func(*http.Request) g
 		if err != nil {
 			return nil, err
 		}
-		payload := NewSearchLibraryPayload(&body, token)
+		payload := NewSearchLibraryPayload(queryString, token)
 		if strings.Contains(payload.Token, " ") {
 			// Remove authorization scheme prefix (e.g. "Bearer")
 			cred := strings.SplitN(payload.Token, " ", 2)[1]

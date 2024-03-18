@@ -10,6 +10,7 @@ package cli
 import (
 	actorservicec "film-lib/gen/http/actor_service/client"
 	filmservicec "film-lib/gen/http/film_service/client"
+	isalivec "film-lib/gen/http/is_alive/client"
 	searchservicec "film-lib/gen/http/search_service/client"
 	signinc "film-lib/gen/http/sign_in/client"
 	"flag"
@@ -25,7 +26,8 @@ import (
 //
 //	command (subcommand1|subcommand2|...)
 func UsageCommands() string {
-	return `actor-service (get-all-actors|add-actor|update-actor-info|delete-actor)
+	return `is-alive check
+actor-service (get-all-actors|add-actor|update-actor-info|delete-actor)
 film-service (get-all-films|add-film|update-film-info|delete-film)
 search-service search-library
 sign-in auth
@@ -34,16 +36,15 @@ sign-in auth
 
 // UsageExamples produces an example of a valid invocation of the CLI tool.
 func UsageExamples() string {
-	return os.Args[0] + ` actor-service get-all-actors --token "Aperiam dolores sed architecto est."` + "\n" +
+	return os.Args[0] + ` is-alive check` + "\n" +
+		os.Args[0] + ` actor-service get-all-actors --token "Aperiam dolores sed architecto est."` + "\n" +
 		os.Args[0] + ` film-service get-all-films --body '{
       "SortBy": {
          "Field": "Provident non totam.",
          "Ordering": "Magnam non excepturi est id laudantium enim."
       }
    }' --token "Consectetur est placeat ullam."` + "\n" +
-		os.Args[0] + ` search-service search-library --body '{
-      "QueryString": "In nulla iure."
-   }' --token "Dolores ipsa odio."` + "\n" +
+		os.Args[0] + ` search-service search-library --query-string "In nulla iure." --token "Dolores ipsa odio."` + "\n" +
 		os.Args[0] + ` sign-in auth --username "user" --password "password"` + "\n" +
 		""
 }
@@ -58,6 +59,10 @@ func ParseEndpoint(
 	restore bool,
 ) (goa.Endpoint, any, error) {
 	var (
+		isAliveFlags = flag.NewFlagSet("is-alive", flag.ContinueOnError)
+
+		isAliveCheckFlags = flag.NewFlagSet("check", flag.ExitOnError)
+
 		actorServiceFlags = flag.NewFlagSet("actor-service", flag.ContinueOnError)
 
 		actorServiceGetAllActorsFlags     = flag.NewFlagSet("get-all-actors", flag.ExitOnError)
@@ -97,9 +102,9 @@ func ParseEndpoint(
 
 		searchServiceFlags = flag.NewFlagSet("search-service", flag.ContinueOnError)
 
-		searchServiceSearchLibraryFlags     = flag.NewFlagSet("search-library", flag.ExitOnError)
-		searchServiceSearchLibraryBodyFlag  = searchServiceSearchLibraryFlags.String("body", "REQUIRED", "")
-		searchServiceSearchLibraryTokenFlag = searchServiceSearchLibraryFlags.String("token", "REQUIRED", "")
+		searchServiceSearchLibraryFlags           = flag.NewFlagSet("search-library", flag.ExitOnError)
+		searchServiceSearchLibraryQueryStringFlag = searchServiceSearchLibraryFlags.String("query-string", "REQUIRED", "")
+		searchServiceSearchLibraryTokenFlag       = searchServiceSearchLibraryFlags.String("token", "REQUIRED", "")
 
 		signInFlags = flag.NewFlagSet("sign-in", flag.ContinueOnError)
 
@@ -107,6 +112,9 @@ func ParseEndpoint(
 		signInAuthUsernameFlag = signInAuthFlags.String("username", "REQUIRED", "Username used to perform sign-in")
 		signInAuthPasswordFlag = signInAuthFlags.String("password", "REQUIRED", "Password used to perform sign-in")
 	)
+	isAliveFlags.Usage = isAliveUsage
+	isAliveCheckFlags.Usage = isAliveCheckUsage
+
 	actorServiceFlags.Usage = actorServiceUsage
 	actorServiceGetAllActorsFlags.Usage = actorServiceGetAllActorsUsage
 	actorServiceAddActorFlags.Usage = actorServiceAddActorUsage
@@ -140,6 +148,8 @@ func ParseEndpoint(
 	{
 		svcn = flag.Arg(0)
 		switch svcn {
+		case "is-alive":
+			svcf = isAliveFlags
 		case "actor-service":
 			svcf = actorServiceFlags
 		case "film-service":
@@ -163,6 +173,13 @@ func ParseEndpoint(
 	{
 		epn = svcf.Arg(0)
 		switch svcn {
+		case "is-alive":
+			switch epn {
+			case "check":
+				epf = isAliveCheckFlags
+
+			}
+
 		case "actor-service":
 			switch epn {
 			case "get-all-actors":
@@ -229,6 +246,13 @@ func ParseEndpoint(
 	)
 	{
 		switch svcn {
+		case "is-alive":
+			c := isalivec.NewClient(scheme, host, doer, enc, dec, restore)
+			switch epn {
+			case "check":
+				endpoint = c.Check()
+				data = nil
+			}
 		case "actor-service":
 			c := actorservicec.NewClient(scheme, host, doer, enc, dec, restore)
 			switch epn {
@@ -266,7 +290,7 @@ func ParseEndpoint(
 			switch epn {
 			case "search-library":
 				endpoint = c.SearchLibrary()
-				data, err = searchservicec.BuildSearchLibraryPayload(*searchServiceSearchLibraryBodyFlag, *searchServiceSearchLibraryTokenFlag)
+				data, err = searchservicec.BuildSearchLibraryPayload(*searchServiceSearchLibraryQueryStringFlag, *searchServiceSearchLibraryTokenFlag)
 			}
 		case "sign-in":
 			c := signinc.NewClient(scheme, host, doer, enc, dec, restore)
@@ -282,6 +306,29 @@ func ParseEndpoint(
 	}
 
 	return endpoint, data, nil
+}
+
+// is-aliveUsage displays the usage of the is-alive command and its subcommands.
+func isAliveUsage() {
+	fmt.Fprintf(os.Stderr, `API for checking if the server is in fact alive
+Usage:
+    %[1]s [globalflags] is-alive COMMAND [flags]
+
+COMMAND:
+    check: Check implements check.
+
+Additional help:
+    %[1]s is-alive COMMAND --help
+`, os.Args[0])
+}
+func isAliveCheckUsage() {
+	fmt.Fprintf(os.Stderr, `%[1]s [flags] is-alive check
+
+Check implements check.
+
+Example:
+    %[1]s is-alive check
+`, os.Args[0])
 }
 
 // actor-serviceUsage displays the usage of the actor-service command and its
@@ -497,16 +544,14 @@ Additional help:
 `, os.Args[0])
 }
 func searchServiceSearchLibraryUsage() {
-	fmt.Fprintf(os.Stderr, `%[1]s [flags] search-service search-library -body JSON -token STRING
+	fmt.Fprintf(os.Stderr, `%[1]s [flags] search-service search-library -query-string STRING -token STRING
 
 SearchLibrary implements searchLibrary.
-    -body JSON: 
+    -query-string STRING: 
     -token STRING: 
 
 Example:
-    %[1]s search-service search-library --body '{
-      "QueryString": "In nulla iure."
-   }' --token "Dolores ipsa odio."
+    %[1]s search-service search-library --query-string "In nulla iure." --token "Dolores ipsa odio."
 `, os.Args[0])
 }
 

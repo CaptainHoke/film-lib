@@ -14,13 +14,6 @@ import (
 	goa "goa.design/goa/v3/pkg"
 )
 
-// SearchLibraryRequestBody is the type of the "SearchService" service
-// "searchLibrary" endpoint HTTP request body.
-type SearchLibraryRequestBody struct {
-	// Actor or Film Name
-	QueryString string `form:"QueryString" json:"QueryString" xml:"QueryString"`
-}
-
 // SearchLibraryResponseBody is the type of the "SearchService" service
 // "searchLibrary" endpoint HTTP response body.
 type SearchLibraryResponseBody struct {
@@ -60,15 +53,6 @@ type ActorInfoResponseBody struct {
 	ActorSex *string `form:"ActorSex,omitempty" json:"ActorSex,omitempty" xml:"ActorSex,omitempty"`
 	// YYYY-MM-DD
 	ActorBirthdate *string `form:"ActorBirthdate,omitempty" json:"ActorBirthdate,omitempty" xml:"ActorBirthdate,omitempty"`
-}
-
-// NewSearchLibraryRequestBody builds the HTTP request body from the payload of
-// the "searchLibrary" endpoint of the "SearchService" service.
-func NewSearchLibraryRequestBody(p *searchservice.SearchLibraryPayload) *SearchLibraryRequestBody {
-	body := &SearchLibraryRequestBody{
-		QueryString: p.QueryString,
-	}
-	return body
 }
 
 // NewSearchLibraryFilmOK builds a "SearchService" service "searchLibrary"
