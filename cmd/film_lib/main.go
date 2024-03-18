@@ -2,11 +2,11 @@ package main
 
 import (
 	"context"
-	filmlib "film-lib"
 	actorservice "film-lib/gen/actor_service"
 	filmservice "film-lib/gen/film_service"
 	searchservice "film-lib/gen/search_service"
 	signin "film-lib/gen/sign_in"
+	"film-lib/services"
 	"flag"
 	"fmt"
 	"log"
@@ -46,10 +46,10 @@ func main() {
 		signInSvc        signin.Service
 	)
 	{
-		actorServiceSvc = filmlib.NewActorService(logger)
-		filmServiceSvc = filmlib.NewFilmService(logger)
-		searchServiceSvc = filmlib.NewSearchService(logger)
-		signInSvc = filmlib.NewSignIn(logger)
+		actorServiceSvc = services.NewActorService(logger)
+		filmServiceSvc = services.NewFilmService(logger)
+		searchServiceSvc = services.NewSearchService(logger)
+		signInSvc = services.NewSignIn(logger)
 	}
 
 	// Wrap the services in endpoints that can be invoked from other services

@@ -8,7 +8,7 @@ COPY . .
 FROM base AS build
 RUN --mount=target=. \
     --mount=type=cache,target=/root/.cache/go-build \
-    go build -o /out/app .
+    go build -o /out/app ./cmd/film_lib
 
 FROM base AS test
 RUN --mount=target=. \

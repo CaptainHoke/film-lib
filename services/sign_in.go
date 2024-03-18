@@ -1,4 +1,4 @@
-package filmlib
+package services
 
 import (
 	"context"
