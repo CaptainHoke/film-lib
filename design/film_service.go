@@ -28,7 +28,7 @@ var _ = Service("FilmService", func() {
 		Error("invalid-scopes", String, "Token scopes are invalid")
 
 		HTTP(func() {
-			GET("/api/v1/films")
+			GET("/films")
 			Header("token:X-Authorization")
 			Response("invalid-scopes", StatusForbidden)
 			Response(StatusOK)
@@ -55,7 +55,7 @@ var _ = Service("FilmService", func() {
 		Error("already-exists", AlreadyExists, "Film already exists")
 
 		HTTP(func() {
-			POST("/api/v1/films")
+			POST("/films")
 			Header("token:X-Authorization")
 			Response("invalid-scopes", StatusForbidden)
 			Response("already-exists", StatusBadRequest)
@@ -82,7 +82,7 @@ var _ = Service("FilmService", func() {
 		Error("not-found", NotFound, "Film not found")
 
 		HTTP(func() {
-			PUT("/api/v1/films/{FilmID}")
+			PUT("/films/{FilmID}")
 			Header("token:X-Authorization")
 			Response("invalid-scopes", StatusForbidden)
 			Response(StatusCreated)
@@ -107,7 +107,7 @@ var _ = Service("FilmService", func() {
 		Error("not-found", NotFound, "Film not found")
 
 		HTTP(func() {
-			DELETE("/api/v1/films/{FilmID}")
+			DELETE("/films/{FilmID}")
 			Header("token:X-Authorization")
 			Response("invalid-scopes", StatusForbidden)
 			Response(StatusNoContent)

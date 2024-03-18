@@ -29,7 +29,7 @@ var _ = Service("SearchService", func() {
 		Error("invalid-scopes", String, "Token scopes are invalid")
 
 		HTTP(func() {
-			GET("/api/v1/search")
+			GET("/search")
 			Header("token:X-Authorization")
 			Response("invalid-scopes", StatusForbidden)
 			Response(StatusOK)

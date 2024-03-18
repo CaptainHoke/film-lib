@@ -27,7 +27,7 @@ var _ = Service("ActorService", func() {
 		Error("invalid-scopes", String, "Token scopes are invalid")
 
 		HTTP(func() {
-			GET("/api/v1/actors")
+			GET("/actors")
 			Header("token:X-Authorization")
 			Response("invalid-scopes", StatusForbidden)
 			Response(StatusOK)
@@ -55,7 +55,7 @@ var _ = Service("ActorService", func() {
 		Error("already-exists", AlreadyExists, "Actor already exists")
 
 		HTTP(func() {
-			POST("/api/v1/actors")
+			POST("/actors")
 			Header("token:X-Authorization")
 			Response("invalid-scopes", StatusForbidden)
 			Response("already-exists", StatusBadRequest)
@@ -82,7 +82,7 @@ var _ = Service("ActorService", func() {
 		Error("not-found", NotFound, "Actor not found")
 
 		HTTP(func() {
-			PUT("/api/v1/actors/{ActorID}")
+			PUT("/actors/{ActorID}")
 			Header("token:X-Authorization")
 			Response("invalid-scopes", StatusForbidden)
 			Response(StatusCreated)
@@ -107,7 +107,7 @@ var _ = Service("ActorService", func() {
 		Error("not-found", NotFound, "Actor not found")
 
 		HTTP(func() {
-			DELETE("/api/v1/actors/{ActorID}")
+			DELETE("/actors/{ActorID}")
 			Header("token:X-Authorization")
 			Response("invalid-scopes", StatusForbidden)
 			Response(StatusNoContent)

@@ -1,0 +1,1004 @@
+openapi: 3.0.3
+info:
+    title: Film Library
+    description: BiS Service for querying and managing films and actors info
+    version: 0.0.1
+servers:
+    - url: http://localhost:3239/api/v1
+paths:
+    /actors:
+        get:
+            tags:
+                - ActorService
+            summary: getAllActors ActorService
+            operationId: ActorService#getAllActors
+            parameters:
+                - name: X-Authorization
+                  in: header
+                  description: JWT used for authentication
+                  allowEmptyValue: true
+                  required: true
+                  schema:
+                    type: string
+                    description: JWT used for authentication
+                    example: Est dolorem sed quam vel tenetur.
+                  example: Commodi fuga ipsa consequuntur numquam nam.
+            responses:
+                "200":
+                    description: OK response.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ActorResultCollection'
+                            example:
+                                - ActorBirthdate: Facere sequi veritatis neque.
+                                  ActorID: 239
+                                  ActorName: Sint et.
+                                  ActorSex: Dolores in ducimus ea sapiente quia delectus.
+                                - ActorBirthdate: Facere sequi veritatis neque.
+                                  ActorID: 239
+                                  ActorName: Sint et.
+                                  ActorSex: Dolores in ducimus ea sapiente quia delectus.
+                "401":
+                    description: 'unauthorized: Unauthorized response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: Quo nihil ea sint.
+                            example: Maxime ad et velit ipsam eveniet.
+                "403":
+                    description: 'invalid-scopes: Forbidden response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: Incidunt modi sit consectetur praesentium voluptatum.
+                            example: Non quia quis eius eaque quia dolor.
+            security:
+                - jwt_header_X-Authorization:
+                    - api:read
+        post:
+            tags:
+                - ActorService
+            summary: addActor ActorService
+            operationId: ActorService#addActor
+            parameters:
+                - name: X-Authorization
+                  in: header
+                  description: JWT used for authentication
+                  allowEmptyValue: true
+                  required: true
+                  schema:
+                    type: string
+                    description: JWT used for authentication
+                    example: Et quo ea quam consequatur.
+                  example: Sed error aut aspernatur.
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/AddActorRequestBody'
+                        example:
+                            ActorInfo:
+                                ActorBirthdate: "2024-03-18"
+                                ActorName: Margo Robbie
+                                ActorSex: F
+            responses:
+                "201":
+                    description: Created response.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Actor'
+                            example:
+                                ActorBirthdate: Consectetur voluptas eum omnis.
+                                ActorID: 239
+                                ActorName: Fugiat quia et.
+                                ActorSex: Ipsum placeat fugiat unde dicta voluptatem.
+                "400":
+                    description: 'already-exists: Actor already exists'
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/AlreadyExists'
+                            example:
+                                id: Cum vitae dolore dignissimos provident.
+                                message: Entity already exists
+                "401":
+                    description: 'unauthorized: Unauthorized response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: Ut adipisci.
+                            example: Explicabo id iste ducimus nihil et.
+                "403":
+                    description: 'invalid-scopes: Forbidden response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: Consequatur qui commodi est.
+                            example: Reprehenderit quos eum quaerat unde.
+            security:
+                - jwt_header_X-Authorization:
+                    - api:write
+    /actors/{ActorID}:
+        delete:
+            tags:
+                - ActorService
+            summary: deleteActor ActorService
+            operationId: ActorService#deleteActor
+            parameters:
+                - name: ActorID
+                  in: path
+                  description: Actor ID
+                  required: true
+                  schema:
+                    type: integer
+                    description: Actor ID
+                    example: 14772010332524518499
+                    format: int64
+                  example: 4605027686241097364
+                - name: X-Authorization
+                  in: header
+                  description: JWT used for authentication
+                  allowEmptyValue: true
+                  required: true
+                  schema:
+                    type: string
+                    description: JWT used for authentication
+                    example: Veniam est.
+                  example: Et asperiores explicabo.
+            responses:
+                "204":
+                    description: No Content response.
+                "401":
+                    description: 'unauthorized: Unauthorized response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: Tenetur excepturi dolor et quod voluptatibus.
+                            example: Aut et et nihil maiores et consequatur.
+                "403":
+                    description: 'invalid-scopes: Forbidden response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: Quos ut ducimus.
+                            example: Magni quos ab dolorem.
+            security:
+                - jwt_header_X-Authorization:
+                    - api:write
+        put:
+            tags:
+                - ActorService
+            summary: updateActorInfo ActorService
+            operationId: ActorService#updateActorInfo
+            parameters:
+                - name: ActorID
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    example: 3572715306842558608
+                    format: int64
+                  example: 10719925718604814973
+                - name: X-Authorization
+                  in: header
+                  description: JWT used for authentication
+                  allowEmptyValue: true
+                  required: true
+                  schema:
+                    type: string
+                    description: JWT used for authentication
+                    example: Delectus fugiat aut qui quae.
+                  example: Incidunt vel quia.
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/AddActorRequestBody'
+                        example:
+                            ActorInfo:
+                                ActorBirthdate: "2024-03-18"
+                                ActorName: Margo Robbie
+                                ActorSex: F
+            responses:
+                "201":
+                    description: Created response.
+                "401":
+                    description: 'unauthorized: Unauthorized response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: Rerum natus.
+                            example: Fugit commodi et.
+                "403":
+                    description: 'invalid-scopes: Forbidden response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: Consequatur animi eligendi quas ut cumque.
+                            example: Quo debitis eaque suscipit totam tempore aut.
+            security:
+                - jwt_header_X-Authorization:
+                    - api:write
+    /films:
+        get:
+            tags:
+                - FilmService
+            summary: getAllFilms FilmService
+            operationId: FilmService#getAllFilms
+            parameters:
+                - name: X-Authorization
+                  in: header
+                  description: JWT used for authentication
+                  allowEmptyValue: true
+                  required: true
+                  schema:
+                    type: string
+                    description: JWT used for authentication
+                    example: At delectus quia quo quia aspernatur neque.
+                  example: Aut molestiae voluptas non facilis.
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/GetAllFilmsRequestBody'
+                        example:
+                            SortBy:
+                                Field: Provident non totam.
+                                Ordering: Magnam non excepturi est id laudantium enim.
+            responses:
+                "200":
+                    description: OK response.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/FilmResultCollection'
+                            example:
+                                - Actors: Ad cum et assumenda dolorem.
+                                  Description: Eius perspiciatis sapiente molestias aliquam laboriosam.
+                                  FilmID: 239
+                                  Rating: Qui omnis vero culpa.
+                                  ReleaseDate: Aut enim natus recusandae modi est.
+                                  Title: Optio qui qui sint sapiente dignissimos qui.
+                                - Actors: Ad cum et assumenda dolorem.
+                                  Description: Eius perspiciatis sapiente molestias aliquam laboriosam.
+                                  FilmID: 239
+                                  Rating: Qui omnis vero culpa.
+                                  ReleaseDate: Aut enim natus recusandae modi est.
+                                  Title: Optio qui qui sint sapiente dignissimos qui.
+                                - Actors: Ad cum et assumenda dolorem.
+                                  Description: Eius perspiciatis sapiente molestias aliquam laboriosam.
+                                  FilmID: 239
+                                  Rating: Qui omnis vero culpa.
+                                  ReleaseDate: Aut enim natus recusandae modi est.
+                                  Title: Optio qui qui sint sapiente dignissimos qui.
+                                - Actors: Ad cum et assumenda dolorem.
+                                  Description: Eius perspiciatis sapiente molestias aliquam laboriosam.
+                                  FilmID: 239
+                                  Rating: Qui omnis vero culpa.
+                                  ReleaseDate: Aut enim natus recusandae modi est.
+                                  Title: Optio qui qui sint sapiente dignissimos qui.
+                "401":
+                    description: 'unauthorized: Unauthorized response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: Quod modi odit expedita.
+                            example: Aut corporis.
+                "403":
+                    description: 'invalid-scopes: Forbidden response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: Rerum et.
+                            example: Voluptatem animi rerum voluptatem ut.
+            security:
+                - jwt_header_X-Authorization:
+                    - api:read
+        post:
+            tags:
+                - FilmService
+            summary: addFilm FilmService
+            operationId: FilmService#addFilm
+            parameters:
+                - name: X-Authorization
+                  in: header
+                  description: JWT used for authentication
+                  allowEmptyValue: true
+                  required: true
+                  schema:
+                    type: string
+                    description: JWT used for authentication
+                    example: Molestias est possimus ullam.
+                  example: Vero minima velit fugit magnam in.
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/AddFilmRequestBody'
+                        example:
+                            FilmInfo:
+                                Actors:
+                                    - ActorID: 239
+                                      ActorInfo:
+                                        ActorBirthdate: "2024-03-18"
+                                        ActorName: Margo Robbie
+                                        ActorSex: F
+                                    - ActorID: 239
+                                      ActorInfo:
+                                        ActorBirthdate: "2024-03-18"
+                                        ActorName: Margo Robbie
+                                        ActorSex: F
+                                Description: 7y9
+                                Rating: 5.3355002
+                                ReleaseDate: "2024-03-18"
+                                Title: 3y
+            responses:
+                "201":
+                    description: Created response.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Film'
+                            example:
+                                Actors: Laudantium magnam temporibus enim tenetur.
+                                Description: Dolores nesciunt qui.
+                                FilmID: 239
+                                Rating: Maxime quo sit omnis et.
+                                ReleaseDate: Impedit mollitia natus eligendi incidunt.
+                                Title: Laudantium libero qui quam vel hic animi.
+                "400":
+                    description: 'already-exists: Film already exists'
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/AlreadyExists'
+                            example:
+                                id: Aut rem ullam ad necessitatibus voluptas dicta.
+                                message: Entity already exists
+                "401":
+                    description: 'unauthorized: Unauthorized response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: Sequi nihil omnis culpa facere et.
+                            example: Non expedita quibusdam.
+                "403":
+                    description: 'invalid-scopes: Forbidden response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: Repellat qui ad assumenda impedit dolorum.
+                            example: Voluptate consequatur est cumque voluptate commodi.
+            security:
+                - jwt_header_X-Authorization:
+                    - api:write
+    /films/{FilmID}:
+        delete:
+            tags:
+                - FilmService
+            summary: deleteFilm FilmService
+            operationId: FilmService#deleteFilm
+            parameters:
+                - name: FilmID
+                  in: path
+                  description: Film ID
+                  required: true
+                  schema:
+                    type: string
+                    description: Film ID
+                    example: Et voluptates vero.
+                  example: Quam et aut.
+                - name: X-Authorization
+                  in: header
+                  description: JWT used for authentication
+                  allowEmptyValue: true
+                  required: true
+                  schema:
+                    type: string
+                    description: JWT used for authentication
+                    example: Et beatae.
+                  example: Qui nostrum earum repudiandae reprehenderit.
+            responses:
+                "204":
+                    description: No Content response.
+                "401":
+                    description: 'unauthorized: Unauthorized response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: Eos dicta unde ut.
+                            example: Facere dolorum quis soluta iure accusamus.
+                "403":
+                    description: 'invalid-scopes: Forbidden response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: Sapiente sunt quis quibusdam.
+                            example: Minima et.
+            security:
+                - jwt_header_X-Authorization:
+                    - api:write
+        put:
+            tags:
+                - FilmService
+            summary: updateFilmInfo FilmService
+            operationId: FilmService#updateFilmInfo
+            parameters:
+                - name: FilmID
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    example: 2026018989275812084
+                    format: int64
+                  example: 6230543431483714786
+                - name: X-Authorization
+                  in: header
+                  description: JWT used for authentication
+                  allowEmptyValue: true
+                  required: true
+                  schema:
+                    type: string
+                    description: JWT used for authentication
+                    example: Omnis eum.
+                  example: Veniam inventore voluptas sunt.
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/AddFilmRequestBody'
+                        example:
+                            FilmInfo:
+                                Actors:
+                                    - ActorID: 239
+                                      ActorInfo:
+                                        ActorBirthdate: "2024-03-18"
+                                        ActorName: Margo Robbie
+                                        ActorSex: F
+                                    - ActorID: 239
+                                      ActorInfo:
+                                        ActorBirthdate: "2024-03-18"
+                                        ActorName: Margo Robbie
+                                        ActorSex: F
+                                Description: 7y9
+                                Rating: 5.3355002
+                                ReleaseDate: "2024-03-18"
+                                Title: 3y
+            responses:
+                "201":
+                    description: Created response.
+                "401":
+                    description: 'unauthorized: Unauthorized response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: Distinctio quia quidem illum.
+                            example: Dolor aperiam.
+                "403":
+                    description: 'invalid-scopes: Forbidden response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: Laboriosam quia laborum dolorum.
+                            example: Recusandae alias aut dolores numquam voluptas dolorum.
+            security:
+                - jwt_header_X-Authorization:
+                    - api:write
+    /search:
+        get:
+            tags:
+                - SearchService
+            summary: searchLibrary SearchService
+            operationId: SearchService#searchLibrary
+            parameters:
+                - name: X-Authorization
+                  in: header
+                  description: JWT used for authentication
+                  allowEmptyValue: true
+                  required: true
+                  schema:
+                    type: string
+                    description: JWT used for authentication
+                    example: Culpa rem sequi debitis.
+                  example: Tempora reiciendis dolorem tempora non.
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/SearchLibraryRequestBody'
+                        example:
+                            QueryString: In nulla iure.
+            responses:
+                "200":
+                    description: OK response.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Film2'
+                            example:
+                                FilmID: 239
+                                FilmInfo:
+                                    Actors:
+                                        - ActorID: 239
+                                          ActorInfo:
+                                            ActorBirthdate: "2024-03-18"
+                                            ActorName: Margo Robbie
+                                            ActorSex: F
+                                        - ActorID: 239
+                                          ActorInfo:
+                                            ActorBirthdate: "2024-03-18"
+                                            ActorName: Margo Robbie
+                                            ActorSex: F
+                                        - ActorID: 239
+                                          ActorInfo:
+                                            ActorBirthdate: "2024-03-18"
+                                            ActorName: Margo Robbie
+                                            ActorSex: F
+                                    Description: v7b
+                                    Rating: 2.8520477
+                                    ReleaseDate: "2024-03-18"
+                                    Title: 4ug
+                "401":
+                    description: 'unauthorized: Unauthorized response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: Natus ullam ut et.
+                            example: Cum pariatur neque.
+                "403":
+                    description: 'invalid-scopes: Forbidden response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: Aut ut excepturi natus molestiae iusto.
+                            example: Sint nihil explicabo facere non voluptatem.
+            security:
+                - jwt_header_X-Authorization:
+                    - api:read
+    /sign-in/auth:
+        post:
+            tags:
+                - SignIn
+            summary: auth SignIn
+            description: Creates a valid JWT
+            operationId: SignIn#auth
+            responses:
+                "200":
+                    description: OK response.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Creds'
+                            example:
+                                jwt: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ
+                "401":
+                    description: 'unauthorized: Unauthorized response.'
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: Harum molestiae repudiandae numquam ut temporibus dolores.
+                            example: Aut ut.
+            security:
+                - basic_header_Authorization: []
+components:
+    schemas:
+        Actor:
+            type: object
+            properties:
+                ActorBirthdate:
+                    type: string
+                    example: Veritatis consequuntur consequuntur aut numquam voluptatem.
+                ActorID:
+                    type: integer
+                    description: Unique ID of an Actor
+                    example: 239
+                    format: int64
+                ActorName:
+                    type: string
+                    example: Maxime ex cum perspiciatis nihil.
+                ActorSex:
+                    type: string
+                    example: Consequuntur odio tempore itaque.
+            example:
+                ActorBirthdate: Qui quibusdam.
+                ActorID: 239
+                ActorName: Et repudiandae fuga quas porro alias.
+                ActorSex: Sunt in.
+            required:
+                - ActorID
+                - ActorInfo
+        Actor2:
+            type: object
+            properties:
+                ActorID:
+                    type: integer
+                    description: Unique ID of an Actor
+                    example: 239
+                    format: int64
+                ActorInfo:
+                    $ref: '#/components/schemas/ActorInfo'
+            description: Actor + ID
+            example:
+                ActorID: 239
+                ActorInfo:
+                    ActorBirthdate: "2024-03-18"
+                    ActorName: Margo Robbie
+                    ActorSex: F
+            required:
+                - ActorID
+                - ActorInfo
+        ActorInfo:
+            type: object
+            properties:
+                ActorBirthdate:
+                    type: string
+                    description: YYYY-MM-DD
+                    example: "2024-03-18"
+                    pattern: ^\d{4}\-(0[1-9]|1[012])\-(0[1-9]|[12][0-9]|3[01])$
+                ActorName:
+                    type: string
+                    description: Name of an Actor
+                    example: Margo Robbie
+                    pattern: ^.*\S.*$
+                    maxLength: 32
+                ActorSex:
+                    type: string
+                    description: Sex of an Actor
+                    example: F
+                    pattern: ^(M|F)$
+            description: Describes an Actor to be added
+            example:
+                ActorBirthdate: "2024-03-18"
+                ActorName: Margo Robbie
+                ActorSex: F
+            required:
+                - ActorName
+                - ActorSex
+                - ActorBirthdate
+        ActorResultCollection:
+            type: array
+            items:
+                $ref: '#/components/schemas/Actor'
+            example:
+                - ActorBirthdate: Facere sequi veritatis neque.
+                  ActorID: 239
+                  ActorName: Sint et.
+                  ActorSex: Dolores in ducimus ea sapiente quia delectus.
+                - ActorBirthdate: Facere sequi veritatis neque.
+                  ActorID: 239
+                  ActorName: Sint et.
+                  ActorSex: Dolores in ducimus ea sapiente quia delectus.
+                - ActorBirthdate: Facere sequi veritatis neque.
+                  ActorID: 239
+                  ActorName: Sint et.
+                  ActorSex: Dolores in ducimus ea sapiente quia delectus.
+        AddActorRequestBody:
+            type: object
+            properties:
+                ActorInfo:
+                    $ref: '#/components/schemas/ActorInfo'
+            example:
+                ActorInfo:
+                    ActorBirthdate: "2024-03-18"
+                    ActorName: Margo Robbie
+                    ActorSex: F
+            required:
+                - ActorInfo
+        AddFilmRequestBody:
+            type: object
+            properties:
+                FilmInfo:
+                    $ref: '#/components/schemas/FilmInfo'
+            example:
+                FilmInfo:
+                    Actors:
+                        - ActorID: 239
+                          ActorInfo:
+                            ActorBirthdate: "2024-03-18"
+                            ActorName: Margo Robbie
+                            ActorSex: F
+                        - ActorID: 239
+                          ActorInfo:
+                            ActorBirthdate: "2024-03-18"
+                            ActorName: Margo Robbie
+                            ActorSex: F
+                    Description: 7y9
+                    Rating: 5.3355002
+                    ReleaseDate: "2024-03-18"
+                    Title: 3y
+            required:
+                - FilmInfo
+        AlreadyExists:
+            type: object
+            properties:
+                id:
+                    type: string
+                    description: ID of existing data
+                    example: Qui consequatur et voluptatem.
+                message:
+                    type: string
+                    description: Error message
+                    example: Entity already exists
+            description: Actor already exists
+            example:
+                id: Assumenda omnis voluptas voluptatibus et.
+                message: Entity already exists
+            required:
+                - message
+                - id
+        Creds:
+            type: object
+            properties:
+                jwt:
+                    type: string
+                    description: JWT token
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ
+            example:
+                jwt: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ
+            required:
+                - jwt
+        Film:
+            type: object
+            properties:
+                Actors:
+                    type: string
+                    example: Rerum quia nemo consequuntur magni.
+                Description:
+                    type: string
+                    example: A repellendus nobis porro voluptas aut voluptatem.
+                FilmID:
+                    type: integer
+                    description: Unique ID of a Film
+                    example: 239
+                    format: int64
+                Rating:
+                    type: string
+                    example: Nulla ipsam non vero.
+                ReleaseDate:
+                    type: string
+                    example: Maiores quisquam aut quaerat molestiae.
+                Title:
+                    type: string
+                    example: Aut voluptatibus eveniet fugit rerum ipsum.
+            example:
+                Actors: Consectetur corporis voluptas.
+                Description: Autem minus accusantium fugiat laboriosam non.
+                FilmID: 239
+                Rating: Atque et et dolor amet.
+                ReleaseDate: Cupiditate incidunt.
+                Title: Quos voluptate dolorem ut ut pariatur.
+            required:
+                - FilmID
+                - FilmInfo
+        Film2:
+            type: object
+            properties:
+                FilmID:
+                    type: integer
+                    description: Unique ID of a Film
+                    example: 239
+                    format: int64
+                FilmInfo:
+                    $ref: '#/components/schemas/FilmInfo'
+            example:
+                FilmID: 239
+                FilmInfo:
+                    Actors:
+                        - ActorID: 239
+                          ActorInfo:
+                            ActorBirthdate: "2024-03-18"
+                            ActorName: Margo Robbie
+                            ActorSex: F
+                        - ActorID: 239
+                          ActorInfo:
+                            ActorBirthdate: "2024-03-18"
+                            ActorName: Margo Robbie
+                            ActorSex: F
+                        - ActorID: 239
+                          ActorInfo:
+                            ActorBirthdate: "2024-03-18"
+                            ActorName: Margo Robbie
+                            ActorSex: F
+                    Description: v7b
+                    Rating: 2.8520477
+                    ReleaseDate: "2024-03-18"
+                    Title: 4ug
+            required:
+                - FilmID
+                - FilmInfo
+        FilmInfo:
+            type: object
+            properties:
+                Actors:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Actor2'
+                    description: List of Actors involved in Film
+                    example:
+                        - ActorID: 239
+                          ActorInfo:
+                            ActorBirthdate: "2024-03-18"
+                            ActorName: Margo Robbie
+                            ActorSex: F
+                        - ActorID: 239
+                          ActorInfo:
+                            ActorBirthdate: "2024-03-18"
+                            ActorName: Margo Robbie
+                            ActorSex: F
+                        - ActorID: 239
+                          ActorInfo:
+                            ActorBirthdate: "2024-03-18"
+                            ActorName: Margo Robbie
+                            ActorSex: F
+                        - ActorID: 239
+                          ActorInfo:
+                            ActorBirthdate: "2024-03-18"
+                            ActorName: Margo Robbie
+                            ActorSex: F
+                Description:
+                    type: string
+                    description: Description of a film
+                    example: ahe
+                    maxLength: 1000
+                Rating:
+                    type: number
+                    description: Rating (0.0 - 10.0)
+                    example: 5.5606394
+                    format: float
+                    minimum: 0
+                    maximum: 10
+                ReleaseDate:
+                    type: string
+                    description: YYYY-MM-DD
+                    example: "2024-03-18"
+                    pattern: ^\d{4}\-(0[1-9]|1[012])\-(0[1-9]|[12][0-9]|3[01])$
+                Title:
+                    type: string
+                    description: Title of a film
+                    example: cp
+                    minLength: 1
+                    maxLength: 150
+            description: Describes a Film to be added
+            example:
+                Actors:
+                    - ActorID: 239
+                      ActorInfo:
+                        ActorBirthdate: "2024-03-18"
+                        ActorName: Margo Robbie
+                        ActorSex: F
+                    - ActorID: 239
+                      ActorInfo:
+                        ActorBirthdate: "2024-03-18"
+                        ActorName: Margo Robbie
+                        ActorSex: F
+                    - ActorID: 239
+                      ActorInfo:
+                        ActorBirthdate: "2024-03-18"
+                        ActorName: Margo Robbie
+                        ActorSex: F
+                Description: xrm
+                Rating: 5.69053
+                ReleaseDate: "2024-03-18"
+                Title: q
+            required:
+                - Title
+                - Description
+                - ReleaseDate
+                - Rating
+                - Actors
+        FilmResultCollection:
+            type: array
+            items:
+                $ref: '#/components/schemas/Film'
+            example:
+                - Actors: Ad cum et assumenda dolorem.
+                  Description: Eius perspiciatis sapiente molestias aliquam laboriosam.
+                  FilmID: 239
+                  Rating: Qui omnis vero culpa.
+                  ReleaseDate: Aut enim natus recusandae modi est.
+                  Title: Optio qui qui sint sapiente dignissimos qui.
+                - Actors: Ad cum et assumenda dolorem.
+                  Description: Eius perspiciatis sapiente molestias aliquam laboriosam.
+                  FilmID: 239
+                  Rating: Qui omnis vero culpa.
+                  ReleaseDate: Aut enim natus recusandae modi est.
+                  Title: Optio qui qui sint sapiente dignissimos qui.
+                - Actors: Ad cum et assumenda dolorem.
+                  Description: Eius perspiciatis sapiente molestias aliquam laboriosam.
+                  FilmID: 239
+                  Rating: Qui omnis vero culpa.
+                  ReleaseDate: Aut enim natus recusandae modi est.
+                  Title: Optio qui qui sint sapiente dignissimos qui.
+                - Actors: Ad cum et assumenda dolorem.
+                  Description: Eius perspiciatis sapiente molestias aliquam laboriosam.
+                  FilmID: 239
+                  Rating: Qui omnis vero culpa.
+                  ReleaseDate: Aut enim natus recusandae modi est.
+                  Title: Optio qui qui sint sapiente dignissimos qui.
+        GetAllFilmsRequestBody:
+            type: object
+            properties:
+                SortBy:
+                    $ref: '#/components/schemas/SortBy'
+            example:
+                SortBy:
+                    Field: Provident non totam.
+                    Ordering: Magnam non excepturi est id laudantium enim.
+            required:
+                - SortBy
+        SearchLibraryRequestBody:
+            type: object
+            properties:
+                QueryString:
+                    type: string
+                    description: Actor or Film Name
+                    example: Alias eos voluptas.
+            example:
+                QueryString: Nam enim.
+            required:
+                - QueryString
+        SortBy:
+            type: object
+            properties:
+                Field:
+                    type: string
+                    description: Field to sort by (Rating (default) | Title | Release Date)
+                    default: Rating
+                    example: Rem dolores in qui numquam ipsam quia.
+                Ordering:
+                    type: string
+                    description: Ascending / Descending
+                    default: Descending
+                    example: Rerum ipsum est.
+            description: Sorting configuration
+            example:
+                Field: Velit in non sed dicta adipisci.
+                Ordering: Unde consequatur quia totam quis.
+            required:
+                - Field
+                - Ordering
+    securitySchemes:
+        basic_header_Authorization:
+            type: http
+            description: Basic authentication used to authenticate security principal during sign-in
+            scheme: basic
+        jwt_header_X-Authorization:
+            type: http
+            description: Secures endpoint by requiring a valid JWT token retrieved via the signin endpoint.
+            scheme: bearer
+tags:
+    - name: ActorService
+      description: API for actor-related requests
+    - name: FilmService
+      description: API for film-related requests
+    - name: SearchService
+      description: API for querying the library
+    - name: SignIn
+      description: The Sign-In service authenticates users and validates tokens
