@@ -7,6 +7,10 @@
 
 ## Launch Instructions
 
+```
+make all
+```
+
 ## TODO
 - [x] Goa API for Actors + JWT Auth
 - [x] API for Films
@@ -28,3 +32,4 @@
 - [x] Fix docs not working as intended, probably will need to regenerate the whole thing
 - [ ] Error handling sucks
 - [ ] No tests
+- [ ] Docker compose leaves dangling images
