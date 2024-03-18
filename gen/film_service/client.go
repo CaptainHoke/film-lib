@@ -59,7 +59,6 @@ func (c *Client) UpdateFilmInfo(ctx context.Context, p *UpdateFilmInfoPayload) (
 // DeleteFilm calls the "deleteFilm" endpoint of the "FilmService" service.
 // DeleteFilm may return the following errors:
 //   - "invalid-scopes" (type InvalidScopes)
-//   - "not-found" (type *NotFound): Film not found
 //   - "unauthorized" (type Unauthorized)
 //   - error: internal error
 func (c *Client) DeleteFilm(ctx context.Context, p *DeleteFilmPayload) (err error) {

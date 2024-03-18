@@ -54,3 +54,23 @@ type Creds struct {
 	// JWT token
 	JWT string
 }
+
+// Credentials are invalid
+type Unauthorized string
+
+// Error returns an error description.
+func (e Unauthorized) Error() string {
+	return "Credentials are invalid"
+}
+
+// ErrorName returns "unauthorized".
+//
+// Deprecated: Use GoaErrorName - https://github.com/goadesign/goa/issues/3105
+func (e Unauthorized) ErrorName() string {
+	return e.GoaErrorName()
+}
+
+// GoaErrorName returns "unauthorized".
+func (e Unauthorized) GoaErrorName() string {
+	return "unauthorized"
+}

@@ -58,6 +58,7 @@ var _ = Service("FilmService", func() {
 		HTTP(func() {
 			PUT("/films/{FilmID}")
 			Response("invalid-scopes", StatusForbidden)
+			Response("not-found", StatusNoContent)
 			Response(StatusCreated)
 		})
 	})
@@ -77,7 +78,6 @@ var _ = Service("FilmService", func() {
 		})
 
 		Error("invalid-scopes", String, "Token scopes are invalid")
-		Error("not-found", NotFound, "Film not found")
 
 		HTTP(func() {
 			DELETE("/films/{FilmID}")

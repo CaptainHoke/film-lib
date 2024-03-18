@@ -43,20 +43,20 @@ func UsageExamples() string {
          "ActorName": "Margo Robbie",
          "ActorSex": "F"
       }
-   }' --token "Ad necessitatibus voluptas dicta omnis fuga possimus."` + "\n" +
+   }' --token "Nulla accusamus ut."` + "\n" +
 		os.Args[0] + ` film-service add-film --body '{
       "FilmInfo": {
          "Actors": [
-            15409686236987074460,
-            1963945278260898944
+            3308568187084537867,
+            1675299544092327479
          ],
-         "Description": "c6v",
-         "Rating": 3.8577452,
+         "Description": "udq",
+         "Rating": 7.013173,
          "ReleaseDate": "2024-03-18",
-         "Title": "y2u"
+         "Title": "o"
       }
-   }' --token "Ut error iste repellat placeat dicta."` + "\n" +
-		os.Args[0] + ` search-service search-library --query-string "Non totam minus magnam non." --token "Est id laudantium enim at consectetur."` + "\n" +
+   }' --token "Ullam aliquam non ut quaerat."` + "\n" +
+		os.Args[0] + ` search-service search-library --query-string "Laudantium magnam temporibus enim tenetur." --token "Distinctio cumque exercitationem dolore saepe."` + "\n" +
 		os.Args[0] + ` sign-in auth --username "user" --password "password"` + "\n" +
 		""
 }
@@ -373,7 +373,7 @@ Example:
          "ActorName": "Margo Robbie",
          "ActorSex": "F"
       }
-   }' --token "Ad necessitatibus voluptas dicta omnis fuga possimus."
+   }' --token "Nulla accusamus ut."
 `, os.Args[0])
 }
 
@@ -392,7 +392,7 @@ Example:
          "ActorName": "Margo Robbie",
          "ActorSex": "F"
       }
-   }' --actor-id 14892883948998841543 --token "Officiis minus hic."
+   }' --actor-id 13132072769901544627 --token "Eos quod nulla at aspernatur ad."
 `, os.Args[0])
 }
 
@@ -404,7 +404,7 @@ DeleteActor implements deleteActor.
     -token STRING: 
 
 Example:
-    %[1]s actor-service delete-actor --actor-id 2465801165763529177 --token "Culpa at."
+    %[1]s actor-service delete-actor --actor-id 14673405560132858109 --token "Unde dicta voluptatem quis consectetur."
 `, os.Args[0])
 }
 
@@ -435,15 +435,15 @@ Example:
     %[1]s film-service add-film --body '{
       "FilmInfo": {
          "Actors": [
-            15409686236987074460,
-            1963945278260898944
+            3308568187084537867,
+            1675299544092327479
          ],
-         "Description": "c6v",
-         "Rating": 3.8577452,
+         "Description": "udq",
+         "Rating": 7.013173,
          "ReleaseDate": "2024-03-18",
-         "Title": "y2u"
+         "Title": "o"
       }
-   }' --token "Ut error iste repellat placeat dicta."
+   }' --token "Ullam aliquam non ut quaerat."
 `, os.Args[0])
 }
 
@@ -459,15 +459,15 @@ Example:
     %[1]s film-service update-film-info --body '{
       "FilmInfo": {
          "Actors": [
-            15409686236987074460,
-            1963945278260898944
+            3308568187084537867,
+            1675299544092327479
          ],
-         "Description": "c6v",
-         "Rating": 3.8577452,
+         "Description": "udq",
+         "Rating": 7.013173,
          "ReleaseDate": "2024-03-18",
-         "Title": "y2u"
+         "Title": "o"
       }
-   }' --film-id 13087534782466187843 --token "Voluptas aliquam ullam aliquam."
+   }' --film-id 2702259953446013370 --token "Ab nostrum est."
 `, os.Args[0])
 }
 
@@ -479,7 +479,7 @@ DeleteFilm implements deleteFilm.
     -token STRING: 
 
 Example:
-    %[1]s film-service delete-film --film-id 15564376704775934646 --token "Enim ea."
+    %[1]s film-service delete-film --film-id 7797467103155672690 --token "Temporibus veniam laboriosam."
 `, os.Args[0])
 }
 
@@ -507,7 +507,7 @@ SearchLibrary implements searchLibrary.
     -token STRING: 
 
 Example:
-    %[1]s search-service search-library --query-string "Non totam minus magnam non." --token "Est id laudantium enim at consectetur."
+    %[1]s search-service search-library --query-string "Laudantium magnam temporibus enim tenetur." --token "Distinctio cumque exercitationem dolore saepe."
 `, os.Args[0])
 }
 
@@ -518,7 +518,7 @@ GetAllActors implements getAllActors.
     -token STRING: 
 
 Example:
-    %[1]s search-service get-all-actors --token "Rerum repellendus voluptas."
+    %[1]s search-service get-all-actors --token "Eum sed officiis minus hic nam commodi."
 `, os.Args[0])
 }
 
@@ -535,7 +535,7 @@ Example:
          "Field": "Rating",
          "Ordering": "Descending"
       }
-   }' --token "Quo sit omnis et."
+   }' --token "In nulla iure."
 `, os.Args[0])
 }
 

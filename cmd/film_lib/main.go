@@ -2,12 +2,13 @@ package main
 
 import (
 	"context"
-	filmlib "film-lib"
 	actorservice "film-lib/gen/actor_service"
 	filmservice "film-lib/gen/film_service"
 	isalive "film-lib/gen/is_alive"
 	searchservice "film-lib/gen/search_service"
 	signin "film-lib/gen/sign_in"
+	"film-lib/internal/repo"
+	"film-lib/internal/services"
 	"flag"
 	"fmt"
 	"log"
@@ -15,6 +16,7 @@ import (
 	"net/url"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"sync"
 	"syscall"
 )
@@ -39,37 +41,73 @@ func main() {
 		logger = log.New(os.Stderr, "[filmlib] ", log.Ltime)
 	}
 
+	connString := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable&pool_max_conns=10",
+		os.Getenv("FL_DBUSER"),
+		os.Getenv("FL_DBPASS"),
+		os.Getenv("FL_DBHOST"),
+		os.Getenv("FL_DBPORT"),
+		os.Getenv("FL_DBNAME"))
+	pg, _ := repo.NewPostgresDB(context.Background(), connString)
+
+	if err := pg.Ping(context.Background()); err != nil {
+		logger.Fatal("Failed to ping db")
+	}
+
+	actorsTableExists, _ := pg.TableExists(context.Background(), "actors")
+	filmsTableExists, _ := pg.TableExists(context.Background(), "films")
+	actorFilmTableExists, _ := pg.TableExists(context.Background(), "actor_film")
+	shouldCreateTables := !actorsTableExists || !filmsTableExists || !actorFilmTableExists
+
+	// TODO: migrate package or smth, this is broken
+	if shouldCreateTables {
+		migrationsDir := "./db/migrations"
+		items, _ := os.ReadDir(migrationsDir)
+
+		for _, item := range items {
+			if !item.IsDir() {
+				path := filepath.Join(migrationsDir, item.Name())
+				m, _ := os.ReadFile(path)
+				sql := string(m)
+				logger.Println(sql)
+				_, err := pg.Db.Exec(context.Background(), sql)
+				if err != nil {
+					logger.Fatal("Failed to set up db")
+				}
+			}
+		}
+	}
+
 	// Initialize the services.
 	var (
-		isAliveSvc       isalive.Service
 		actorServiceSvc  actorservice.Service
 		filmServiceSvc   filmservice.Service
 		searchServiceSvc searchservice.Service
 		signInSvc        signin.Service
+		isAliveSvc       isalive.Service
 	)
 	{
-		isAliveSvc = filmlib.NewIsAlive(logger)
-		actorServiceSvc = filmlib.NewActorService(logger)
-		filmServiceSvc = filmlib.NewFilmService(logger)
-		searchServiceSvc = filmlib.NewSearchService(logger)
-		signInSvc = filmlib.NewSignIn(logger)
+		actorServiceSvc = services.NewActorService(logger)
+		filmServiceSvc = services.NewFilmService(logger)
+		searchServiceSvc = services.NewSearchService(logger)
+		signInSvc = services.NewSignIn(logger)
+		isAliveSvc = services.NewIsAlive(logger)
 	}
 
 	// Wrap the services in endpoints that can be invoked from other services
 	// potentially running in different processes.
 	var (
-		isAliveEndpoints       *isalive.Endpoints
 		actorServiceEndpoints  *actorservice.Endpoints
 		filmServiceEndpoints   *filmservice.Endpoints
 		searchServiceEndpoints *searchservice.Endpoints
 		signInEndpoints        *signin.Endpoints
+		isAliveEndPoints       *isalive.Endpoints
 	)
 	{
-		isAliveEndpoints = isalive.NewEndpoints(isAliveSvc)
 		actorServiceEndpoints = actorservice.NewEndpoints(actorServiceSvc)
 		filmServiceEndpoints = filmservice.NewEndpoints(filmServiceSvc)
 		searchServiceEndpoints = searchservice.NewEndpoints(searchServiceSvc)
 		signInEndpoints = signin.NewEndpoints(signInSvc)
+		isAliveEndPoints = isalive.NewEndpoints(isAliveSvc)
 	}
 
 	// Create channel used by both the signal handler and server goroutines
@@ -88,35 +126,41 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	// Start the servers and send errors (if any) to the error channel.
+	addr := ""
 	switch *hostF {
+	// TODO: Should've been fixed in api.go
+	case "docker":
+		{
+			addr = "http://0.0.0.0:3239/api/v1"
+		}
 	case "localhost":
 		{
-			addr := "http://localhost:3239"
-			u, err := url.Parse(addr)
-			if err != nil {
-				logger.Fatalf("invalid URL %#v: %s\n", addr, err)
-			}
-			if *secureF {
-				u.Scheme = "https"
-			}
-			if *domainF != "" {
-				u.Host = *domainF
-			}
-			if *httpPortF != "" {
-				h, _, err := net.SplitHostPort(u.Host)
-				if err != nil {
-					logger.Fatalf("invalid URL %#v: %s\n", u.Host, err)
-				}
-				u.Host = net.JoinHostPort(h, *httpPortF)
-			} else if u.Port() == "" {
-				u.Host = net.JoinHostPort(u.Host, "80")
-			}
-			handleHTTPServer(ctx, u, isAliveEndpoints, actorServiceEndpoints, filmServiceEndpoints, searchServiceEndpoints, signInEndpoints, &wg, errc, logger, *dbgF)
+			addr = "http://localhost:3239/api/v1"
 		}
-
 	default:
-		logger.Fatalf("invalid host argument: %q (valid hosts: localhost)\n", *hostF)
+		logger.Fatalf("invalid host argument: %q (valid hosts: docker, localhost)\n", *hostF)
 	}
+
+	u, err := url.Parse(addr)
+	if err != nil {
+		logger.Fatalf("invalid URL %#v: %s\n", addr, err)
+	}
+	if *secureF {
+		u.Scheme = "https"
+	}
+	if *domainF != "" {
+		u.Host = *domainF
+	}
+	if *httpPortF != "" {
+		h, _, err := net.SplitHostPort(u.Host)
+		if err != nil {
+			logger.Fatalf("invalid URL %#v: %s\n", u.Host, err)
+		}
+		u.Host = net.JoinHostPort(h, *httpPortF)
+	} else if u.Port() == "" {
+		u.Host = net.JoinHostPort(u.Host, "80")
+	}
+	handleHTTPServer(ctx, u, isAliveEndPoints, actorServiceEndpoints, filmServiceEndpoints, searchServiceEndpoints, signInEndpoints, &wg, errc, logger, *dbgF)
 
 	// Wait for signal.
 	logger.Printf("exiting (%v)", <-errc)

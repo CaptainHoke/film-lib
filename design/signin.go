@@ -19,6 +19,11 @@ var JWTAuth = JWTSecurity("jwt", func() {
 var _ = Service("SignIn", func() {
 	Description("The Sign-In service authenticates users and validates tokens")
 
+	Error("unauthorized", String, "Credentials are invalid")
+	HTTP(func() {
+		Response("unauthorized", StatusUnauthorized)
+	})
+
 	Method("auth", func() {
 		Description("Creates a valid JWT")
 

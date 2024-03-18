@@ -30,6 +30,13 @@ func NewAuthCredsOK(body *AuthResponseBody) *signin.Creds {
 	return v
 }
 
+// NewAuthUnauthorized builds a SignIn service auth endpoint unauthorized error.
+func NewAuthUnauthorized(body string) signin.Unauthorized {
+	v := signin.Unauthorized(body)
+
+	return v
+}
+
 // ValidateAuthResponseBody runs the validations defined on AuthResponseBody
 func ValidateAuthResponseBody(body *AuthResponseBody) (err error) {
 	if body.JWT == nil {

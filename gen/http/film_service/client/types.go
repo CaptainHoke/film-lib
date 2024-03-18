@@ -48,6 +48,15 @@ type AddFilmAlreadyExistsResponseBody struct {
 	ID *string `form:"id,omitempty" json:"id,omitempty" xml:"id,omitempty"`
 }
 
+// UpdateFilmInfoNotFoundResponseBody is the type of the "FilmService" service
+// "updateFilmInfo" endpoint HTTP response body for the "not-found" error.
+type UpdateFilmInfoNotFoundResponseBody struct {
+	// Message of error
+	Message *string `form:"message,omitempty" json:"message,omitempty" xml:"message,omitempty"`
+	// ID of missing data
+	ID *string `form:"id,omitempty" json:"id,omitempty" xml:"id,omitempty"`
+}
+
 // FilmInfoRequestBody is used to define fields on request body types.
 type FilmInfoRequestBody struct {
 	// Title of a film
@@ -124,6 +133,17 @@ func NewAddFilmUnauthorized(body string) filmservice.Unauthorized {
 	return v
 }
 
+// NewUpdateFilmInfoNotFound builds a FilmService service updateFilmInfo
+// endpoint not-found error.
+func NewUpdateFilmInfoNotFound(body *UpdateFilmInfoNotFoundResponseBody) *filmservice.NotFound {
+	v := &filmservice.NotFound{
+		Message: *body.Message,
+		ID:      *body.ID,
+	}
+
+	return v
+}
+
 // NewUpdateFilmInfoInvalidScopes builds a FilmService service updateFilmInfo
 // endpoint invalid-scopes error.
 func NewUpdateFilmInfoInvalidScopes(body string) filmservice.InvalidScopes {
@@ -159,6 +179,18 @@ func NewDeleteFilmUnauthorized(body string) filmservice.Unauthorized {
 // ValidateAddFilmAlreadyExistsResponseBody runs the validations defined on
 // addFilm_already-exists_response_body
 func ValidateAddFilmAlreadyExistsResponseBody(body *AddFilmAlreadyExistsResponseBody) (err error) {
+	if body.Message == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("message", "body"))
+	}
+	if body.ID == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("id", "body"))
+	}
+	return
+}
+
+// ValidateUpdateFilmInfoNotFoundResponseBody runs the validations defined on
+// updateFilmInfo_not-found_response_body
+func ValidateUpdateFilmInfoNotFoundResponseBody(body *UpdateFilmInfoNotFoundResponseBody) (err error) {
 	if body.Message == nil {
 		err = goa.MergeErrors(err, goa.MissingFieldError("message", "body"))
 	}

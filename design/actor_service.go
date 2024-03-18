@@ -5,6 +5,11 @@ import . "goa.design/goa/v3/dsl"
 var _ = Service("ActorService", func() {
 	Description("API for actor-related requests")
 
+	Error("unauthorized", String, "Credentials are invalid")
+	HTTP(func() {
+		Response("unauthorized", StatusUnauthorized)
+	})
+
 	Method("addActor", func() {
 		Payload(func() {
 			TokenField(1, "token", String, func() {
@@ -53,6 +58,7 @@ var _ = Service("ActorService", func() {
 		HTTP(func() {
 			PUT("/actors/{ActorID}")
 			Response("invalid-scopes", StatusForbidden)
+			Response("not-found", StatusNoContent)
 			Response(StatusCreated)
 		})
 	})
@@ -72,7 +78,6 @@ var _ = Service("ActorService", func() {
 		})
 
 		Error("invalid-scopes", String, "Token scopes are invalid")
-		Error("not-found", NotFound, "Actor not found")
 
 		HTTP(func() {
 			DELETE("/actors/{ActorID}")

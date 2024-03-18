@@ -64,6 +64,7 @@ func EncodeAddActorRequest(encoder func(*http.Request) goahttp.Encoder) func(*ht
 // DecodeAddActorResponse may return the following errors:
 //   - "already-exists" (type *actorservice.AlreadyExists): http.StatusBadRequest
 //   - "invalid-scopes" (type actorservice.InvalidScopes): http.StatusForbidden
+//   - "unauthorized" (type actorservice.Unauthorized): http.StatusUnauthorized
 //   - error: internal error
 func DecodeAddActorResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody bool) func(*http.Response) (any, error) {
 	return func(resp *http.Response) (any, error) {
@@ -114,6 +115,16 @@ func DecodeAddActorResponse(decoder func(*http.Response) goahttp.Decoder, restor
 				return nil, goahttp.ErrDecodingError("ActorService", "addActor", err)
 			}
 			return nil, NewAddActorInvalidScopes(body)
+		case http.StatusUnauthorized:
+			var (
+				body string
+				err  error
+			)
+			err = decoder(resp).Decode(&body)
+			if err != nil {
+				return nil, goahttp.ErrDecodingError("ActorService", "addActor", err)
+			}
+			return nil, NewAddActorUnauthorized(body)
 		default:
 			body, _ := io.ReadAll(resp.Body)
 			return nil, goahttp.ErrInvalidResponse("ActorService", "addActor", resp.StatusCode, string(body))
@@ -174,7 +185,9 @@ func EncodeUpdateActorInfoRequest(encoder func(*http.Request) goahttp.Encoder) f
 // the ActorService updateActorInfo endpoint. restoreBody controls whether the
 // response body should be restored after having been read.
 // DecodeUpdateActorInfoResponse may return the following errors:
+//   - "not-found" (type *actorservice.NotFound): http.StatusNoContent
 //   - "invalid-scopes" (type actorservice.InvalidScopes): http.StatusForbidden
+//   - "unauthorized" (type actorservice.Unauthorized): http.StatusUnauthorized
 //   - error: internal error
 func DecodeUpdateActorInfoResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody bool) func(*http.Response) (any, error) {
 	return func(resp *http.Response) (any, error) {
@@ -193,6 +206,20 @@ func DecodeUpdateActorInfoResponse(decoder func(*http.Response) goahttp.Decoder,
 		switch resp.StatusCode {
 		case http.StatusCreated:
 			return nil, nil
+		case http.StatusNoContent:
+			var (
+				body UpdateActorInfoNotFoundResponseBody
+				err  error
+			)
+			err = decoder(resp).Decode(&body)
+			if err != nil {
+				return nil, goahttp.ErrDecodingError("ActorService", "updateActorInfo", err)
+			}
+			err = ValidateUpdateActorInfoNotFoundResponseBody(&body)
+			if err != nil {
+				return nil, goahttp.ErrValidationError("ActorService", "updateActorInfo", err)
+			}
+			return nil, NewUpdateActorInfoNotFound(&body)
 		case http.StatusForbidden:
 			var (
 				body string
@@ -203,6 +230,16 @@ func DecodeUpdateActorInfoResponse(decoder func(*http.Response) goahttp.Decoder,
 				return nil, goahttp.ErrDecodingError("ActorService", "updateActorInfo", err)
 			}
 			return nil, NewUpdateActorInfoInvalidScopes(body)
+		case http.StatusUnauthorized:
+			var (
+				body string
+				err  error
+			)
+			err = decoder(resp).Decode(&body)
+			if err != nil {
+				return nil, goahttp.ErrDecodingError("ActorService", "updateActorInfo", err)
+			}
+			return nil, NewUpdateActorInfoUnauthorized(body)
 		default:
 			body, _ := io.ReadAll(resp.Body)
 			return nil, goahttp.ErrInvalidResponse("ActorService", "updateActorInfo", resp.StatusCode, string(body))
@@ -260,6 +297,7 @@ func EncodeDeleteActorRequest(encoder func(*http.Request) goahttp.Encoder) func(
 // body should be restored after having been read.
 // DecodeDeleteActorResponse may return the following errors:
 //   - "invalid-scopes" (type actorservice.InvalidScopes): http.StatusForbidden
+//   - "unauthorized" (type actorservice.Unauthorized): http.StatusUnauthorized
 //   - error: internal error
 func DecodeDeleteActorResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody bool) func(*http.Response) (any, error) {
 	return func(resp *http.Response) (any, error) {
@@ -288,6 +326,16 @@ func DecodeDeleteActorResponse(decoder func(*http.Response) goahttp.Decoder, res
 				return nil, goahttp.ErrDecodingError("ActorService", "deleteActor", err)
 			}
 			return nil, NewDeleteActorInvalidScopes(body)
+		case http.StatusUnauthorized:
+			var (
+				body string
+				err  error
+			)
+			err = decoder(resp).Decode(&body)
+			if err != nil {
+				return nil, goahttp.ErrDecodingError("ActorService", "deleteActor", err)
+			}
+			return nil, NewDeleteActorUnauthorized(body)
 		default:
 			body, _ := io.ReadAll(resp.Body)
 			return nil, goahttp.ErrInvalidResponse("ActorService", "deleteActor", resp.StatusCode, string(body))

@@ -33,6 +33,7 @@ func NewClient(addActor, updateActorInfo, deleteActor goa.Endpoint) *Client {
 // AddActor may return the following errors:
 //   - "invalid-scopes" (type InvalidScopes)
 //   - "already-exists" (type *AlreadyExists): Actor already exists
+//   - "unauthorized" (type Unauthorized)
 //   - error: internal error
 func (c *Client) AddActor(ctx context.Context, p *AddActorPayload) (res uint64, err error) {
 	var ires any
@@ -48,6 +49,7 @@ func (c *Client) AddActor(ctx context.Context, p *AddActorPayload) (res uint64, 
 // UpdateActorInfo may return the following errors:
 //   - "invalid-scopes" (type InvalidScopes)
 //   - "not-found" (type *NotFound): Actor not found
+//   - "unauthorized" (type Unauthorized)
 //   - error: internal error
 func (c *Client) UpdateActorInfo(ctx context.Context, p *UpdateActorInfoPayload) (err error) {
 	_, err = c.UpdateActorInfoEndpoint(ctx, p)
@@ -57,7 +59,7 @@ func (c *Client) UpdateActorInfo(ctx context.Context, p *UpdateActorInfoPayload)
 // DeleteActor calls the "deleteActor" endpoint of the "ActorService" service.
 // DeleteActor may return the following errors:
 //   - "invalid-scopes" (type InvalidScopes)
-//   - "not-found" (type *NotFound): Actor not found
+//   - "unauthorized" (type Unauthorized)
 //   - error: internal error
 func (c *Client) DeleteActor(ctx context.Context, p *DeleteActorPayload) (err error) {
 	_, err = c.DeleteActorEndpoint(ctx, p)

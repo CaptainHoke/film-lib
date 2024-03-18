@@ -26,6 +26,9 @@ func NewClient(auth goa.Endpoint) *Client {
 }
 
 // Auth calls the "auth" endpoint of the "SignIn" service.
+// Auth may return the following errors:
+//   - "unauthorized" (type Unauthorized)
+//   - error: internal error
 func (c *Client) Auth(ctx context.Context, p *AuthPayload) (res *Creds, err error) {
 	var ires any
 	ires, err = c.AuthEndpoint(ctx, p)

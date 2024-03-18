@@ -191,6 +191,19 @@ func EncodeUpdateFilmInfoError(encoder func(context.Context, http.ResponseWriter
 			return encodeError(ctx, w, v)
 		}
 		switch en.GoaErrorName() {
+		case "not-found":
+			var res *filmservice.NotFound
+			errors.As(v, &res)
+			enc := encoder(ctx, w)
+			var body any
+			if formatter != nil {
+				body = formatter(ctx, res)
+			} else {
+				body = NewUpdateFilmInfoNotFoundResponseBody(res)
+			}
+			w.Header().Set("goa-error", res.GoaErrorName())
+			w.WriteHeader(http.StatusNoContent)
+			return enc.Encode(body)
 		case "invalid-scopes":
 			var res filmservice.InvalidScopes
 			errors.As(v, &res)

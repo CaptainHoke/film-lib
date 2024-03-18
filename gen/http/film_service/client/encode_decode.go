@@ -195,6 +195,7 @@ func EncodeUpdateFilmInfoRequest(encoder func(*http.Request) goahttp.Encoder) fu
 // FilmService updateFilmInfo endpoint. restoreBody controls whether the
 // response body should be restored after having been read.
 // DecodeUpdateFilmInfoResponse may return the following errors:
+//   - "not-found" (type *filmservice.NotFound): http.StatusNoContent
 //   - "invalid-scopes" (type filmservice.InvalidScopes): http.StatusForbidden
 //   - "unauthorized" (type filmservice.Unauthorized): http.StatusUnauthorized
 //   - error: internal error
@@ -215,6 +216,20 @@ func DecodeUpdateFilmInfoResponse(decoder func(*http.Response) goahttp.Decoder, 
 		switch resp.StatusCode {
 		case http.StatusCreated:
 			return nil, nil
+		case http.StatusNoContent:
+			var (
+				body UpdateFilmInfoNotFoundResponseBody
+				err  error
+			)
+			err = decoder(resp).Decode(&body)
+			if err != nil {
+				return nil, goahttp.ErrDecodingError("FilmService", "updateFilmInfo", err)
+			}
+			err = ValidateUpdateFilmInfoNotFoundResponseBody(&body)
+			if err != nil {
+				return nil, goahttp.ErrValidationError("FilmService", "updateFilmInfo", err)
+			}
+			return nil, NewUpdateFilmInfoNotFound(&body)
 		case http.StatusForbidden:
 			var (
 				body string

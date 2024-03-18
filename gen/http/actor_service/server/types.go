@@ -35,6 +35,16 @@ type AddActorAlreadyExistsResponseBody struct {
 	ID string `form:"id" json:"id" xml:"id"`
 }
 
+// UpdateActorInfoNotFoundResponseBody is the type of the "ActorService"
+// service "updateActorInfo" endpoint HTTP response body for the "not-found"
+// error.
+type UpdateActorInfoNotFoundResponseBody struct {
+	// Message of error
+	Message string `form:"message" json:"message" xml:"message"`
+	// ID of missing data
+	ID string `form:"id" json:"id" xml:"id"`
+}
+
 // ActorInfoRequestBody is used to define fields on request body types.
 type ActorInfoRequestBody struct {
 	// Name of an Actor
@@ -49,6 +59,16 @@ type ActorInfoRequestBody struct {
 // result of the "addActor" endpoint of the "ActorService" service.
 func NewAddActorAlreadyExistsResponseBody(res *actorservice.AlreadyExists) *AddActorAlreadyExistsResponseBody {
 	body := &AddActorAlreadyExistsResponseBody{
+		Message: res.Message,
+		ID:      res.ID,
+	}
+	return body
+}
+
+// NewUpdateActorInfoNotFoundResponseBody builds the HTTP response body from
+// the result of the "updateActorInfo" endpoint of the "ActorService" service.
+func NewUpdateActorInfoNotFoundResponseBody(res *actorservice.NotFound) *UpdateActorInfoNotFoundResponseBody {
+	body := &UpdateActorInfoNotFoundResponseBody{
 		Message: res.Message,
 		ID:      res.ID,
 	}

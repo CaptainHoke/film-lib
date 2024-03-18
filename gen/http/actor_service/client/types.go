@@ -35,6 +35,16 @@ type AddActorAlreadyExistsResponseBody struct {
 	ID *string `form:"id,omitempty" json:"id,omitempty" xml:"id,omitempty"`
 }
 
+// UpdateActorInfoNotFoundResponseBody is the type of the "ActorService"
+// service "updateActorInfo" endpoint HTTP response body for the "not-found"
+// error.
+type UpdateActorInfoNotFoundResponseBody struct {
+	// Message of error
+	Message *string `form:"message,omitempty" json:"message,omitempty" xml:"message,omitempty"`
+	// ID of missing data
+	ID *string `form:"id,omitempty" json:"id,omitempty" xml:"id,omitempty"`
+}
+
 // ActorInfoRequestBody is used to define fields on request body types.
 type ActorInfoRequestBody struct {
 	// Name of an Actor
@@ -84,10 +94,37 @@ func NewAddActorInvalidScopes(body string) actorservice.InvalidScopes {
 	return v
 }
 
+// NewAddActorUnauthorized builds a ActorService service addActor endpoint
+// unauthorized error.
+func NewAddActorUnauthorized(body string) actorservice.Unauthorized {
+	v := actorservice.Unauthorized(body)
+
+	return v
+}
+
+// NewUpdateActorInfoNotFound builds a ActorService service updateActorInfo
+// endpoint not-found error.
+func NewUpdateActorInfoNotFound(body *UpdateActorInfoNotFoundResponseBody) *actorservice.NotFound {
+	v := &actorservice.NotFound{
+		Message: *body.Message,
+		ID:      *body.ID,
+	}
+
+	return v
+}
+
 // NewUpdateActorInfoInvalidScopes builds a ActorService service
 // updateActorInfo endpoint invalid-scopes error.
 func NewUpdateActorInfoInvalidScopes(body string) actorservice.InvalidScopes {
 	v := actorservice.InvalidScopes(body)
+
+	return v
+}
+
+// NewUpdateActorInfoUnauthorized builds a ActorService service updateActorInfo
+// endpoint unauthorized error.
+func NewUpdateActorInfoUnauthorized(body string) actorservice.Unauthorized {
+	v := actorservice.Unauthorized(body)
 
 	return v
 }
@@ -100,9 +137,29 @@ func NewDeleteActorInvalidScopes(body string) actorservice.InvalidScopes {
 	return v
 }
 
+// NewDeleteActorUnauthorized builds a ActorService service deleteActor
+// endpoint unauthorized error.
+func NewDeleteActorUnauthorized(body string) actorservice.Unauthorized {
+	v := actorservice.Unauthorized(body)
+
+	return v
+}
+
 // ValidateAddActorAlreadyExistsResponseBody runs the validations defined on
 // addActor_already-exists_response_body
 func ValidateAddActorAlreadyExistsResponseBody(body *AddActorAlreadyExistsResponseBody) (err error) {
+	if body.Message == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("message", "body"))
+	}
+	if body.ID == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("id", "body"))
+	}
+	return
+}
+
+// ValidateUpdateActorInfoNotFoundResponseBody runs the validations defined on
+// updateActorInfo_not-found_response_body
+func ValidateUpdateActorInfoNotFoundResponseBody(body *UpdateActorInfoNotFoundResponseBody) (err error) {
 	if body.Message == nil {
 		err = goa.MergeErrors(err, goa.MissingFieldError("message", "body"))
 	}

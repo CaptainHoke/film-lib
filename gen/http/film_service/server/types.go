@@ -48,6 +48,15 @@ type AddFilmAlreadyExistsResponseBody struct {
 	ID string `form:"id" json:"id" xml:"id"`
 }
 
+// UpdateFilmInfoNotFoundResponseBody is the type of the "FilmService" service
+// "updateFilmInfo" endpoint HTTP response body for the "not-found" error.
+type UpdateFilmInfoNotFoundResponseBody struct {
+	// Message of error
+	Message string `form:"message" json:"message" xml:"message"`
+	// ID of missing data
+	ID string `form:"id" json:"id" xml:"id"`
+}
+
 // FilmInfoRequestBody is used to define fields on request body types.
 type FilmInfoRequestBody struct {
 	// Title of a film
@@ -80,6 +89,16 @@ func NewAddFilmResponseBody(res *filmserviceviews.FilmResultView) *AddFilmRespon
 // result of the "addFilm" endpoint of the "FilmService" service.
 func NewAddFilmAlreadyExistsResponseBody(res *filmservice.AlreadyExists) *AddFilmAlreadyExistsResponseBody {
 	body := &AddFilmAlreadyExistsResponseBody{
+		Message: res.Message,
+		ID:      res.ID,
+	}
+	return body
+}
+
+// NewUpdateFilmInfoNotFoundResponseBody builds the HTTP response body from the
+// result of the "updateFilmInfo" endpoint of the "FilmService" service.
+func NewUpdateFilmInfoNotFoundResponseBody(res *filmservice.NotFound) *UpdateFilmInfoNotFoundResponseBody {
+	body := &UpdateFilmInfoNotFoundResponseBody{
 		Message: res.Message,
 		ID:      res.ID,
 	}
