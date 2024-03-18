@@ -27,7 +27,6 @@ RUN --mount=target=. \
 FROM scratch AS bin
 COPY --from=build /out/app /
 
-FROM ubuntu:latest
+FROM gcr.io/distroless/base-debian12:latest-amd64
 COPY --from=build /out/app /
-EXPOSE 3239
-CMD ["./app", "--debug=true"]
+CMD ["./app", "--debug=true", "--host=docker"]

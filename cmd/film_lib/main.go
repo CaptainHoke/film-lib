@@ -89,7 +89,7 @@ func main() {
 
 	// Start the servers and send errors (if any) to the error channel.
 	switch *hostF {
-	case "localhost":
+	case "docker":
 		{
 			addr := "http://0.0.0.0:3239/api/v1"
 			u, err := url.Parse(addr)
@@ -114,8 +114,33 @@ func main() {
 			handleHTTPServer(ctx, u, actorServiceEndpoints, filmServiceEndpoints, searchServiceEndpoints, signInEndpoints, isAliveEndPoints, &wg, errc, logger, *dbgF)
 		}
 
+	case "localhost":
+		{
+			addr := "http://localhost:3239/api/v1"
+			u, err := url.Parse(addr)
+			if err != nil {
+				logger.Fatalf("invalid URL %#v: %s\n", addr, err)
+			}
+			if *secureF {
+				u.Scheme = "https"
+			}
+			if *domainF != "" {
+				u.Host = *domainF
+			}
+			if *httpPortF != "" {
+				h, _, err := net.SplitHostPort(u.Host)
+				if err != nil {
+					logger.Fatalf("invalid URL %#v: %s\n", u.Host, err)
+				}
+				u.Host = net.JoinHostPort(h, *httpPortF)
+			} else if u.Port() == "" {
+				u.Host = net.JoinHostPort(u.Host, "80")
+			}
+			handleHTTPServer(ctx, u, actorServiceEndpoints, filmServiceEndpoints, searchServiceEndpoints, signInEndpoints, isAliveEndPoints, &wg, errc, logger, *dbgF)
+		}
+
 	default:
-		logger.Fatalf("invalid host argument: %q (valid hosts: localhost)\n", *hostF)
+		logger.Fatalf("invalid host argument: %q (valid hosts: docker, localhost)\n", *hostF)
 	}
 
 	// Wait for signal.
