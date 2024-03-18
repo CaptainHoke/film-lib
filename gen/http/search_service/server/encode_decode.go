@@ -11,6 +11,8 @@ import (
 	"context"
 	"errors"
 	searchservice "film-lib/gen/search_service"
+	searchserviceviews "film-lib/gen/search_service/views"
+	"io"
 	"net/http"
 	"strings"
 
@@ -35,26 +37,24 @@ func EncodeSearchLibraryResponse(encoder func(context.Context, http.ResponseWrit
 func DecodeSearchLibraryRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.Decoder) func(*http.Request) (any, error) {
 	return func(r *http.Request) (any, error) {
 		var (
-			queryString string
-			token       string
-			err         error
+			queryString *string
+			token       *string
 		)
-		queryString = r.URL.Query().Get("QueryString")
-		if queryString == "" {
-			err = goa.MergeErrors(err, goa.MissingFieldError("QueryString", "query string"))
+		queryStringRaw := r.URL.Query().Get("QueryString")
+		if queryStringRaw != "" {
+			queryString = &queryStringRaw
 		}
-		token = r.Header.Get("X-Authorization")
-		if token == "" {
-			err = goa.MergeErrors(err, goa.MissingFieldError("token", "header"))
-		}
-		if err != nil {
-			return nil, err
+		tokenRaw := r.Header.Get("Authorization")
+		if tokenRaw != "" {
+			token = &tokenRaw
 		}
 		payload := NewSearchLibraryPayload(queryString, token)
-		if strings.Contains(payload.Token, " ") {
-			// Remove authorization scheme prefix (e.g. "Bearer")
-			cred := strings.SplitN(payload.Token, " ", 2)[1]
-			payload.Token = cred
+		if payload.Token != nil {
+			if strings.Contains(*payload.Token, " ") {
+				// Remove authorization scheme prefix (e.g. "Bearer")
+				cred := strings.SplitN(*payload.Token, " ", 2)[1]
+				payload.Token = &cred
+			}
 		}
 
 		return payload, nil
@@ -64,6 +64,158 @@ func DecodeSearchLibraryRequest(mux goahttp.Muxer, decoder func(*http.Request) g
 // EncodeSearchLibraryError returns an encoder for errors returned by the
 // searchLibrary SearchService endpoint.
 func EncodeSearchLibraryError(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder, formatter func(ctx context.Context, err error) goahttp.Statuser) func(context.Context, http.ResponseWriter, error) error {
+	encodeError := goahttp.ErrorEncoder(encoder, formatter)
+	return func(ctx context.Context, w http.ResponseWriter, v error) error {
+		var en goa.GoaErrorNamer
+		if !errors.As(v, &en) {
+			return encodeError(ctx, w, v)
+		}
+		switch en.GoaErrorName() {
+		case "invalid-scopes":
+			var res searchservice.InvalidScopes
+			errors.As(v, &res)
+			enc := encoder(ctx, w)
+			body := res
+			w.Header().Set("goa-error", res.GoaErrorName())
+			w.WriteHeader(http.StatusForbidden)
+			return enc.Encode(body)
+		case "unauthorized":
+			var res searchservice.Unauthorized
+			errors.As(v, &res)
+			enc := encoder(ctx, w)
+			body := res
+			w.Header().Set("goa-error", res.GoaErrorName())
+			w.WriteHeader(http.StatusUnauthorized)
+			return enc.Encode(body)
+		default:
+			return encodeError(ctx, w, v)
+		}
+	}
+}
+
+// EncodeGetAllActorsResponse returns an encoder for responses returned by the
+// SearchService getAllActors endpoint.
+func EncodeGetAllActorsResponse(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) func(context.Context, http.ResponseWriter, any) error {
+	return func(ctx context.Context, w http.ResponseWriter, v any) error {
+		res := v.(searchserviceviews.ActorResultCollection)
+		enc := encoder(ctx, w)
+		body := NewActorResultResponseCollection(res.Projected)
+		w.WriteHeader(http.StatusOK)
+		return enc.Encode(body)
+	}
+}
+
+// DecodeGetAllActorsRequest returns a decoder for requests sent to the
+// SearchService getAllActors endpoint.
+func DecodeGetAllActorsRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.Decoder) func(*http.Request) (any, error) {
+	return func(r *http.Request) (any, error) {
+		var (
+			token *string
+		)
+		tokenRaw := r.Header.Get("Authorization")
+		if tokenRaw != "" {
+			token = &tokenRaw
+		}
+		payload := NewGetAllActorsPayload(token)
+		if payload.Token != nil {
+			if strings.Contains(*payload.Token, " ") {
+				// Remove authorization scheme prefix (e.g. "Bearer")
+				cred := strings.SplitN(*payload.Token, " ", 2)[1]
+				payload.Token = &cred
+			}
+		}
+
+		return payload, nil
+	}
+}
+
+// EncodeGetAllActorsError returns an encoder for errors returned by the
+// getAllActors SearchService endpoint.
+func EncodeGetAllActorsError(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder, formatter func(ctx context.Context, err error) goahttp.Statuser) func(context.Context, http.ResponseWriter, error) error {
+	encodeError := goahttp.ErrorEncoder(encoder, formatter)
+	return func(ctx context.Context, w http.ResponseWriter, v error) error {
+		var en goa.GoaErrorNamer
+		if !errors.As(v, &en) {
+			return encodeError(ctx, w, v)
+		}
+		switch en.GoaErrorName() {
+		case "invalid-scopes":
+			var res searchservice.InvalidScopes
+			errors.As(v, &res)
+			enc := encoder(ctx, w)
+			body := res
+			w.Header().Set("goa-error", res.GoaErrorName())
+			w.WriteHeader(http.StatusForbidden)
+			return enc.Encode(body)
+		case "unauthorized":
+			var res searchservice.Unauthorized
+			errors.As(v, &res)
+			enc := encoder(ctx, w)
+			body := res
+			w.Header().Set("goa-error", res.GoaErrorName())
+			w.WriteHeader(http.StatusUnauthorized)
+			return enc.Encode(body)
+		default:
+			return encodeError(ctx, w, v)
+		}
+	}
+}
+
+// EncodeGetAllFilmsResponse returns an encoder for responses returned by the
+// SearchService getAllFilms endpoint.
+func EncodeGetAllFilmsResponse(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) func(context.Context, http.ResponseWriter, any) error {
+	return func(ctx context.Context, w http.ResponseWriter, v any) error {
+		res := v.(searchserviceviews.FilmResultCollection)
+		enc := encoder(ctx, w)
+		body := NewFilmResultResponseCollection(res.Projected)
+		w.WriteHeader(http.StatusOK)
+		return enc.Encode(body)
+	}
+}
+
+// DecodeGetAllFilmsRequest returns a decoder for requests sent to the
+// SearchService getAllFilms endpoint.
+func DecodeGetAllFilmsRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.Decoder) func(*http.Request) (any, error) {
+	return func(r *http.Request) (any, error) {
+		var (
+			body GetAllFilmsRequestBody
+			err  error
+		)
+		err = decoder(r).Decode(&body)
+		if err != nil {
+			if err == io.EOF {
+				return nil, goa.MissingPayloadError()
+			}
+			return nil, goa.DecodePayloadError(err.Error())
+		}
+		err = ValidateGetAllFilmsRequestBody(&body)
+		if err != nil {
+			return nil, err
+		}
+
+		var (
+			token *string
+		)
+		tokenRaw := r.Header.Get("Authorization")
+		if tokenRaw != "" {
+			token = &tokenRaw
+		}
+		payload := NewGetAllFilmsPayload(&body, token)
+		if payload.Token != nil {
+			if strings.Contains(*payload.Token, " ") {
+				// Remove authorization scheme prefix (e.g. "Bearer")
+				cred := strings.SplitN(*payload.Token, " ", 2)[1]
+				payload.Token = &cred
+			}
+		}
+
+		return payload, nil
+	}
+}
+
+// EncodeGetAllFilmsError returns an encoder for errors returned by the
+// getAllFilms SearchService endpoint.
+func EncodeGetAllFilmsError(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder, formatter func(ctx context.Context, err error) goahttp.Statuser) func(context.Context, http.ResponseWriter, error) error {
 	encodeError := goahttp.ErrorEncoder(encoder, formatter)
 	return func(ctx context.Context, w http.ResponseWriter, v error) error {
 		var en goa.GoaErrorNamer
@@ -103,37 +255,53 @@ func marshalSearchserviceFilmInfoToFilmInfoResponseBody(v *searchservice.FilmInf
 		Rating:      v.Rating,
 	}
 	if v.Actors != nil {
-		res.Actors = make([]*ActorResponseBody, len(v.Actors))
+		res.Actors = make([]uint64, len(v.Actors))
 		for i, val := range v.Actors {
-			res.Actors[i] = marshalSearchserviceActorToActorResponseBody(val)
+			res.Actors[i] = val
 		}
 	} else {
-		res.Actors = []*ActorResponseBody{}
+		res.Actors = []uint64{}
 	}
 
 	return res
 }
 
-// marshalSearchserviceActorToActorResponseBody builds a value of type
-// *ActorResponseBody from a value of type *searchservice.Actor.
-func marshalSearchserviceActorToActorResponseBody(v *searchservice.Actor) *ActorResponseBody {
-	res := &ActorResponseBody{
-		ActorID: v.ActorID,
-	}
-	if v.ActorInfo != nil {
-		res.ActorInfo = marshalSearchserviceActorInfoToActorInfoResponseBody(v.ActorInfo)
-	}
-
-	return res
-}
-
-// marshalSearchserviceActorInfoToActorInfoResponseBody builds a value of type
-// *ActorInfoResponseBody from a value of type *searchservice.ActorInfo.
-func marshalSearchserviceActorInfoToActorInfoResponseBody(v *searchservice.ActorInfo) *ActorInfoResponseBody {
-	res := &ActorInfoResponseBody{
+// marshalSearchserviceviewsActorResultViewToActorResultResponse builds a value
+// of type *ActorResultResponse from a value of type
+// *searchserviceviews.ActorResultView.
+func marshalSearchserviceviewsActorResultViewToActorResultResponse(v *searchserviceviews.ActorResultView) *ActorResultResponse {
+	res := &ActorResultResponse{
+		ActorID:        *v.ActorID,
 		ActorName:      v.ActorName,
 		ActorSex:       v.ActorSex,
 		ActorBirthdate: v.ActorBirthdate,
+	}
+
+	return res
+}
+
+// unmarshalSortByRequestBodyToSearchserviceSortBy builds a value of type
+// *searchservice.SortBy from a value of type *SortByRequestBody.
+func unmarshalSortByRequestBodyToSearchserviceSortBy(v *SortByRequestBody) *searchservice.SortBy {
+	res := &searchservice.SortBy{
+		Field:    *v.Field,
+		Ordering: *v.Ordering,
+	}
+
+	return res
+}
+
+// marshalSearchserviceviewsFilmResultViewToFilmResultResponse builds a value
+// of type *FilmResultResponse from a value of type
+// *searchserviceviews.FilmResultView.
+func marshalSearchserviceviewsFilmResultViewToFilmResultResponse(v *searchserviceviews.FilmResultView) *FilmResultResponse {
+	res := &FilmResultResponse{
+		FilmID:      *v.FilmID,
+		Title:       v.Title,
+		Description: v.Description,
+		ReleaseDate: v.ReleaseDate,
+		Rating:      v.Rating,
+		Actors:      v.Actors,
 	}
 
 	return res

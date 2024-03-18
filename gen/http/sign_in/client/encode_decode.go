@@ -41,7 +41,11 @@ func EncodeAuthRequest(encoder func(*http.Request) goahttp.Encoder) func(*http.R
 		if !ok {
 			return goahttp.ErrInvalidType("SignIn", "auth", "*signin.AuthPayload", v)
 		}
-		req.SetBasicAuth(p.Username, p.Password)
+		if p.Username != nil {
+			if p.Password != nil {
+				req.SetBasicAuth(*p.Username, *p.Password)
+			}
+		}
 		return nil
 	}
 }
@@ -49,9 +53,6 @@ func EncodeAuthRequest(encoder func(*http.Request) goahttp.Encoder) func(*http.R
 // DecodeAuthResponse returns a decoder for responses returned by the SignIn
 // auth endpoint. restoreBody controls whether the response body should be
 // restored after having been read.
-// DecodeAuthResponse may return the following errors:
-//   - "unauthorized" (type signin.Unauthorized): http.StatusUnauthorized
-//   - error: internal error
 func DecodeAuthResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody bool) func(*http.Response) (any, error) {
 	return func(resp *http.Response) (any, error) {
 		if restoreBody {
@@ -82,16 +83,6 @@ func DecodeAuthResponse(decoder func(*http.Response) goahttp.Decoder, restoreBod
 			}
 			res := NewAuthCredsOK(&body)
 			return res, nil
-		case http.StatusUnauthorized:
-			var (
-				body string
-				err  error
-			)
-			err = decoder(resp).Decode(&body)
-			if err != nil {
-				return nil, goahttp.ErrDecodingError("SignIn", "auth", err)
-			}
-			return nil, NewAuthUnauthorized(body)
 		default:
 			body, _ := io.ReadAll(resp.Body)
 			return nil, goahttp.ErrInvalidResponse("SignIn", "auth", resp.StatusCode, string(body))

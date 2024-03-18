@@ -10,31 +10,6 @@ var _ = Service("FilmService", func() {
 		Response("unauthorized", StatusUnauthorized)
 	})
 
-	Method("getAllFilms", func() {
-		Payload(func() {
-			TokenField(1, "token", String, func() {
-				Description("JWT used for authentication")
-			})
-			Attribute("SortBy", SortingOptions)
-			Required("token", "SortBy")
-		})
-
-		Security(JWTAuth, func() {
-			Scope("api:read")
-		})
-
-		Result(CollectionOf(FilmResult))
-
-		Error("invalid-scopes", String, "Token scopes are invalid")
-
-		HTTP(func() {
-			GET("/films")
-			Header("token:X-Authorization")
-			Response("invalid-scopes", StatusForbidden)
-			Response(StatusOK)
-		})
-	})
-
 	Method("addFilm", func() {
 		Payload(func() {
 			TokenField(1, "token", String, func() {
@@ -42,7 +17,7 @@ var _ = Service("FilmService", func() {
 			})
 			Attribute("FilmInfo", FilmInfo)
 
-			Required("token", "FilmInfo")
+			Required("FilmInfo")
 		})
 
 		Security(JWTAuth, func() {
@@ -56,7 +31,6 @@ var _ = Service("FilmService", func() {
 
 		HTTP(func() {
 			POST("/films")
-			Header("token:X-Authorization")
 			Response("invalid-scopes", StatusForbidden)
 			Response("already-exists", StatusBadRequest)
 			Response(StatusCreated)
@@ -71,7 +45,7 @@ var _ = Service("FilmService", func() {
 			Attribute("FilmID", UInt64)
 			Attribute("FilmInfo", FilmInfo)
 
-			Required("token", "FilmID", "FilmInfo")
+			Required("FilmInfo")
 		})
 
 		Security(JWTAuth, func() {
@@ -83,7 +57,6 @@ var _ = Service("FilmService", func() {
 
 		HTTP(func() {
 			PUT("/films/{FilmID}")
-			Header("token:X-Authorization")
 			Response("invalid-scopes", StatusForbidden)
 			Response(StatusCreated)
 		})
@@ -94,9 +67,9 @@ var _ = Service("FilmService", func() {
 			TokenField(1, "token", String, func() {
 				Description("JWT used for authentication")
 			})
-			Field(2, "FilmID", String, "Film ID")
+			Attribute("FilmID", UInt64, "Film ID")
 
-			Required("token", "FilmID")
+			Required("FilmID")
 		})
 
 		Security(JWTAuth, func() {
@@ -108,7 +81,6 @@ var _ = Service("FilmService", func() {
 
 		HTTP(func() {
 			DELETE("/films/{FilmID}")
-			Header("token:X-Authorization")
 			Response("invalid-scopes", StatusForbidden)
 			Response(StatusNoContent)
 		})
@@ -119,9 +91,11 @@ var SortingOptions = Type("SortBy", func() {
 	Description("Sorting configuration")
 	Attribute("Field", String, "Field to sort by (Rating (default) | Title | Release Date)", func() {
 		Default("Rating")
+		Example("Rating")
 	})
 	Attribute("Ordering", String, "Ascending / Descending", func() {
 		Default("Descending")
+		Example("Descending")
 	})
 	Required("Field", "Ordering")
 })
@@ -180,7 +154,7 @@ var FilmInfo = Type("FilmInfo", func() {
 		Minimum(0.0)
 		Maximum(10.0)
 	})
-	Attribute("Actors", ArrayOf(Actor), "List of Actors involved in Film")
+	Attribute("Actors", ArrayOf(UInt64), "Actors' Ids")
 
 	Required("Title", "Description", "ReleaseDate", "Rating", "Actors")
 })

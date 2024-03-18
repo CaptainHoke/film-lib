@@ -15,12 +15,6 @@ import (
 	goa "goa.design/goa/v3/pkg"
 )
 
-// GetAllFilmsRequestBody is the type of the "FilmService" service
-// "getAllFilms" endpoint HTTP request body.
-type GetAllFilmsRequestBody struct {
-	SortBy *SortByRequestBody `form:"SortBy" json:"SortBy" xml:"SortBy"`
-}
-
 // AddFilmRequestBody is the type of the "FilmService" service "addFilm"
 // endpoint HTTP request body.
 type AddFilmRequestBody struct {
@@ -32,10 +26,6 @@ type AddFilmRequestBody struct {
 type UpdateFilmInfoRequestBody struct {
 	FilmInfo *FilmInfoRequestBody `form:"FilmInfo" json:"FilmInfo" xml:"FilmInfo"`
 }
-
-// GetAllFilmsResponseBody is the type of the "FilmService" service
-// "getAllFilms" endpoint HTTP response body.
-type GetAllFilmsResponseBody []*FilmResultResponse
 
 // AddFilmResponseBody is the type of the "FilmService" service "addFilm"
 // endpoint HTTP response body.
@@ -58,25 +48,6 @@ type AddFilmAlreadyExistsResponseBody struct {
 	ID *string `form:"id,omitempty" json:"id,omitempty" xml:"id,omitempty"`
 }
 
-// SortByRequestBody is used to define fields on request body types.
-type SortByRequestBody struct {
-	// Field to sort by (Rating (default) | Title | Release Date)
-	Field string `form:"Field" json:"Field" xml:"Field"`
-	// Ascending / Descending
-	Ordering string `form:"Ordering" json:"Ordering" xml:"Ordering"`
-}
-
-// FilmResultResponse is used to define fields on response body types.
-type FilmResultResponse struct {
-	// Unique ID of a Film
-	FilmID      *uint64 `form:"FilmID,omitempty" json:"FilmID,omitempty" xml:"FilmID,omitempty"`
-	Title       *string `form:"Title,omitempty" json:"Title,omitempty" xml:"Title,omitempty"`
-	Description *string `form:"Description,omitempty" json:"Description,omitempty" xml:"Description,omitempty"`
-	ReleaseDate *string `form:"ReleaseDate,omitempty" json:"ReleaseDate,omitempty" xml:"ReleaseDate,omitempty"`
-	Rating      *string `form:"Rating,omitempty" json:"Rating,omitempty" xml:"Rating,omitempty"`
-	Actors      *string `form:"Actors,omitempty" json:"Actors,omitempty" xml:"Actors,omitempty"`
-}
-
 // FilmInfoRequestBody is used to define fields on request body types.
 type FilmInfoRequestBody struct {
 	// Title of a film
@@ -87,36 +58,8 @@ type FilmInfoRequestBody struct {
 	ReleaseDate string `form:"ReleaseDate" json:"ReleaseDate" xml:"ReleaseDate"`
 	// Rating (0.0 - 10.0)
 	Rating float32 `form:"Rating" json:"Rating" xml:"Rating"`
-	// List of Actors involved in Film
-	Actors []*ActorRequestBody `form:"Actors" json:"Actors" xml:"Actors"`
-}
-
-// ActorRequestBody is used to define fields on request body types.
-type ActorRequestBody struct {
-	// Unique ID of an Actor
-	ActorID uint64 `form:"ActorID" json:"ActorID" xml:"ActorID"`
-	// Actor Info
-	ActorInfo *ActorInfoRequestBody `form:"ActorInfo" json:"ActorInfo" xml:"ActorInfo"`
-}
-
-// ActorInfoRequestBody is used to define fields on request body types.
-type ActorInfoRequestBody struct {
-	// Name of an Actor
-	ActorName string `form:"ActorName" json:"ActorName" xml:"ActorName"`
-	// Sex of an Actor
-	ActorSex string `form:"ActorSex" json:"ActorSex" xml:"ActorSex"`
-	// YYYY-MM-DD
-	ActorBirthdate string `form:"ActorBirthdate" json:"ActorBirthdate" xml:"ActorBirthdate"`
-}
-
-// NewGetAllFilmsRequestBody builds the HTTP request body from the payload of
-// the "getAllFilms" endpoint of the "FilmService" service.
-func NewGetAllFilmsRequestBody(p *filmservice.GetAllFilmsPayload) *GetAllFilmsRequestBody {
-	body := &GetAllFilmsRequestBody{}
-	if p.SortBy != nil {
-		body.SortBy = marshalFilmserviceSortByToSortByRequestBody(p.SortBy)
-	}
-	return body
+	// Actors' Ids
+	Actors []uint64 `form:"Actors" json:"Actors" xml:"Actors"`
 }
 
 // NewAddFilmRequestBody builds the HTTP request body from the payload of the
@@ -137,33 +80,6 @@ func NewUpdateFilmInfoRequestBody(p *filmservice.UpdateFilmInfoPayload) *UpdateF
 		body.FilmInfo = marshalFilmserviceFilmInfoToFilmInfoRequestBody(p.FilmInfo)
 	}
 	return body
-}
-
-// NewGetAllFilmsFilmResultCollectionOK builds a "FilmService" service
-// "getAllFilms" endpoint result from a HTTP "OK" response.
-func NewGetAllFilmsFilmResultCollectionOK(body GetAllFilmsResponseBody) filmserviceviews.FilmResultCollectionView {
-	v := make([]*filmserviceviews.FilmResultView, len(body))
-	for i, val := range body {
-		v[i] = unmarshalFilmResultResponseToFilmserviceviewsFilmResultView(val)
-	}
-
-	return v
-}
-
-// NewGetAllFilmsInvalidScopes builds a FilmService service getAllFilms
-// endpoint invalid-scopes error.
-func NewGetAllFilmsInvalidScopes(body string) filmservice.InvalidScopes {
-	v := filmservice.InvalidScopes(body)
-
-	return v
-}
-
-// NewGetAllFilmsUnauthorized builds a FilmService service getAllFilms endpoint
-// unauthorized error.
-func NewGetAllFilmsUnauthorized(body string) filmservice.Unauthorized {
-	v := filmservice.Unauthorized(body)
-
-	return v
 }
 
 // NewAddFilmFilmResultCreated builds a "FilmService" service "addFilm"
@@ -252,14 +168,6 @@ func ValidateAddFilmAlreadyExistsResponseBody(body *AddFilmAlreadyExistsResponse
 	return
 }
 
-// ValidateFilmResultResponse runs the validations defined on FilmResultResponse
-func ValidateFilmResultResponse(body *FilmResultResponse) (err error) {
-	if body.FilmID == nil {
-		err = goa.MergeErrors(err, goa.MissingFieldError("FilmID", "body"))
-	}
-	return
-}
-
 // ValidateFilmInfoRequestBody runs the validations defined on
 // FilmInfoRequestBody
 func ValidateFilmInfoRequestBody(body *FilmInfoRequestBody) (err error) {
@@ -282,37 +190,5 @@ func ValidateFilmInfoRequestBody(body *FilmInfoRequestBody) (err error) {
 	if body.Rating > 10 {
 		err = goa.MergeErrors(err, goa.InvalidRangeError("body.Rating", body.Rating, 10, false))
 	}
-	for _, e := range body.Actors {
-		if e != nil {
-			if err2 := ValidateActorRequestBody(e); err2 != nil {
-				err = goa.MergeErrors(err, err2)
-			}
-		}
-	}
-	return
-}
-
-// ValidateActorRequestBody runs the validations defined on ActorRequestBody
-func ValidateActorRequestBody(body *ActorRequestBody) (err error) {
-	if body.ActorInfo == nil {
-		err = goa.MergeErrors(err, goa.MissingFieldError("ActorInfo", "body"))
-	}
-	if body.ActorInfo != nil {
-		if err2 := ValidateActorInfoRequestBody(body.ActorInfo); err2 != nil {
-			err = goa.MergeErrors(err, err2)
-		}
-	}
-	return
-}
-
-// ValidateActorInfoRequestBody runs the validations defined on
-// ActorInfoRequestBody
-func ValidateActorInfoRequestBody(body *ActorInfoRequestBody) (err error) {
-	err = goa.MergeErrors(err, goa.ValidatePattern("body.ActorName", body.ActorName, "^.*\\S.*$"))
-	if utf8.RuneCountInString(body.ActorName) > 32 {
-		err = goa.MergeErrors(err, goa.InvalidLengthError("body.ActorName", body.ActorName, utf8.RuneCountInString(body.ActorName), 32, false))
-	}
-	err = goa.MergeErrors(err, goa.ValidatePattern("body.ActorSex", body.ActorSex, "^(M|F)$"))
-	err = goa.MergeErrors(err, goa.ValidatePattern("body.ActorBirthdate", body.ActorBirthdate, "^\\d{4}\\-(0[1-9]|1[012])\\-(0[1-9]|[12][0-9]|3[01])$"))
 	return
 }

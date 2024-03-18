@@ -16,7 +16,6 @@ import (
 
 // Endpoints wraps the "ActorService" service endpoints.
 type Endpoints struct {
-	GetAllActors    goa.Endpoint
 	AddActor        goa.Endpoint
 	UpdateActorInfo goa.Endpoint
 	DeleteActor     goa.Endpoint
@@ -27,7 +26,6 @@ func NewEndpoints(s Service) *Endpoints {
 	// Casting service to Auther interface
 	a := s.(Auther)
 	return &Endpoints{
-		GetAllActors:    NewGetAllActorsEndpoint(s, a.JWTAuth),
 		AddActor:        NewAddActorEndpoint(s, a.JWTAuth),
 		UpdateActorInfo: NewUpdateActorInfoEndpoint(s, a.JWTAuth),
 		DeleteActor:     NewDeleteActorEndpoint(s, a.JWTAuth),
@@ -36,34 +34,9 @@ func NewEndpoints(s Service) *Endpoints {
 
 // Use applies the given middleware to all the "ActorService" service endpoints.
 func (e *Endpoints) Use(m func(goa.Endpoint) goa.Endpoint) {
-	e.GetAllActors = m(e.GetAllActors)
 	e.AddActor = m(e.AddActor)
 	e.UpdateActorInfo = m(e.UpdateActorInfo)
 	e.DeleteActor = m(e.DeleteActor)
-}
-
-// NewGetAllActorsEndpoint returns an endpoint function that calls the method
-// "getAllActors" of service "ActorService".
-func NewGetAllActorsEndpoint(s Service, authJWTFn security.AuthJWTFunc) goa.Endpoint {
-	return func(ctx context.Context, req any) (any, error) {
-		p := req.(*GetAllActorsPayload)
-		var err error
-		sc := security.JWTScheme{
-			Name:           "jwt",
-			Scopes:         []string{"api:read", "api:write"},
-			RequiredScopes: []string{"api:read"},
-		}
-		ctx, err = authJWTFn(ctx, p.Token, &sc)
-		if err != nil {
-			return nil, err
-		}
-		res, err := s.GetAllActors(ctx, p)
-		if err != nil {
-			return nil, err
-		}
-		vres := NewViewedActorResultCollection(res, "default")
-		return vres, nil
-	}
 }
 
 // NewAddActorEndpoint returns an endpoint function that calls the method
@@ -77,16 +50,15 @@ func NewAddActorEndpoint(s Service, authJWTFn security.AuthJWTFunc) goa.Endpoint
 			Scopes:         []string{"api:read", "api:write"},
 			RequiredScopes: []string{"api:write"},
 		}
-		ctx, err = authJWTFn(ctx, p.Token, &sc)
+		var token string
+		if p.Token != nil {
+			token = *p.Token
+		}
+		ctx, err = authJWTFn(ctx, token, &sc)
 		if err != nil {
 			return nil, err
 		}
-		res, err := s.AddActor(ctx, p)
-		if err != nil {
-			return nil, err
-		}
-		vres := NewViewedActorResult(res, "default")
-		return vres, nil
+		return s.AddActor(ctx, p)
 	}
 }
 
@@ -101,7 +73,11 @@ func NewUpdateActorInfoEndpoint(s Service, authJWTFn security.AuthJWTFunc) goa.E
 			Scopes:         []string{"api:read", "api:write"},
 			RequiredScopes: []string{"api:write"},
 		}
-		ctx, err = authJWTFn(ctx, p.Token, &sc)
+		var token string
+		if p.Token != nil {
+			token = *p.Token
+		}
+		ctx, err = authJWTFn(ctx, token, &sc)
 		if err != nil {
 			return nil, err
 		}
@@ -120,7 +96,11 @@ func NewDeleteActorEndpoint(s Service, authJWTFn security.AuthJWTFunc) goa.Endpo
 			Scopes:         []string{"api:read", "api:write"},
 			RequiredScopes: []string{"api:write"},
 		}
-		ctx, err = authJWTFn(ctx, p.Token, &sc)
+		var token string
+		if p.Token != nil {
+			token = *p.Token
+		}
+		ctx, err = authJWTFn(ctx, token, &sc)
 		if err != nil {
 			return nil, err
 		}

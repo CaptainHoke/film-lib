@@ -21,6 +21,14 @@ type Client struct {
 	// searchLibrary endpoint.
 	SearchLibraryDoer goahttp.Doer
 
+	// GetAllActors Doer is the HTTP client used to make requests to the
+	// getAllActors endpoint.
+	GetAllActorsDoer goahttp.Doer
+
+	// GetAllFilms Doer is the HTTP client used to make requests to the getAllFilms
+	// endpoint.
+	GetAllFilmsDoer goahttp.Doer
+
 	// RestoreResponseBody controls whether the response bodies are reset after
 	// decoding so they can be read again.
 	RestoreResponseBody bool
@@ -43,6 +51,8 @@ func NewClient(
 ) *Client {
 	return &Client{
 		SearchLibraryDoer:   doer,
+		GetAllActorsDoer:    doer,
+		GetAllFilmsDoer:     doer,
 		RestoreResponseBody: restoreBody,
 		scheme:              scheme,
 		host:                host,
@@ -70,6 +80,54 @@ func (c *Client) SearchLibrary() goa.Endpoint {
 		resp, err := c.SearchLibraryDoer.Do(req)
 		if err != nil {
 			return nil, goahttp.ErrRequestError("SearchService", "searchLibrary", err)
+		}
+		return decodeResponse(resp)
+	}
+}
+
+// GetAllActors returns an endpoint that makes HTTP requests to the
+// SearchService service getAllActors server.
+func (c *Client) GetAllActors() goa.Endpoint {
+	var (
+		encodeRequest  = EncodeGetAllActorsRequest(c.encoder)
+		decodeResponse = DecodeGetAllActorsResponse(c.decoder, c.RestoreResponseBody)
+	)
+	return func(ctx context.Context, v any) (any, error) {
+		req, err := c.BuildGetAllActorsRequest(ctx, v)
+		if err != nil {
+			return nil, err
+		}
+		err = encodeRequest(req, v)
+		if err != nil {
+			return nil, err
+		}
+		resp, err := c.GetAllActorsDoer.Do(req)
+		if err != nil {
+			return nil, goahttp.ErrRequestError("SearchService", "getAllActors", err)
+		}
+		return decodeResponse(resp)
+	}
+}
+
+// GetAllFilms returns an endpoint that makes HTTP requests to the
+// SearchService service getAllFilms server.
+func (c *Client) GetAllFilms() goa.Endpoint {
+	var (
+		encodeRequest  = EncodeGetAllFilmsRequest(c.encoder)
+		decodeResponse = DecodeGetAllFilmsResponse(c.decoder, c.RestoreResponseBody)
+	)
+	return func(ctx context.Context, v any) (any, error) {
+		req, err := c.BuildGetAllFilmsRequest(ctx, v)
+		if err != nil {
+			return nil, err
+		}
+		err = encodeRequest(req, v)
+		if err != nil {
+			return nil, err
+		}
+		resp, err := c.GetAllFilmsDoer.Do(req)
+		if err != nil {
+			return nil, goahttp.ErrRequestError("SearchService", "getAllFilms", err)
 		}
 		return decodeResponse(resp)
 	}

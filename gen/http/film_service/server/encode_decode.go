@@ -21,91 +21,6 @@ import (
 	goa "goa.design/goa/v3/pkg"
 )
 
-// EncodeGetAllFilmsResponse returns an encoder for responses returned by the
-// FilmService getAllFilms endpoint.
-func EncodeGetAllFilmsResponse(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) func(context.Context, http.ResponseWriter, any) error {
-	return func(ctx context.Context, w http.ResponseWriter, v any) error {
-		res := v.(filmserviceviews.FilmResultCollection)
-		enc := encoder(ctx, w)
-		body := NewFilmResultResponseCollection(res.Projected)
-		w.WriteHeader(http.StatusOK)
-		return enc.Encode(body)
-	}
-}
-
-// DecodeGetAllFilmsRequest returns a decoder for requests sent to the
-// FilmService getAllFilms endpoint.
-func DecodeGetAllFilmsRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.Decoder) func(*http.Request) (any, error) {
-	return func(r *http.Request) (any, error) {
-		var (
-			body GetAllFilmsRequestBody
-			err  error
-		)
-		err = decoder(r).Decode(&body)
-		if err != nil {
-			if err == io.EOF {
-				return nil, goa.MissingPayloadError()
-			}
-			return nil, goa.DecodePayloadError(err.Error())
-		}
-		err = ValidateGetAllFilmsRequestBody(&body)
-		if err != nil {
-			return nil, err
-		}
-
-		var (
-			token string
-		)
-		token = r.Header.Get("X-Authorization")
-		if token == "" {
-			err = goa.MergeErrors(err, goa.MissingFieldError("token", "header"))
-		}
-		if err != nil {
-			return nil, err
-		}
-		payload := NewGetAllFilmsPayload(&body, token)
-		if strings.Contains(payload.Token, " ") {
-			// Remove authorization scheme prefix (e.g. "Bearer")
-			cred := strings.SplitN(payload.Token, " ", 2)[1]
-			payload.Token = cred
-		}
-
-		return payload, nil
-	}
-}
-
-// EncodeGetAllFilmsError returns an encoder for errors returned by the
-// getAllFilms FilmService endpoint.
-func EncodeGetAllFilmsError(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder, formatter func(ctx context.Context, err error) goahttp.Statuser) func(context.Context, http.ResponseWriter, error) error {
-	encodeError := goahttp.ErrorEncoder(encoder, formatter)
-	return func(ctx context.Context, w http.ResponseWriter, v error) error {
-		var en goa.GoaErrorNamer
-		if !errors.As(v, &en) {
-			return encodeError(ctx, w, v)
-		}
-		switch en.GoaErrorName() {
-		case "invalid-scopes":
-			var res filmservice.InvalidScopes
-			errors.As(v, &res)
-			enc := encoder(ctx, w)
-			body := res
-			w.Header().Set("goa-error", res.GoaErrorName())
-			w.WriteHeader(http.StatusForbidden)
-			return enc.Encode(body)
-		case "unauthorized":
-			var res filmservice.Unauthorized
-			errors.As(v, &res)
-			enc := encoder(ctx, w)
-			body := res
-			w.Header().Set("goa-error", res.GoaErrorName())
-			w.WriteHeader(http.StatusUnauthorized)
-			return enc.Encode(body)
-		default:
-			return encodeError(ctx, w, v)
-		}
-	}
-}
-
 // EncodeAddFilmResponse returns an encoder for responses returned by the
 // FilmService addFilm endpoint.
 func EncodeAddFilmResponse(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) func(context.Context, http.ResponseWriter, any) error {
@@ -139,20 +54,19 @@ func DecodeAddFilmRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp
 		}
 
 		var (
-			token string
+			token *string
 		)
-		token = r.Header.Get("X-Authorization")
-		if token == "" {
-			err = goa.MergeErrors(err, goa.MissingFieldError("token", "header"))
-		}
-		if err != nil {
-			return nil, err
+		tokenRaw := r.Header.Get("Authorization")
+		if tokenRaw != "" {
+			token = &tokenRaw
 		}
 		payload := NewAddFilmPayload(&body, token)
-		if strings.Contains(payload.Token, " ") {
-			// Remove authorization scheme prefix (e.g. "Bearer")
-			cred := strings.SplitN(payload.Token, " ", 2)[1]
-			payload.Token = cred
+		if payload.Token != nil {
+			if strings.Contains(*payload.Token, " ") {
+				// Remove authorization scheme prefix (e.g. "Bearer")
+				cred := strings.SplitN(*payload.Token, " ", 2)[1]
+				payload.Token = &cred
+			}
 		}
 
 		return payload, nil
@@ -235,7 +149,7 @@ func DecodeUpdateFilmInfoRequest(mux goahttp.Muxer, decoder func(*http.Request) 
 
 		var (
 			filmID uint64
-			token  string
+			token  *string
 
 			params = mux.Vars(r)
 		)
@@ -247,18 +161,20 @@ func DecodeUpdateFilmInfoRequest(mux goahttp.Muxer, decoder func(*http.Request) 
 			}
 			filmID = v
 		}
-		token = r.Header.Get("X-Authorization")
-		if token == "" {
-			err = goa.MergeErrors(err, goa.MissingFieldError("token", "header"))
+		tokenRaw := r.Header.Get("Authorization")
+		if tokenRaw != "" {
+			token = &tokenRaw
 		}
 		if err != nil {
 			return nil, err
 		}
 		payload := NewUpdateFilmInfoPayload(&body, filmID, token)
-		if strings.Contains(payload.Token, " ") {
-			// Remove authorization scheme prefix (e.g. "Bearer")
-			cred := strings.SplitN(payload.Token, " ", 2)[1]
-			payload.Token = cred
+		if payload.Token != nil {
+			if strings.Contains(*payload.Token, " ") {
+				// Remove authorization scheme prefix (e.g. "Bearer")
+				cred := strings.SplitN(*payload.Token, " ", 2)[1]
+				payload.Token = &cred
+			}
 		}
 
 		return payload, nil
@@ -311,25 +227,34 @@ func EncodeDeleteFilmResponse(encoder func(context.Context, http.ResponseWriter)
 func DecodeDeleteFilmRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.Decoder) func(*http.Request) (any, error) {
 	return func(r *http.Request) (any, error) {
 		var (
-			filmID string
-			token  string
+			filmID uint64
+			token  *string
 			err    error
 
 			params = mux.Vars(r)
 		)
-		filmID = params["FilmID"]
-		token = r.Header.Get("X-Authorization")
-		if token == "" {
-			err = goa.MergeErrors(err, goa.MissingFieldError("token", "header"))
+		{
+			filmIDRaw := params["FilmID"]
+			v, err2 := strconv.ParseUint(filmIDRaw, 10, 64)
+			if err2 != nil {
+				err = goa.MergeErrors(err, goa.InvalidFieldTypeError("FilmID", filmIDRaw, "unsigned integer"))
+			}
+			filmID = v
+		}
+		tokenRaw := r.Header.Get("Authorization")
+		if tokenRaw != "" {
+			token = &tokenRaw
 		}
 		if err != nil {
 			return nil, err
 		}
 		payload := NewDeleteFilmPayload(filmID, token)
-		if strings.Contains(payload.Token, " ") {
-			// Remove authorization scheme prefix (e.g. "Bearer")
-			cred := strings.SplitN(payload.Token, " ", 2)[1]
-			payload.Token = cred
+		if payload.Token != nil {
+			if strings.Contains(*payload.Token, " ") {
+				// Remove authorization scheme prefix (e.g. "Bearer")
+				cred := strings.SplitN(*payload.Token, " ", 2)[1]
+				payload.Token = &cred
+			}
 		}
 
 		return payload, nil
@@ -368,33 +293,6 @@ func EncodeDeleteFilmError(encoder func(context.Context, http.ResponseWriter) go
 	}
 }
 
-// unmarshalSortByRequestBodyToFilmserviceSortBy builds a value of type
-// *filmservice.SortBy from a value of type *SortByRequestBody.
-func unmarshalSortByRequestBodyToFilmserviceSortBy(v *SortByRequestBody) *filmservice.SortBy {
-	res := &filmservice.SortBy{
-		Field:    *v.Field,
-		Ordering: *v.Ordering,
-	}
-
-	return res
-}
-
-// marshalFilmserviceviewsFilmResultViewToFilmResultResponse builds a value of
-// type *FilmResultResponse from a value of type
-// *filmserviceviews.FilmResultView.
-func marshalFilmserviceviewsFilmResultViewToFilmResultResponse(v *filmserviceviews.FilmResultView) *FilmResultResponse {
-	res := &FilmResultResponse{
-		FilmID:      *v.FilmID,
-		Title:       v.Title,
-		Description: v.Description,
-		ReleaseDate: v.ReleaseDate,
-		Rating:      v.Rating,
-		Actors:      v.Actors,
-	}
-
-	return res
-}
-
 // unmarshalFilmInfoRequestBodyToFilmserviceFilmInfo builds a value of type
 // *filmservice.FilmInfo from a value of type *FilmInfoRequestBody.
 func unmarshalFilmInfoRequestBodyToFilmserviceFilmInfo(v *FilmInfoRequestBody) *filmservice.FilmInfo {
@@ -404,32 +302,9 @@ func unmarshalFilmInfoRequestBodyToFilmserviceFilmInfo(v *FilmInfoRequestBody) *
 		ReleaseDate: *v.ReleaseDate,
 		Rating:      *v.Rating,
 	}
-	res.Actors = make([]*filmservice.Actor, len(v.Actors))
+	res.Actors = make([]uint64, len(v.Actors))
 	for i, val := range v.Actors {
-		res.Actors[i] = unmarshalActorRequestBodyToFilmserviceActor(val)
-	}
-
-	return res
-}
-
-// unmarshalActorRequestBodyToFilmserviceActor builds a value of type
-// *filmservice.Actor from a value of type *ActorRequestBody.
-func unmarshalActorRequestBodyToFilmserviceActor(v *ActorRequestBody) *filmservice.Actor {
-	res := &filmservice.Actor{
-		ActorID: *v.ActorID,
-	}
-	res.ActorInfo = unmarshalActorInfoRequestBodyToFilmserviceActorInfo(v.ActorInfo)
-
-	return res
-}
-
-// unmarshalActorInfoRequestBodyToFilmserviceActorInfo builds a value of type
-// *filmservice.ActorInfo from a value of type *ActorInfoRequestBody.
-func unmarshalActorInfoRequestBodyToFilmserviceActorInfo(v *ActorInfoRequestBody) *filmservice.ActorInfo {
-	res := &filmservice.ActorInfo{
-		ActorName:      *v.ActorName,
-		ActorSex:       *v.ActorSex,
-		ActorBirthdate: *v.ActorBirthdate,
+		res.Actors[i] = val
 	}
 
 	return res

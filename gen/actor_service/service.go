@@ -9,17 +9,14 @@ package actorservice
 
 import (
 	"context"
-	actorserviceviews "film-lib/gen/actor_service/views"
 
 	"goa.design/goa/v3/security"
 )
 
 // API for actor-related requests
 type Service interface {
-	// GetAllActors implements getAllActors.
-	GetAllActors(context.Context, *GetAllActorsPayload) (res ActorResultCollection, err error)
 	// AddActor implements addActor.
-	AddActor(context.Context, *AddActorPayload) (res *ActorResult, err error)
+	AddActor(context.Context, *AddActorPayload) (res uint64, err error)
 	// UpdateActorInfo implements updateActorInfo.
 	UpdateActorInfo(context.Context, *UpdateActorInfoPayload) (err error)
 	// DeleteActor implements deleteActor.
@@ -36,7 +33,7 @@ type Auther interface {
 const APIName = "film-lib"
 
 // APIVersion is the version of the API as defined in the design.
-const APIVersion = "0.0.1"
+const APIVersion = "1.0"
 
 // ServiceName is the name of the service as defined in the design. This is the
 // same value that is set in the endpoint request contexts under the ServiceKey
@@ -46,7 +43,7 @@ const ServiceName = "ActorService"
 // MethodNames lists the service method names as defined in the design. These
 // are the same values that are set in the endpoint request contexts under the
 // MethodKey key.
-var MethodNames = [4]string{"getAllActors", "addActor", "updateActorInfo", "deleteActor"}
+var MethodNames = [3]string{"addActor", "updateActorInfo", "deleteActor"}
 
 // Describes an Actor to be added
 type ActorInfo struct {
@@ -58,29 +55,11 @@ type ActorInfo struct {
 	ActorBirthdate string
 }
 
-// ActorResult is the result type of the ActorService service addActor method.
-type ActorResult struct {
-	// Unique ID of an Actor
-	ActorID        uint64
-	ActorName      *string
-	ActorSex       *string
-	ActorBirthdate *string
-}
-
-type ActorWithFilms struct {
-	ActorResult ActorResult
-	FilmIds []uint64
-}
-
-// ActorResultCollection is the result type of the ActorService service
-// getAllActors method.
-type ActorResultCollection []*ActorWithFilms
-
 // AddActorPayload is the payload type of the ActorService service addActor
 // method.
 type AddActorPayload struct {
 	// JWT used for authentication
-	Token     string
+	Token     *string
 	ActorInfo *ActorInfo
 }
 
@@ -97,16 +76,9 @@ type AlreadyExists struct {
 // deleteActor method.
 type DeleteActorPayload struct {
 	// JWT used for authentication
-	Token string
+	Token *string
 	// Actor ID
 	ActorID uint64
-}
-
-// GetAllActorsPayload is the payload type of the ActorService service
-// getAllActors method.
-type GetAllActorsPayload struct {
-	// JWT used for authentication
-	Token string
 }
 
 // NotFound is the type returned when the requested data that does not exist.
@@ -121,16 +93,13 @@ type NotFound struct {
 // updateActorInfo method.
 type UpdateActorInfoPayload struct {
 	// JWT used for authentication
-	Token     string
+	Token     *string
 	ActorID   uint64
 	ActorInfo *ActorInfo
 }
 
 // Token scopes are invalid
 type InvalidScopes string
-
-// Credentials are invalid
-type Unauthorized string
 
 // Error returns an error description.
 func (e *AlreadyExists) Error() string {
@@ -181,97 +150,4 @@ func (e InvalidScopes) ErrorName() string {
 // GoaErrorName returns "invalid-scopes".
 func (e InvalidScopes) GoaErrorName() string {
 	return "invalid-scopes"
-}
-
-// Error returns an error description.
-func (e Unauthorized) Error() string {
-	return "Credentials are invalid"
-}
-
-// ErrorName returns "unauthorized".
-//
-// Deprecated: Use GoaErrorName - https://github.com/goadesign/goa/issues/3105
-func (e Unauthorized) ErrorName() string {
-	return e.GoaErrorName()
-}
-
-// GoaErrorName returns "unauthorized".
-func (e Unauthorized) GoaErrorName() string {
-	return "unauthorized"
-}
-
-// NewActorResultCollection initializes result type ActorResultCollection from
-// viewed result type ActorResultCollection.
-func NewActorResultCollection(vres actorserviceviews.ActorResultCollection) ActorResultCollection {
-	return newActorResultCollection(vres.Projected)
-}
-
-// NewViewedActorResultCollection initializes viewed result type
-// ActorResultCollection from result type ActorResultCollection using the given
-// view.
-func NewViewedActorResultCollection(res ActorResultCollection, view string) actorserviceviews.ActorResultCollection {
-	p := newActorResultCollectionView(res)
-	return actorserviceviews.ActorResultCollection{Projected: p, View: "default"}
-}
-
-// NewActorResult initializes result type ActorResult from viewed result type
-// ActorResult.
-func NewActorResult(vres *actorserviceviews.ActorResult) *ActorResult {
-	return newActorResult(vres.Projected)
-}
-
-// NewViewedActorResult initializes viewed result type ActorResult from result
-// type ActorResult using the given view.
-func NewViewedActorResult(res *ActorResult, view string) *actorserviceviews.ActorResult {
-	p := newActorResultView(res)
-	return &actorserviceviews.ActorResult{Projected: p, View: "default"}
-}
-
-
-
-// newActorResultCollection converts projected type ActorResultCollection to
-// service type ActorResultCollection.
-func newActorResultCollection(vres actorserviceviews.ActorResultCollectionView) ActorResultCollection {
-	res := make(ActorResultCollection, len(vres))
-	for i, n := range vres {
-		r := newActorResult(n)
-		res[i] = &ActorWithFilms{ActorResult: *r, FilmIds: nil}
-	}
-	return res
-}
-
-// newActorResultCollectionView projects result type ActorResultCollection to
-// projected type ActorResultCollectionView using the "default" view.
-func newActorResultCollectionView(res ActorResultCollection) actorserviceviews.ActorResultCollectionView {
-	vres := make(actorserviceviews.ActorResultCollectionView, len(res))
-	for i, n := range res {
-		vres[i] = newActorResultView(&n.ActorResult)
-	}
-	return vres
-}
-
-// newActorResult converts projected type ActorResult to service type
-// ActorResult.
-func newActorResult(vres *actorserviceviews.ActorResultView) *ActorResult {
-	res := &ActorResult{
-		ActorName:      vres.ActorName,
-		ActorSex:       vres.ActorSex,
-		ActorBirthdate: vres.ActorBirthdate,
-	}
-	if vres.ActorID != nil {
-		res.ActorID = *vres.ActorID
-	}
-	return res
-}
-
-// newActorResultView projects result type ActorResult to projected type
-// ActorResultView using the "default" view.
-func newActorResultView(res *ActorResult) *actorserviceviews.ActorResultView {
-	vres := &actorserviceviews.ActorResultView{
-		ActorID:        &res.ActorID,
-		ActorName:      res.ActorName,
-		ActorSex:       res.ActorSex,
-		ActorBirthdate: res.ActorBirthdate,
-	}
-	return vres
 }

@@ -15,110 +15,10 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strings"
 
 	goahttp "goa.design/goa/v3/http"
 )
-
-// BuildGetAllFilmsRequest instantiates a HTTP request object with method and
-// path set to call the "FilmService" service "getAllFilms" endpoint
-func (c *Client) BuildGetAllFilmsRequest(ctx context.Context, v any) (*http.Request, error) {
-	u := &url.URL{Scheme: c.scheme, Host: c.host, Path: GetAllFilmsFilmServicePath()}
-	req, err := http.NewRequest("GET", u.String(), nil)
-	if err != nil {
-		return nil, goahttp.ErrInvalidURL("FilmService", "getAllFilms", u.String(), err)
-	}
-	if ctx != nil {
-		req = req.WithContext(ctx)
-	}
-
-	return req, nil
-}
-
-// EncodeGetAllFilmsRequest returns an encoder for requests sent to the
-// FilmService getAllFilms server.
-func EncodeGetAllFilmsRequest(encoder func(*http.Request) goahttp.Encoder) func(*http.Request, any) error {
-	return func(req *http.Request, v any) error {
-		p, ok := v.(*filmservice.GetAllFilmsPayload)
-		if !ok {
-			return goahttp.ErrInvalidType("FilmService", "getAllFilms", "*filmservice.GetAllFilmsPayload", v)
-		}
-		{
-			head := p.Token
-			req.Header.Set("X-Authorization", head)
-		}
-		body := NewGetAllFilmsRequestBody(p)
-		if err := encoder(req).Encode(&body); err != nil {
-			return goahttp.ErrEncodingError("FilmService", "getAllFilms", err)
-		}
-		return nil
-	}
-}
-
-// DecodeGetAllFilmsResponse returns a decoder for responses returned by the
-// FilmService getAllFilms endpoint. restoreBody controls whether the response
-// body should be restored after having been read.
-// DecodeGetAllFilmsResponse may return the following errors:
-//   - "invalid-scopes" (type filmservice.InvalidScopes): http.StatusForbidden
-//   - "unauthorized" (type filmservice.Unauthorized): http.StatusUnauthorized
-//   - error: internal error
-func DecodeGetAllFilmsResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody bool) func(*http.Response) (any, error) {
-	return func(resp *http.Response) (any, error) {
-		if restoreBody {
-			b, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return nil, err
-			}
-			resp.Body = io.NopCloser(bytes.NewBuffer(b))
-			defer func() {
-				resp.Body = io.NopCloser(bytes.NewBuffer(b))
-			}()
-		} else {
-			defer resp.Body.Close()
-		}
-		switch resp.StatusCode {
-		case http.StatusOK:
-			var (
-				body GetAllFilmsResponseBody
-				err  error
-			)
-			err = decoder(resp).Decode(&body)
-			if err != nil {
-				return nil, goahttp.ErrDecodingError("FilmService", "getAllFilms", err)
-			}
-			p := NewGetAllFilmsFilmResultCollectionOK(body)
-			view := "default"
-			vres := filmserviceviews.FilmResultCollection{Projected: p, View: view}
-			if err = filmserviceviews.ValidateFilmResultCollection(vres); err != nil {
-				return nil, goahttp.ErrValidationError("FilmService", "getAllFilms", err)
-			}
-			res := filmservice.NewFilmResultCollection(vres)
-			return res, nil
-		case http.StatusForbidden:
-			var (
-				body string
-				err  error
-			)
-			err = decoder(resp).Decode(&body)
-			if err != nil {
-				return nil, goahttp.ErrDecodingError("FilmService", "getAllFilms", err)
-			}
-			return nil, NewGetAllFilmsInvalidScopes(body)
-		case http.StatusUnauthorized:
-			var (
-				body string
-				err  error
-			)
-			err = decoder(resp).Decode(&body)
-			if err != nil {
-				return nil, goahttp.ErrDecodingError("FilmService", "getAllFilms", err)
-			}
-			return nil, NewGetAllFilmsUnauthorized(body)
-		default:
-			body, _ := io.ReadAll(resp.Body)
-			return nil, goahttp.ErrInvalidResponse("FilmService", "getAllFilms", resp.StatusCode, string(body))
-		}
-	}
-}
 
 // BuildAddFilmRequest instantiates a HTTP request object with method and path
 // set to call the "FilmService" service "addFilm" endpoint
@@ -143,9 +43,13 @@ func EncodeAddFilmRequest(encoder func(*http.Request) goahttp.Encoder) func(*htt
 		if !ok {
 			return goahttp.ErrInvalidType("FilmService", "addFilm", "*filmservice.AddFilmPayload", v)
 		}
-		{
-			head := p.Token
-			req.Header.Set("X-Authorization", head)
+		if p.Token != nil {
+			head := *p.Token
+			if !strings.Contains(head, " ") {
+				req.Header.Set("Authorization", "Bearer "+head)
+			} else {
+				req.Header.Set("Authorization", head)
+			}
 		}
 		body := NewAddFilmRequestBody(p)
 		if err := encoder(req).Encode(&body); err != nil {
@@ -247,7 +151,9 @@ func (c *Client) BuildUpdateFilmInfoRequest(ctx context.Context, v any) (*http.R
 		if !ok {
 			return nil, goahttp.ErrInvalidType("FilmService", "updateFilmInfo", "*filmservice.UpdateFilmInfoPayload", v)
 		}
-		filmID = p.FilmID
+		if p.FilmID != nil {
+			filmID = *p.FilmID
+		}
 	}
 	u := &url.URL{Scheme: c.scheme, Host: c.host, Path: UpdateFilmInfoFilmServicePath(filmID)}
 	req, err := http.NewRequest("PUT", u.String(), nil)
@@ -269,9 +175,13 @@ func EncodeUpdateFilmInfoRequest(encoder func(*http.Request) goahttp.Encoder) fu
 		if !ok {
 			return goahttp.ErrInvalidType("FilmService", "updateFilmInfo", "*filmservice.UpdateFilmInfoPayload", v)
 		}
-		{
-			head := p.Token
-			req.Header.Set("X-Authorization", head)
+		if p.Token != nil {
+			head := *p.Token
+			if !strings.Contains(head, " ") {
+				req.Header.Set("Authorization", "Bearer "+head)
+			} else {
+				req.Header.Set("Authorization", head)
+			}
 		}
 		body := NewUpdateFilmInfoRequestBody(p)
 		if err := encoder(req).Encode(&body); err != nil {
@@ -336,7 +246,7 @@ func DecodeUpdateFilmInfoResponse(decoder func(*http.Response) goahttp.Decoder, 
 // path set to call the "FilmService" service "deleteFilm" endpoint
 func (c *Client) BuildDeleteFilmRequest(ctx context.Context, v any) (*http.Request, error) {
 	var (
-		filmID string
+		filmID uint64
 	)
 	{
 		p, ok := v.(*filmservice.DeleteFilmPayload)
@@ -365,9 +275,13 @@ func EncodeDeleteFilmRequest(encoder func(*http.Request) goahttp.Encoder) func(*
 		if !ok {
 			return goahttp.ErrInvalidType("FilmService", "deleteFilm", "*filmservice.DeleteFilmPayload", v)
 		}
-		{
-			head := p.Token
-			req.Header.Set("X-Authorization", head)
+		if p.Token != nil {
+			head := *p.Token
+			if !strings.Contains(head, " ") {
+				req.Header.Set("Authorization", "Bearer "+head)
+			} else {
+				req.Header.Set("Authorization", head)
+			}
 		}
 		return nil
 	}
@@ -424,44 +338,6 @@ func DecodeDeleteFilmResponse(decoder func(*http.Response) goahttp.Decoder, rest
 	}
 }
 
-// marshalFilmserviceSortByToSortByRequestBody builds a value of type
-// *SortByRequestBody from a value of type *filmservice.SortBy.
-func marshalFilmserviceSortByToSortByRequestBody(v *filmservice.SortBy) *SortByRequestBody {
-	res := &SortByRequestBody{
-		Field:    v.Field,
-		Ordering: v.Ordering,
-	}
-
-	return res
-}
-
-// marshalSortByRequestBodyToFilmserviceSortBy builds a value of type
-// *filmservice.SortBy from a value of type *SortByRequestBody.
-func marshalSortByRequestBodyToFilmserviceSortBy(v *SortByRequestBody) *filmservice.SortBy {
-	res := &filmservice.SortBy{
-		Field:    v.Field,
-		Ordering: v.Ordering,
-	}
-
-	return res
-}
-
-// unmarshalFilmResultResponseToFilmserviceviewsFilmResultView builds a value
-// of type *filmserviceviews.FilmResultView from a value of type
-// *FilmResultResponse.
-func unmarshalFilmResultResponseToFilmserviceviewsFilmResultView(v *FilmResultResponse) *filmserviceviews.FilmResultView {
-	res := &filmserviceviews.FilmResultView{
-		FilmID:      v.FilmID,
-		Title:       v.Title,
-		Description: v.Description,
-		ReleaseDate: v.ReleaseDate,
-		Rating:      v.Rating,
-		Actors:      v.Actors,
-	}
-
-	return res
-}
-
 // marshalFilmserviceFilmInfoToFilmInfoRequestBody builds a value of type
 // *FilmInfoRequestBody from a value of type *filmservice.FilmInfo.
 func marshalFilmserviceFilmInfoToFilmInfoRequestBody(v *filmservice.FilmInfo) *FilmInfoRequestBody {
@@ -472,37 +348,12 @@ func marshalFilmserviceFilmInfoToFilmInfoRequestBody(v *filmservice.FilmInfo) *F
 		Rating:      v.Rating,
 	}
 	if v.Actors != nil {
-		res.Actors = make([]*ActorRequestBody, len(v.Actors))
+		res.Actors = make([]uint64, len(v.Actors))
 		for i, val := range v.Actors {
-			res.Actors[i] = marshalFilmserviceActorToActorRequestBody(val)
+			res.Actors[i] = val
 		}
 	} else {
-		res.Actors = []*ActorRequestBody{}
-	}
-
-	return res
-}
-
-// marshalFilmserviceActorToActorRequestBody builds a value of type
-// *ActorRequestBody from a value of type *filmservice.Actor.
-func marshalFilmserviceActorToActorRequestBody(v *filmservice.Actor) *ActorRequestBody {
-	res := &ActorRequestBody{
-		ActorID: v.ActorID,
-	}
-	if v.ActorInfo != nil {
-		res.ActorInfo = marshalFilmserviceActorInfoToActorInfoRequestBody(v.ActorInfo)
-	}
-
-	return res
-}
-
-// marshalFilmserviceActorInfoToActorInfoRequestBody builds a value of type
-// *ActorInfoRequestBody from a value of type *filmservice.ActorInfo.
-func marshalFilmserviceActorInfoToActorInfoRequestBody(v *filmservice.ActorInfo) *ActorInfoRequestBody {
-	res := &ActorInfoRequestBody{
-		ActorName:      v.ActorName,
-		ActorSex:       v.ActorSex,
-		ActorBirthdate: v.ActorBirthdate,
+		res.Actors = []uint64{}
 	}
 
 	return res
@@ -518,37 +369,12 @@ func marshalFilmInfoRequestBodyToFilmserviceFilmInfo(v *FilmInfoRequestBody) *fi
 		Rating:      v.Rating,
 	}
 	if v.Actors != nil {
-		res.Actors = make([]*filmservice.Actor, len(v.Actors))
+		res.Actors = make([]uint64, len(v.Actors))
 		for i, val := range v.Actors {
-			res.Actors[i] = marshalActorRequestBodyToFilmserviceActor(val)
+			res.Actors[i] = val
 		}
 	} else {
-		res.Actors = []*filmservice.Actor{}
-	}
-
-	return res
-}
-
-// marshalActorRequestBodyToFilmserviceActor builds a value of type
-// *filmservice.Actor from a value of type *ActorRequestBody.
-func marshalActorRequestBodyToFilmserviceActor(v *ActorRequestBody) *filmservice.Actor {
-	res := &filmservice.Actor{
-		ActorID: v.ActorID,
-	}
-	if v.ActorInfo != nil {
-		res.ActorInfo = marshalActorInfoRequestBodyToFilmserviceActorInfo(v.ActorInfo)
-	}
-
-	return res
-}
-
-// marshalActorInfoRequestBodyToFilmserviceActorInfo builds a value of type
-// *filmservice.ActorInfo from a value of type *ActorInfoRequestBody.
-func marshalActorInfoRequestBodyToFilmserviceActorInfo(v *ActorInfoRequestBody) *filmservice.ActorInfo {
-	res := &filmservice.ActorInfo{
-		ActorName:      v.ActorName,
-		ActorSex:       v.ActorSex,
-		ActorBirthdate: v.ActorBirthdate,
+		res.Actors = []uint64{}
 	}
 
 	return res

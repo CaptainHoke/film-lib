@@ -16,8 +16,6 @@ import (
 
 // API for film-related requests
 type Service interface {
-	// GetAllFilms implements getAllFilms.
-	GetAllFilms(context.Context, *GetAllFilmsPayload) (res FilmResultCollection, err error)
 	// AddFilm implements addFilm.
 	AddFilm(context.Context, *AddFilmPayload) (res *FilmResult, err error)
 	// UpdateFilmInfo implements updateFilmInfo.
@@ -36,7 +34,7 @@ type Auther interface {
 const APIName = "film-lib"
 
 // APIVersion is the version of the API as defined in the design.
-const APIVersion = "0.0.1"
+const APIVersion = "1.0"
 
 // ServiceName is the name of the service as defined in the design. This is the
 // same value that is set in the endpoint request contexts under the ServiceKey
@@ -46,30 +44,12 @@ const ServiceName = "FilmService"
 // MethodNames lists the service method names as defined in the design. These
 // are the same values that are set in the endpoint request contexts under the
 // MethodKey key.
-var MethodNames = [4]string{"getAllFilms", "addFilm", "updateFilmInfo", "deleteFilm"}
-
-// Actor + ID
-type Actor struct {
-	// Unique ID of an Actor
-	ActorID uint64
-	// Actor Info
-	ActorInfo *ActorInfo
-}
-
-// Describes an Actor to be added
-type ActorInfo struct {
-	// Name of an Actor
-	ActorName string
-	// Sex of an Actor
-	ActorSex string
-	// YYYY-MM-DD
-	ActorBirthdate string
-}
+var MethodNames = [3]string{"addFilm", "updateFilmInfo", "deleteFilm"}
 
 // AddFilmPayload is the payload type of the FilmService service addFilm method.
 type AddFilmPayload struct {
 	// JWT used for authentication
-	Token    string
+	Token    *string
 	FilmInfo *FilmInfo
 }
 
@@ -86,9 +66,9 @@ type AlreadyExists struct {
 // method.
 type DeleteFilmPayload struct {
 	// JWT used for authentication
-	Token string
+	Token *string
 	// Film ID
-	FilmID string
+	FilmID uint64
 }
 
 // Describes a Film to be added
@@ -101,8 +81,8 @@ type FilmInfo struct {
 	ReleaseDate string
 	// Rating (0.0 - 10.0)
 	Rating float32
-	// List of Actors involved in Film
-	Actors []*Actor
+	// Actors' Ids
+	Actors []uint64
 }
 
 // FilmResult is the result type of the FilmService service addFilm method.
@@ -116,18 +96,6 @@ type FilmResult struct {
 	Actors      *string
 }
 
-// FilmResultCollection is the result type of the FilmService service
-// getAllFilms method.
-type FilmResultCollection []*FilmResult
-
-// GetAllFilmsPayload is the payload type of the FilmService service
-// getAllFilms method.
-type GetAllFilmsPayload struct {
-	// JWT used for authentication
-	Token  string
-	SortBy *SortBy
-}
-
 // NotFound is the type returned when the requested data that does not exist.
 type NotFound struct {
 	// Message of error
@@ -136,20 +104,12 @@ type NotFound struct {
 	ID string
 }
 
-// Sorting configuration
-type SortBy struct {
-	// Field to sort by (Rating (default) | Title | Release Date)
-	Field string
-	// Ascending / Descending
-	Ordering string
-}
-
 // UpdateFilmInfoPayload is the payload type of the FilmService service
 // updateFilmInfo method.
 type UpdateFilmInfoPayload struct {
 	// JWT used for authentication
-	Token    string
-	FilmID   uint64
+	Token    *string
+	FilmID   *uint64
 	FilmInfo *FilmInfo
 }
 
@@ -227,20 +187,6 @@ func (e Unauthorized) GoaErrorName() string {
 	return "unauthorized"
 }
 
-// NewFilmResultCollection initializes result type FilmResultCollection from
-// viewed result type FilmResultCollection.
-func NewFilmResultCollection(vres filmserviceviews.FilmResultCollection) FilmResultCollection {
-	return newFilmResultCollection(vres.Projected)
-}
-
-// NewViewedFilmResultCollection initializes viewed result type
-// FilmResultCollection from result type FilmResultCollection using the given
-// view.
-func NewViewedFilmResultCollection(res FilmResultCollection, view string) filmserviceviews.FilmResultCollection {
-	p := newFilmResultCollectionView(res)
-	return filmserviceviews.FilmResultCollection{Projected: p, View: "default"}
-}
-
 // NewFilmResult initializes result type FilmResult from viewed result type
 // FilmResult.
 func NewFilmResult(vres *filmserviceviews.FilmResult) *FilmResult {
@@ -252,26 +198,6 @@ func NewFilmResult(vres *filmserviceviews.FilmResult) *FilmResult {
 func NewViewedFilmResult(res *FilmResult, view string) *filmserviceviews.FilmResult {
 	p := newFilmResultView(res)
 	return &filmserviceviews.FilmResult{Projected: p, View: "default"}
-}
-
-// newFilmResultCollection converts projected type FilmResultCollection to
-// service type FilmResultCollection.
-func newFilmResultCollection(vres filmserviceviews.FilmResultCollectionView) FilmResultCollection {
-	res := make(FilmResultCollection, len(vres))
-	for i, n := range vres {
-		res[i] = newFilmResult(n)
-	}
-	return res
-}
-
-// newFilmResultCollectionView projects result type FilmResultCollection to
-// projected type FilmResultCollectionView using the "default" view.
-func newFilmResultCollectionView(res FilmResultCollection) filmserviceviews.FilmResultCollectionView {
-	vres := make(filmserviceviews.FilmResultCollectionView, len(res))
-	for i, n := range res {
-		vres[i] = newFilmResultView(n)
-	}
-	return vres
 }
 
 // newFilmResult converts projected type FilmResult to service type FilmResult.

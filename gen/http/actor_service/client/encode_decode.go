@@ -11,110 +11,13 @@ import (
 	"bytes"
 	"context"
 	actorservice "film-lib/gen/actor_service"
-	actorserviceviews "film-lib/gen/actor_service/views"
 	"io"
 	"net/http"
 	"net/url"
+	"strings"
 
 	goahttp "goa.design/goa/v3/http"
 )
-
-// BuildGetAllActorsRequest instantiates a HTTP request object with method and
-// path set to call the "ActorService" service "getAllActors" endpoint
-func (c *Client) BuildGetAllActorsRequest(ctx context.Context, v any) (*http.Request, error) {
-	u := &url.URL{Scheme: c.scheme, Host: c.host, Path: GetAllActorsActorServicePath()}
-	req, err := http.NewRequest("GET", u.String(), nil)
-	if err != nil {
-		return nil, goahttp.ErrInvalidURL("ActorService", "getAllActors", u.String(), err)
-	}
-	if ctx != nil {
-		req = req.WithContext(ctx)
-	}
-
-	return req, nil
-}
-
-// EncodeGetAllActorsRequest returns an encoder for requests sent to the
-// ActorService getAllActors server.
-func EncodeGetAllActorsRequest(encoder func(*http.Request) goahttp.Encoder) func(*http.Request, any) error {
-	return func(req *http.Request, v any) error {
-		p, ok := v.(*actorservice.GetAllActorsPayload)
-		if !ok {
-			return goahttp.ErrInvalidType("ActorService", "getAllActors", "*actorservice.GetAllActorsPayload", v)
-		}
-		{
-			head := p.Token
-			req.Header.Set("X-Authorization", head)
-		}
-		return nil
-	}
-}
-
-// DecodeGetAllActorsResponse returns a decoder for responses returned by the
-// ActorService getAllActors endpoint. restoreBody controls whether the
-// response body should be restored after having been read.
-// DecodeGetAllActorsResponse may return the following errors:
-//   - "invalid-scopes" (type actorservice.InvalidScopes): http.StatusForbidden
-//   - "unauthorized" (type actorservice.Unauthorized): http.StatusUnauthorized
-//   - error: internal error
-func DecodeGetAllActorsResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody bool) func(*http.Response) (any, error) {
-	return func(resp *http.Response) (any, error) {
-		if restoreBody {
-			b, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return nil, err
-			}
-			resp.Body = io.NopCloser(bytes.NewBuffer(b))
-			defer func() {
-				resp.Body = io.NopCloser(bytes.NewBuffer(b))
-			}()
-		} else {
-			defer resp.Body.Close()
-		}
-		switch resp.StatusCode {
-		case http.StatusOK:
-			var (
-				body GetAllActorsResponseBody
-				err  error
-			)
-			err = decoder(resp).Decode(&body)
-			if err != nil {
-				return nil, goahttp.ErrDecodingError("ActorService", "getAllActors", err)
-			}
-			p := NewGetAllActorsActorResultCollectionOK(body)
-			view := "default"
-			vres := actorserviceviews.ActorResultCollection{Projected: p, View: view}
-			if err = actorserviceviews.ValidateActorResultCollection(vres); err != nil {
-				return nil, goahttp.ErrValidationError("ActorService", "getAllActors", err)
-			}
-			res := actorservice.NewActorResultCollection(vres)
-			return res, nil
-		case http.StatusForbidden:
-			var (
-				body string
-				err  error
-			)
-			err = decoder(resp).Decode(&body)
-			if err != nil {
-				return nil, goahttp.ErrDecodingError("ActorService", "getAllActors", err)
-			}
-			return nil, NewGetAllActorsInvalidScopes(body)
-		case http.StatusUnauthorized:
-			var (
-				body string
-				err  error
-			)
-			err = decoder(resp).Decode(&body)
-			if err != nil {
-				return nil, goahttp.ErrDecodingError("ActorService", "getAllActors", err)
-			}
-			return nil, NewGetAllActorsUnauthorized(body)
-		default:
-			body, _ := io.ReadAll(resp.Body)
-			return nil, goahttp.ErrInvalidResponse("ActorService", "getAllActors", resp.StatusCode, string(body))
-		}
-	}
-}
 
 // BuildAddActorRequest instantiates a HTTP request object with method and path
 // set to call the "ActorService" service "addActor" endpoint
@@ -139,9 +42,13 @@ func EncodeAddActorRequest(encoder func(*http.Request) goahttp.Encoder) func(*ht
 		if !ok {
 			return goahttp.ErrInvalidType("ActorService", "addActor", "*actorservice.AddActorPayload", v)
 		}
-		{
-			head := p.Token
-			req.Header.Set("X-Authorization", head)
+		if p.Token != nil {
+			head := *p.Token
+			if !strings.Contains(head, " ") {
+				req.Header.Set("Authorization", "Bearer "+head)
+			} else {
+				req.Header.Set("Authorization", head)
+			}
 		}
 		body := NewAddActorRequestBody(p)
 		if err := encoder(req).Encode(&body); err != nil {
@@ -157,7 +64,6 @@ func EncodeAddActorRequest(encoder func(*http.Request) goahttp.Encoder) func(*ht
 // DecodeAddActorResponse may return the following errors:
 //   - "already-exists" (type *actorservice.AlreadyExists): http.StatusBadRequest
 //   - "invalid-scopes" (type actorservice.InvalidScopes): http.StatusForbidden
-//   - "unauthorized" (type actorservice.Unauthorized): http.StatusUnauthorized
 //   - error: internal error
 func DecodeAddActorResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody bool) func(*http.Response) (any, error) {
 	return func(resp *http.Response) (any, error) {
@@ -176,21 +82,14 @@ func DecodeAddActorResponse(decoder func(*http.Response) goahttp.Decoder, restor
 		switch resp.StatusCode {
 		case http.StatusCreated:
 			var (
-				body AddActorResponseBody
+				body uint64
 				err  error
 			)
 			err = decoder(resp).Decode(&body)
 			if err != nil {
 				return nil, goahttp.ErrDecodingError("ActorService", "addActor", err)
 			}
-			p := NewAddActorActorResultCreated(&body)
-			view := "default"
-			vres := &actorserviceviews.ActorResult{Projected: p, View: view}
-			if err = actorserviceviews.ValidateActorResult(vres); err != nil {
-				return nil, goahttp.ErrValidationError("ActorService", "addActor", err)
-			}
-			res := actorservice.NewActorResult(vres)
-			return res, nil
+			return body, nil
 		case http.StatusBadRequest:
 			var (
 				body AddActorAlreadyExistsResponseBody
@@ -215,16 +114,6 @@ func DecodeAddActorResponse(decoder func(*http.Response) goahttp.Decoder, restor
 				return nil, goahttp.ErrDecodingError("ActorService", "addActor", err)
 			}
 			return nil, NewAddActorInvalidScopes(body)
-		case http.StatusUnauthorized:
-			var (
-				body string
-				err  error
-			)
-			err = decoder(resp).Decode(&body)
-			if err != nil {
-				return nil, goahttp.ErrDecodingError("ActorService", "addActor", err)
-			}
-			return nil, NewAddActorUnauthorized(body)
 		default:
 			body, _ := io.ReadAll(resp.Body)
 			return nil, goahttp.ErrInvalidResponse("ActorService", "addActor", resp.StatusCode, string(body))
@@ -265,9 +154,13 @@ func EncodeUpdateActorInfoRequest(encoder func(*http.Request) goahttp.Encoder) f
 		if !ok {
 			return goahttp.ErrInvalidType("ActorService", "updateActorInfo", "*actorservice.UpdateActorInfoPayload", v)
 		}
-		{
-			head := p.Token
-			req.Header.Set("X-Authorization", head)
+		if p.Token != nil {
+			head := *p.Token
+			if !strings.Contains(head, " ") {
+				req.Header.Set("Authorization", "Bearer "+head)
+			} else {
+				req.Header.Set("Authorization", head)
+			}
 		}
 		body := NewUpdateActorInfoRequestBody(p)
 		if err := encoder(req).Encode(&body); err != nil {
@@ -282,7 +175,6 @@ func EncodeUpdateActorInfoRequest(encoder func(*http.Request) goahttp.Encoder) f
 // response body should be restored after having been read.
 // DecodeUpdateActorInfoResponse may return the following errors:
 //   - "invalid-scopes" (type actorservice.InvalidScopes): http.StatusForbidden
-//   - "unauthorized" (type actorservice.Unauthorized): http.StatusUnauthorized
 //   - error: internal error
 func DecodeUpdateActorInfoResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody bool) func(*http.Response) (any, error) {
 	return func(resp *http.Response) (any, error) {
@@ -311,16 +203,6 @@ func DecodeUpdateActorInfoResponse(decoder func(*http.Response) goahttp.Decoder,
 				return nil, goahttp.ErrDecodingError("ActorService", "updateActorInfo", err)
 			}
 			return nil, NewUpdateActorInfoInvalidScopes(body)
-		case http.StatusUnauthorized:
-			var (
-				body string
-				err  error
-			)
-			err = decoder(resp).Decode(&body)
-			if err != nil {
-				return nil, goahttp.ErrDecodingError("ActorService", "updateActorInfo", err)
-			}
-			return nil, NewUpdateActorInfoUnauthorized(body)
 		default:
 			body, _ := io.ReadAll(resp.Body)
 			return nil, goahttp.ErrInvalidResponse("ActorService", "updateActorInfo", resp.StatusCode, string(body))
@@ -361,9 +243,13 @@ func EncodeDeleteActorRequest(encoder func(*http.Request) goahttp.Encoder) func(
 		if !ok {
 			return goahttp.ErrInvalidType("ActorService", "deleteActor", "*actorservice.DeleteActorPayload", v)
 		}
-		{
-			head := p.Token
-			req.Header.Set("X-Authorization", head)
+		if p.Token != nil {
+			head := *p.Token
+			if !strings.Contains(head, " ") {
+				req.Header.Set("Authorization", "Bearer "+head)
+			} else {
+				req.Header.Set("Authorization", head)
+			}
 		}
 		return nil
 	}
@@ -374,7 +260,6 @@ func EncodeDeleteActorRequest(encoder func(*http.Request) goahttp.Encoder) func(
 // body should be restored after having been read.
 // DecodeDeleteActorResponse may return the following errors:
 //   - "invalid-scopes" (type actorservice.InvalidScopes): http.StatusForbidden
-//   - "unauthorized" (type actorservice.Unauthorized): http.StatusUnauthorized
 //   - error: internal error
 func DecodeDeleteActorResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody bool) func(*http.Response) (any, error) {
 	return func(resp *http.Response) (any, error) {
@@ -403,35 +288,11 @@ func DecodeDeleteActorResponse(decoder func(*http.Response) goahttp.Decoder, res
 				return nil, goahttp.ErrDecodingError("ActorService", "deleteActor", err)
 			}
 			return nil, NewDeleteActorInvalidScopes(body)
-		case http.StatusUnauthorized:
-			var (
-				body string
-				err  error
-			)
-			err = decoder(resp).Decode(&body)
-			if err != nil {
-				return nil, goahttp.ErrDecodingError("ActorService", "deleteActor", err)
-			}
-			return nil, NewDeleteActorUnauthorized(body)
 		default:
 			body, _ := io.ReadAll(resp.Body)
 			return nil, goahttp.ErrInvalidResponse("ActorService", "deleteActor", resp.StatusCode, string(body))
 		}
 	}
-}
-
-// unmarshalActorResultResponseToActorserviceviewsActorResultView builds a
-// value of type *actorserviceviews.ActorResultView from a value of type
-// *ActorResultResponse.
-func unmarshalActorResultResponseToActorserviceviewsActorResultView(v *ActorResultResponse) *actorserviceviews.ActorResultView {
-	res := &actorserviceviews.ActorResultView{
-		ActorID:        v.ActorID,
-		ActorName:      v.ActorName,
-		ActorSex:       v.ActorSex,
-		ActorBirthdate: v.ActorBirthdate,
-	}
-
-	return res
 }
 
 // marshalActorserviceActorInfoToActorInfoRequestBody builds a value of type

@@ -19,7 +19,6 @@ import (
 // Server lists the FilmService service endpoint HTTP handlers.
 type Server struct {
 	Mounts         []*MountPoint
-	GetAllFilms    http.Handler
 	AddFilm        http.Handler
 	UpdateFilmInfo http.Handler
 	DeleteFilm     http.Handler
@@ -52,12 +51,10 @@ func New(
 ) *Server {
 	return &Server{
 		Mounts: []*MountPoint{
-			{"GetAllFilms", "GET", "/films"},
 			{"AddFilm", "POST", "/films"},
 			{"UpdateFilmInfo", "PUT", "/films/{FilmID}"},
 			{"DeleteFilm", "DELETE", "/films/{FilmID}"},
 		},
-		GetAllFilms:    NewGetAllFilmsHandler(e.GetAllFilms, mux, decoder, encoder, errhandler, formatter),
 		AddFilm:        NewAddFilmHandler(e.AddFilm, mux, decoder, encoder, errhandler, formatter),
 		UpdateFilmInfo: NewUpdateFilmInfoHandler(e.UpdateFilmInfo, mux, decoder, encoder, errhandler, formatter),
 		DeleteFilm:     NewDeleteFilmHandler(e.DeleteFilm, mux, decoder, encoder, errhandler, formatter),
@@ -69,7 +66,6 @@ func (s *Server) Service() string { return "FilmService" }
 
 // Use wraps the server handlers with the given middleware.
 func (s *Server) Use(m func(http.Handler) http.Handler) {
-	s.GetAllFilms = m(s.GetAllFilms)
 	s.AddFilm = m(s.AddFilm)
 	s.UpdateFilmInfo = m(s.UpdateFilmInfo)
 	s.DeleteFilm = m(s.DeleteFilm)
@@ -80,7 +76,6 @@ func (s *Server) MethodNames() []string { return filmservice.MethodNames[:] }
 
 // Mount configures the mux to serve the FilmService endpoints.
 func Mount(mux goahttp.Muxer, h *Server) {
-	MountGetAllFilmsHandler(mux, h.GetAllFilms)
 	MountAddFilmHandler(mux, h.AddFilm)
 	MountUpdateFilmInfoHandler(mux, h.UpdateFilmInfo)
 	MountDeleteFilmHandler(mux, h.DeleteFilm)
@@ -89,57 +84,6 @@ func Mount(mux goahttp.Muxer, h *Server) {
 // Mount configures the mux to serve the FilmService endpoints.
 func (s *Server) Mount(mux goahttp.Muxer) {
 	Mount(mux, s)
-}
-
-// MountGetAllFilmsHandler configures the mux to serve the "FilmService"
-// service "getAllFilms" endpoint.
-func MountGetAllFilmsHandler(mux goahttp.Muxer, h http.Handler) {
-	f, ok := h.(http.HandlerFunc)
-	if !ok {
-		f = func(w http.ResponseWriter, r *http.Request) {
-			h.ServeHTTP(w, r)
-		}
-	}
-	mux.Handle("GET", "/films", f)
-}
-
-// NewGetAllFilmsHandler creates a HTTP handler which loads the HTTP request
-// and calls the "FilmService" service "getAllFilms" endpoint.
-func NewGetAllFilmsHandler(
-	endpoint goa.Endpoint,
-	mux goahttp.Muxer,
-	decoder func(*http.Request) goahttp.Decoder,
-	encoder func(context.Context, http.ResponseWriter) goahttp.Encoder,
-	errhandler func(context.Context, http.ResponseWriter, error),
-	formatter func(ctx context.Context, err error) goahttp.Statuser,
-) http.Handler {
-	var (
-		decodeRequest  = DecodeGetAllFilmsRequest(mux, decoder)
-		encodeResponse = EncodeGetAllFilmsResponse(encoder)
-		encodeError    = EncodeGetAllFilmsError(encoder, formatter)
-	)
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ctx := context.WithValue(r.Context(), goahttp.AcceptTypeKey, r.Header.Get("Accept"))
-		ctx = context.WithValue(ctx, goa.MethodKey, "getAllFilms")
-		ctx = context.WithValue(ctx, goa.ServiceKey, "FilmService")
-		payload, err := decodeRequest(r)
-		if err != nil {
-			if err := encodeError(ctx, w, err); err != nil {
-				errhandler(ctx, w, err)
-			}
-			return
-		}
-		res, err := endpoint(ctx, payload)
-		if err != nil {
-			if err := encodeError(ctx, w, err); err != nil {
-				errhandler(ctx, w, err)
-			}
-			return
-		}
-		if err := encodeResponse(ctx, w, res); err != nil {
-			errhandler(ctx, w, err)
-		}
-	})
 }
 
 // MountAddFilmHandler configures the mux to serve the "FilmService" service

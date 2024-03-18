@@ -16,12 +16,16 @@ import (
 // Client is the "SearchService" service client.
 type Client struct {
 	SearchLibraryEndpoint goa.Endpoint
+	GetAllActorsEndpoint  goa.Endpoint
+	GetAllFilmsEndpoint   goa.Endpoint
 }
 
 // NewClient initializes a "SearchService" service client given the endpoints.
-func NewClient(searchLibrary goa.Endpoint) *Client {
+func NewClient(searchLibrary, getAllActors, getAllFilms goa.Endpoint) *Client {
 	return &Client{
 		SearchLibraryEndpoint: searchLibrary,
+		GetAllActorsEndpoint:  getAllActors,
+		GetAllFilmsEndpoint:   getAllFilms,
 	}
 }
 
@@ -38,4 +42,33 @@ func (c *Client) SearchLibrary(ctx context.Context, p *SearchLibraryPayload) (re
 		return
 	}
 	return ires.(*Film), nil
+}
+
+// GetAllActors calls the "getAllActors" endpoint of the "SearchService"
+// service.
+// GetAllActors may return the following errors:
+//   - "invalid-scopes" (type InvalidScopes)
+//   - "unauthorized" (type Unauthorized)
+//   - error: internal error
+func (c *Client) GetAllActors(ctx context.Context, p *GetAllActorsPayload) (res ActorResultCollection, err error) {
+	var ires any
+	ires, err = c.GetAllActorsEndpoint(ctx, p)
+	if err != nil {
+		return
+	}
+	return ires.(ActorResultCollection), nil
+}
+
+// GetAllFilms calls the "getAllFilms" endpoint of the "SearchService" service.
+// GetAllFilms may return the following errors:
+//   - "invalid-scopes" (type InvalidScopes)
+//   - "unauthorized" (type Unauthorized)
+//   - error: internal error
+func (c *Client) GetAllFilms(ctx context.Context, p *GetAllFilmsPayload) (res FilmResultCollection, err error) {
+	var ires any
+	ires, err = c.GetAllFilmsEndpoint(ctx, p)
+	if err != nil {
+		return
+	}
+	return ires.(FilmResultCollection), nil
 }

@@ -9,7 +9,6 @@ package server
 
 import (
 	actorservice "film-lib/gen/actor_service"
-	actorserviceviews "film-lib/gen/actor_service/views"
 	"unicode/utf8"
 
 	goa "goa.design/goa/v3/pkg"
@@ -27,20 +26,6 @@ type UpdateActorInfoRequestBody struct {
 	ActorInfo *ActorInfoRequestBody `form:"ActorInfo,omitempty" json:"ActorInfo,omitempty" xml:"ActorInfo,omitempty"`
 }
 
-// ActorResultResponseCollection is the type of the "ActorService" service
-// "getAllActors" endpoint HTTP response body.
-type ActorResultResponseCollection []*ActorResultResponse
-
-// AddActorResponseBody is the type of the "ActorService" service "addActor"
-// endpoint HTTP response body.
-type AddActorResponseBody struct {
-	// Unique ID of an Actor
-	ActorID        uint64  `form:"ActorID" json:"ActorID" xml:"ActorID"`
-	ActorName      *string `form:"ActorName,omitempty" json:"ActorName,omitempty" xml:"ActorName,omitempty"`
-	ActorSex       *string `form:"ActorSex,omitempty" json:"ActorSex,omitempty" xml:"ActorSex,omitempty"`
-	ActorBirthdate *string `form:"ActorBirthdate,omitempty" json:"ActorBirthdate,omitempty" xml:"ActorBirthdate,omitempty"`
-}
-
 // AddActorAlreadyExistsResponseBody is the type of the "ActorService" service
 // "addActor" endpoint HTTP response body for the "already-exists" error.
 type AddActorAlreadyExistsResponseBody struct {
@@ -48,15 +33,6 @@ type AddActorAlreadyExistsResponseBody struct {
 	Message string `form:"message" json:"message" xml:"message"`
 	// ID of existing data
 	ID string `form:"id" json:"id" xml:"id"`
-}
-
-// ActorResultResponse is used to define fields on response body types.
-type ActorResultResponse struct {
-	// Unique ID of an Actor
-	ActorID        uint64  `form:"ActorID" json:"ActorID" xml:"ActorID"`
-	ActorName      *string `form:"ActorName,omitempty" json:"ActorName,omitempty" xml:"ActorName,omitempty"`
-	ActorSex       *string `form:"ActorSex,omitempty" json:"ActorSex,omitempty" xml:"ActorSex,omitempty"`
-	ActorBirthdate *string `form:"ActorBirthdate,omitempty" json:"ActorBirthdate,omitempty" xml:"ActorBirthdate,omitempty"`
 }
 
 // ActorInfoRequestBody is used to define fields on request body types.
@@ -69,28 +45,6 @@ type ActorInfoRequestBody struct {
 	ActorBirthdate *string `form:"ActorBirthdate,omitempty" json:"ActorBirthdate,omitempty" xml:"ActorBirthdate,omitempty"`
 }
 
-// NewActorResultResponseCollection builds the HTTP response body from the
-// result of the "getAllActors" endpoint of the "ActorService" service.
-func NewActorResultResponseCollection(res actorserviceviews.ActorResultCollectionView) ActorResultResponseCollection {
-	body := make([]*ActorResultResponse, len(res))
-	for i, val := range res {
-		body[i] = marshalActorserviceviewsActorResultViewToActorResultResponse(val)
-	}
-	return body
-}
-
-// NewAddActorResponseBody builds the HTTP response body from the result of the
-// "addActor" endpoint of the "ActorService" service.
-func NewAddActorResponseBody(res *actorserviceviews.ActorResultView) *AddActorResponseBody {
-	body := &AddActorResponseBody{
-		ActorID:        *res.ActorID,
-		ActorName:      res.ActorName,
-		ActorSex:       res.ActorSex,
-		ActorBirthdate: res.ActorBirthdate,
-	}
-	return body
-}
-
 // NewAddActorAlreadyExistsResponseBody builds the HTTP response body from the
 // result of the "addActor" endpoint of the "ActorService" service.
 func NewAddActorAlreadyExistsResponseBody(res *actorservice.AlreadyExists) *AddActorAlreadyExistsResponseBody {
@@ -101,17 +55,8 @@ func NewAddActorAlreadyExistsResponseBody(res *actorservice.AlreadyExists) *AddA
 	return body
 }
 
-// NewGetAllActorsPayload builds a ActorService service getAllActors endpoint
-// payload.
-func NewGetAllActorsPayload(token string) *actorservice.GetAllActorsPayload {
-	v := &actorservice.GetAllActorsPayload{}
-	v.Token = token
-
-	return v
-}
-
 // NewAddActorPayload builds a ActorService service addActor endpoint payload.
-func NewAddActorPayload(body *AddActorRequestBody, token string) *actorservice.AddActorPayload {
+func NewAddActorPayload(body *AddActorRequestBody, token *string) *actorservice.AddActorPayload {
 	v := &actorservice.AddActorPayload{}
 	v.ActorInfo = unmarshalActorInfoRequestBodyToActorserviceActorInfo(body.ActorInfo)
 	v.Token = token
@@ -121,7 +66,7 @@ func NewAddActorPayload(body *AddActorRequestBody, token string) *actorservice.A
 
 // NewUpdateActorInfoPayload builds a ActorService service updateActorInfo
 // endpoint payload.
-func NewUpdateActorInfoPayload(body *UpdateActorInfoRequestBody, actorID uint64, token string) *actorservice.UpdateActorInfoPayload {
+func NewUpdateActorInfoPayload(body *UpdateActorInfoRequestBody, actorID uint64, token *string) *actorservice.UpdateActorInfoPayload {
 	v := &actorservice.UpdateActorInfoPayload{}
 	v.ActorInfo = unmarshalActorInfoRequestBodyToActorserviceActorInfo(body.ActorInfo)
 	v.ActorID = actorID
@@ -132,7 +77,7 @@ func NewUpdateActorInfoPayload(body *UpdateActorInfoRequestBody, actorID uint64,
 
 // NewDeleteActorPayload builds a ActorService service deleteActor endpoint
 // payload.
-func NewDeleteActorPayload(actorID uint64, token string) *actorservice.DeleteActorPayload {
+func NewDeleteActorPayload(actorID uint64, token *string) *actorservice.DeleteActorPayload {
 	v := &actorservice.DeleteActorPayload{}
 	v.ActorID = actorID
 	v.Token = token

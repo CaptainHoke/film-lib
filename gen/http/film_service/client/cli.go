@@ -16,36 +16,6 @@ import (
 	goa "goa.design/goa/v3/pkg"
 )
 
-// BuildGetAllFilmsPayload builds the payload for the FilmService getAllFilms
-// endpoint from CLI flags.
-func BuildGetAllFilmsPayload(filmServiceGetAllFilmsBody string, filmServiceGetAllFilmsToken string) (*filmservice.GetAllFilmsPayload, error) {
-	var err error
-	var body GetAllFilmsRequestBody
-	{
-		err = json.Unmarshal([]byte(filmServiceGetAllFilmsBody), &body)
-		if err != nil {
-			return nil, fmt.Errorf("invalid JSON for body, \nerror: %s, \nexample of valid JSON:\n%s", err, "'{\n      \"SortBy\": {\n         \"Field\": \"Provident non totam.\",\n         \"Ordering\": \"Magnam non excepturi est id laudantium enim.\"\n      }\n   }'")
-		}
-		if body.SortBy == nil {
-			err = goa.MergeErrors(err, goa.MissingFieldError("SortBy", "body"))
-		}
-		if err != nil {
-			return nil, err
-		}
-	}
-	var token string
-	{
-		token = filmServiceGetAllFilmsToken
-	}
-	v := &filmservice.GetAllFilmsPayload{}
-	if body.SortBy != nil {
-		v.SortBy = marshalSortByRequestBodyToFilmserviceSortBy(body.SortBy)
-	}
-	v.Token = token
-
-	return v, nil
-}
-
 // BuildAddFilmPayload builds the payload for the FilmService addFilm endpoint
 // from CLI flags.
 func BuildAddFilmPayload(filmServiceAddFilmBody string, filmServiceAddFilmToken string) (*filmservice.AddFilmPayload, error) {
@@ -54,7 +24,7 @@ func BuildAddFilmPayload(filmServiceAddFilmBody string, filmServiceAddFilmToken 
 	{
 		err = json.Unmarshal([]byte(filmServiceAddFilmBody), &body)
 		if err != nil {
-			return nil, fmt.Errorf("invalid JSON for body, \nerror: %s, \nexample of valid JSON:\n%s", err, "'{\n      \"FilmInfo\": {\n         \"Actors\": [\n            {\n               \"ActorID\": 239,\n               \"ActorInfo\": {\n                  \"ActorBirthdate\": \"2024-03-18\",\n                  \"ActorName\": \"Margo Robbie\",\n                  \"ActorSex\": \"F\"\n               }\n            },\n            {\n               \"ActorID\": 239,\n               \"ActorInfo\": {\n                  \"ActorBirthdate\": \"2024-03-18\",\n                  \"ActorName\": \"Margo Robbie\",\n                  \"ActorSex\": \"F\"\n               }\n            }\n         ],\n         \"Description\": \"7y9\",\n         \"Rating\": 5.3355002,\n         \"ReleaseDate\": \"2024-03-18\",\n         \"Title\": \"3y\"\n      }\n   }'")
+			return nil, fmt.Errorf("invalid JSON for body, \nerror: %s, \nexample of valid JSON:\n%s", err, "'{\n      \"FilmInfo\": {\n         \"Actors\": [\n            15409686236987074460,\n            1963945278260898944\n         ],\n         \"Description\": \"c6v\",\n         \"Rating\": 3.8577452,\n         \"ReleaseDate\": \"2024-03-18\",\n         \"Title\": \"y2u\"\n      }\n   }'")
 		}
 		if body.FilmInfo == nil {
 			err = goa.MergeErrors(err, goa.MissingFieldError("FilmInfo", "body"))
@@ -68,9 +38,11 @@ func BuildAddFilmPayload(filmServiceAddFilmBody string, filmServiceAddFilmToken 
 			return nil, err
 		}
 	}
-	var token string
+	var token *string
 	{
-		token = filmServiceAddFilmToken
+		if filmServiceAddFilmToken != "" {
+			token = &filmServiceAddFilmToken
+		}
 	}
 	v := &filmservice.AddFilmPayload{}
 	if body.FilmInfo != nil {
@@ -89,7 +61,7 @@ func BuildUpdateFilmInfoPayload(filmServiceUpdateFilmInfoBody string, filmServic
 	{
 		err = json.Unmarshal([]byte(filmServiceUpdateFilmInfoBody), &body)
 		if err != nil {
-			return nil, fmt.Errorf("invalid JSON for body, \nerror: %s, \nexample of valid JSON:\n%s", err, "'{\n      \"FilmInfo\": {\n         \"Actors\": [\n            {\n               \"ActorID\": 239,\n               \"ActorInfo\": {\n                  \"ActorBirthdate\": \"2024-03-18\",\n                  \"ActorName\": \"Margo Robbie\",\n                  \"ActorSex\": \"F\"\n               }\n            },\n            {\n               \"ActorID\": 239,\n               \"ActorInfo\": {\n                  \"ActorBirthdate\": \"2024-03-18\",\n                  \"ActorName\": \"Margo Robbie\",\n                  \"ActorSex\": \"F\"\n               }\n            }\n         ],\n         \"Description\": \"7y9\",\n         \"Rating\": 5.3355002,\n         \"ReleaseDate\": \"2024-03-18\",\n         \"Title\": \"3y\"\n      }\n   }'")
+			return nil, fmt.Errorf("invalid JSON for body, \nerror: %s, \nexample of valid JSON:\n%s", err, "'{\n      \"FilmInfo\": {\n         \"Actors\": [\n            15409686236987074460,\n            1963945278260898944\n         ],\n         \"Description\": \"c6v\",\n         \"Rating\": 3.8577452,\n         \"ReleaseDate\": \"2024-03-18\",\n         \"Title\": \"y2u\"\n      }\n   }'")
 		}
 		if body.FilmInfo == nil {
 			err = goa.MergeErrors(err, goa.MissingFieldError("FilmInfo", "body"))
@@ -110,15 +82,17 @@ func BuildUpdateFilmInfoPayload(filmServiceUpdateFilmInfoBody string, filmServic
 			return nil, fmt.Errorf("invalid value for filmID, must be UINT64")
 		}
 	}
-	var token string
+	var token *string
 	{
-		token = filmServiceUpdateFilmInfoToken
+		if filmServiceUpdateFilmInfoToken != "" {
+			token = &filmServiceUpdateFilmInfoToken
+		}
 	}
 	v := &filmservice.UpdateFilmInfoPayload{}
 	if body.FilmInfo != nil {
 		v.FilmInfo = marshalFilmInfoRequestBodyToFilmserviceFilmInfo(body.FilmInfo)
 	}
-	v.FilmID = filmID
+	v.FilmID = &filmID
 	v.Token = token
 
 	return v, nil
@@ -127,13 +101,19 @@ func BuildUpdateFilmInfoPayload(filmServiceUpdateFilmInfoBody string, filmServic
 // BuildDeleteFilmPayload builds the payload for the FilmService deleteFilm
 // endpoint from CLI flags.
 func BuildDeleteFilmPayload(filmServiceDeleteFilmFilmID string, filmServiceDeleteFilmToken string) (*filmservice.DeleteFilmPayload, error) {
-	var filmID string
+	var err error
+	var filmID uint64
 	{
-		filmID = filmServiceDeleteFilmFilmID
+		filmID, err = strconv.ParseUint(filmServiceDeleteFilmFilmID, 10, 64)
+		if err != nil {
+			return nil, fmt.Errorf("invalid value for filmID, must be UINT64")
+		}
 	}
-	var token string
+	var token *string
 	{
-		token = filmServiceDeleteFilmToken
+		if filmServiceDeleteFilmToken != "" {
+			token = &filmServiceDeleteFilmToken
+		}
 	}
 	v := &filmservice.DeleteFilmPayload{}
 	v.FilmID = filmID

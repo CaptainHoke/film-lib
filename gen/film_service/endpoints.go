@@ -16,7 +16,6 @@ import (
 
 // Endpoints wraps the "FilmService" service endpoints.
 type Endpoints struct {
-	GetAllFilms    goa.Endpoint
 	AddFilm        goa.Endpoint
 	UpdateFilmInfo goa.Endpoint
 	DeleteFilm     goa.Endpoint
@@ -27,7 +26,6 @@ func NewEndpoints(s Service) *Endpoints {
 	// Casting service to Auther interface
 	a := s.(Auther)
 	return &Endpoints{
-		GetAllFilms:    NewGetAllFilmsEndpoint(s, a.JWTAuth),
 		AddFilm:        NewAddFilmEndpoint(s, a.JWTAuth),
 		UpdateFilmInfo: NewUpdateFilmInfoEndpoint(s, a.JWTAuth),
 		DeleteFilm:     NewDeleteFilmEndpoint(s, a.JWTAuth),
@@ -36,34 +34,9 @@ func NewEndpoints(s Service) *Endpoints {
 
 // Use applies the given middleware to all the "FilmService" service endpoints.
 func (e *Endpoints) Use(m func(goa.Endpoint) goa.Endpoint) {
-	e.GetAllFilms = m(e.GetAllFilms)
 	e.AddFilm = m(e.AddFilm)
 	e.UpdateFilmInfo = m(e.UpdateFilmInfo)
 	e.DeleteFilm = m(e.DeleteFilm)
-}
-
-// NewGetAllFilmsEndpoint returns an endpoint function that calls the method
-// "getAllFilms" of service "FilmService".
-func NewGetAllFilmsEndpoint(s Service, authJWTFn security.AuthJWTFunc) goa.Endpoint {
-	return func(ctx context.Context, req any) (any, error) {
-		p := req.(*GetAllFilmsPayload)
-		var err error
-		sc := security.JWTScheme{
-			Name:           "jwt",
-			Scopes:         []string{"api:read", "api:write"},
-			RequiredScopes: []string{"api:read"},
-		}
-		ctx, err = authJWTFn(ctx, p.Token, &sc)
-		if err != nil {
-			return nil, err
-		}
-		res, err := s.GetAllFilms(ctx, p)
-		if err != nil {
-			return nil, err
-		}
-		vres := NewViewedFilmResultCollection(res, "default")
-		return vres, nil
-	}
 }
 
 // NewAddFilmEndpoint returns an endpoint function that calls the method
@@ -77,7 +50,11 @@ func NewAddFilmEndpoint(s Service, authJWTFn security.AuthJWTFunc) goa.Endpoint 
 			Scopes:         []string{"api:read", "api:write"},
 			RequiredScopes: []string{"api:write"},
 		}
-		ctx, err = authJWTFn(ctx, p.Token, &sc)
+		var token string
+		if p.Token != nil {
+			token = *p.Token
+		}
+		ctx, err = authJWTFn(ctx, token, &sc)
 		if err != nil {
 			return nil, err
 		}
@@ -101,7 +78,11 @@ func NewUpdateFilmInfoEndpoint(s Service, authJWTFn security.AuthJWTFunc) goa.En
 			Scopes:         []string{"api:read", "api:write"},
 			RequiredScopes: []string{"api:write"},
 		}
-		ctx, err = authJWTFn(ctx, p.Token, &sc)
+		var token string
+		if p.Token != nil {
+			token = *p.Token
+		}
+		ctx, err = authJWTFn(ctx, token, &sc)
 		if err != nil {
 			return nil, err
 		}
@@ -120,7 +101,11 @@ func NewDeleteFilmEndpoint(s Service, authJWTFn security.AuthJWTFunc) goa.Endpoi
 			Scopes:         []string{"api:read", "api:write"},
 			RequiredScopes: []string{"api:write"},
 		}
-		ctx, err = authJWTFn(ctx, p.Token, &sc)
+		var token string
+		if p.Token != nil {
+			token = *p.Token
+		}
+		ctx, err = authJWTFn(ctx, token, &sc)
 		if err != nil {
 			return nil, err
 		}

@@ -9,7 +9,6 @@ package client
 
 import (
 	actorservice "film-lib/gen/actor_service"
-	actorserviceviews "film-lib/gen/actor_service/views"
 	"unicode/utf8"
 
 	goa "goa.design/goa/v3/pkg"
@@ -27,20 +26,6 @@ type UpdateActorInfoRequestBody struct {
 	ActorInfo *ActorInfoRequestBody `form:"ActorInfo" json:"ActorInfo" xml:"ActorInfo"`
 }
 
-// GetAllActorsResponseBody is the type of the "ActorService" service
-// "getAllActors" endpoint HTTP response body.
-type GetAllActorsResponseBody []*ActorResultResponse
-
-// AddActorResponseBody is the type of the "ActorService" service "addActor"
-// endpoint HTTP response body.
-type AddActorResponseBody struct {
-	// Unique ID of an Actor
-	ActorID        *uint64 `form:"ActorID,omitempty" json:"ActorID,omitempty" xml:"ActorID,omitempty"`
-	ActorName      *string `form:"ActorName,omitempty" json:"ActorName,omitempty" xml:"ActorName,omitempty"`
-	ActorSex       *string `form:"ActorSex,omitempty" json:"ActorSex,omitempty" xml:"ActorSex,omitempty"`
-	ActorBirthdate *string `form:"ActorBirthdate,omitempty" json:"ActorBirthdate,omitempty" xml:"ActorBirthdate,omitempty"`
-}
-
 // AddActorAlreadyExistsResponseBody is the type of the "ActorService" service
 // "addActor" endpoint HTTP response body for the "already-exists" error.
 type AddActorAlreadyExistsResponseBody struct {
@@ -48,15 +33,6 @@ type AddActorAlreadyExistsResponseBody struct {
 	Message *string `form:"message,omitempty" json:"message,omitempty" xml:"message,omitempty"`
 	// ID of existing data
 	ID *string `form:"id,omitempty" json:"id,omitempty" xml:"id,omitempty"`
-}
-
-// ActorResultResponse is used to define fields on response body types.
-type ActorResultResponse struct {
-	// Unique ID of an Actor
-	ActorID        *uint64 `form:"ActorID,omitempty" json:"ActorID,omitempty" xml:"ActorID,omitempty"`
-	ActorName      *string `form:"ActorName,omitempty" json:"ActorName,omitempty" xml:"ActorName,omitempty"`
-	ActorSex       *string `form:"ActorSex,omitempty" json:"ActorSex,omitempty" xml:"ActorSex,omitempty"`
-	ActorBirthdate *string `form:"ActorBirthdate,omitempty" json:"ActorBirthdate,omitempty" xml:"ActorBirthdate,omitempty"`
 }
 
 // ActorInfoRequestBody is used to define fields on request body types.
@@ -89,46 +65,6 @@ func NewUpdateActorInfoRequestBody(p *actorservice.UpdateActorInfoPayload) *Upda
 	return body
 }
 
-// NewGetAllActorsActorResultCollectionOK builds a "ActorService" service
-// "getAllActors" endpoint result from a HTTP "OK" response.
-func NewGetAllActorsActorResultCollectionOK(body GetAllActorsResponseBody) actorserviceviews.ActorResultCollectionView {
-	v := make([]*actorserviceviews.ActorResultView, len(body))
-	for i, val := range body {
-		v[i] = unmarshalActorResultResponseToActorserviceviewsActorResultView(val)
-	}
-
-	return v
-}
-
-// NewGetAllActorsInvalidScopes builds a ActorService service getAllActors
-// endpoint invalid-scopes error.
-func NewGetAllActorsInvalidScopes(body string) actorservice.InvalidScopes {
-	v := actorservice.InvalidScopes(body)
-
-	return v
-}
-
-// NewGetAllActorsUnauthorized builds a ActorService service getAllActors
-// endpoint unauthorized error.
-func NewGetAllActorsUnauthorized(body string) actorservice.Unauthorized {
-	v := actorservice.Unauthorized(body)
-
-	return v
-}
-
-// NewAddActorActorResultCreated builds a "ActorService" service "addActor"
-// endpoint result from a HTTP "Created" response.
-func NewAddActorActorResultCreated(body *AddActorResponseBody) *actorserviceviews.ActorResultView {
-	v := &actorserviceviews.ActorResultView{
-		ActorID:        body.ActorID,
-		ActorName:      body.ActorName,
-		ActorSex:       body.ActorSex,
-		ActorBirthdate: body.ActorBirthdate,
-	}
-
-	return v
-}
-
 // NewAddActorAlreadyExists builds a ActorService service addActor endpoint
 // already-exists error.
 func NewAddActorAlreadyExists(body *AddActorAlreadyExistsResponseBody) *actorservice.AlreadyExists {
@@ -148,26 +84,10 @@ func NewAddActorInvalidScopes(body string) actorservice.InvalidScopes {
 	return v
 }
 
-// NewAddActorUnauthorized builds a ActorService service addActor endpoint
-// unauthorized error.
-func NewAddActorUnauthorized(body string) actorservice.Unauthorized {
-	v := actorservice.Unauthorized(body)
-
-	return v
-}
-
 // NewUpdateActorInfoInvalidScopes builds a ActorService service
 // updateActorInfo endpoint invalid-scopes error.
 func NewUpdateActorInfoInvalidScopes(body string) actorservice.InvalidScopes {
 	v := actorservice.InvalidScopes(body)
-
-	return v
-}
-
-// NewUpdateActorInfoUnauthorized builds a ActorService service updateActorInfo
-// endpoint unauthorized error.
-func NewUpdateActorInfoUnauthorized(body string) actorservice.Unauthorized {
-	v := actorservice.Unauthorized(body)
 
 	return v
 }
@@ -180,14 +100,6 @@ func NewDeleteActorInvalidScopes(body string) actorservice.InvalidScopes {
 	return v
 }
 
-// NewDeleteActorUnauthorized builds a ActorService service deleteActor
-// endpoint unauthorized error.
-func NewDeleteActorUnauthorized(body string) actorservice.Unauthorized {
-	v := actorservice.Unauthorized(body)
-
-	return v
-}
-
 // ValidateAddActorAlreadyExistsResponseBody runs the validations defined on
 // addActor_already-exists_response_body
 func ValidateAddActorAlreadyExistsResponseBody(body *AddActorAlreadyExistsResponseBody) (err error) {
@@ -196,15 +108,6 @@ func ValidateAddActorAlreadyExistsResponseBody(body *AddActorAlreadyExistsRespon
 	}
 	if body.ID == nil {
 		err = goa.MergeErrors(err, goa.MissingFieldError("id", "body"))
-	}
-	return
-}
-
-// ValidateActorResultResponse runs the validations defined on
-// ActorResultResponse
-func ValidateActorResultResponse(body *ActorResultResponse) (err error) {
-	if body.ActorID == nil {
-		err = goa.MergeErrors(err, goa.MissingFieldError("ActorID", "body"))
 	}
 	return
 }

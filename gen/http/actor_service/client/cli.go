@@ -16,19 +16,6 @@ import (
 	goa "goa.design/goa/v3/pkg"
 )
 
-// BuildGetAllActorsPayload builds the payload for the ActorService
-// getAllActors endpoint from CLI flags.
-func BuildGetAllActorsPayload(actorServiceGetAllActorsToken string) (*actorservice.GetAllActorsPayload, error) {
-	var token string
-	{
-		token = actorServiceGetAllActorsToken
-	}
-	v := &actorservice.GetAllActorsPayload{}
-	v.Token = token
-
-	return v, nil
-}
-
 // BuildAddActorPayload builds the payload for the ActorService addActor
 // endpoint from CLI flags.
 func BuildAddActorPayload(actorServiceAddActorBody string, actorServiceAddActorToken string) (*actorservice.AddActorPayload, error) {
@@ -51,9 +38,11 @@ func BuildAddActorPayload(actorServiceAddActorBody string, actorServiceAddActorT
 			return nil, err
 		}
 	}
-	var token string
+	var token *string
 	{
-		token = actorServiceAddActorToken
+		if actorServiceAddActorToken != "" {
+			token = &actorServiceAddActorToken
+		}
 	}
 	v := &actorservice.AddActorPayload{}
 	if body.ActorInfo != nil {
@@ -93,9 +82,11 @@ func BuildUpdateActorInfoPayload(actorServiceUpdateActorInfoBody string, actorSe
 			return nil, fmt.Errorf("invalid value for actorID, must be UINT64")
 		}
 	}
-	var token string
+	var token *string
 	{
-		token = actorServiceUpdateActorInfoToken
+		if actorServiceUpdateActorInfoToken != "" {
+			token = &actorServiceUpdateActorInfoToken
+		}
 	}
 	v := &actorservice.UpdateActorInfoPayload{}
 	if body.ActorInfo != nil {
@@ -118,9 +109,11 @@ func BuildDeleteActorPayload(actorServiceDeleteActorActorID string, actorService
 			return nil, fmt.Errorf("invalid value for actorID, must be UINT64")
 		}
 	}
-	var token string
+	var token *string
 	{
-		token = actorServiceDeleteActorToken
+		if actorServiceDeleteActorToken != "" {
+			token = &actorServiceDeleteActorToken
+		}
 	}
 	v := &actorservice.DeleteActorPayload{}
 	v.ActorID = actorID

@@ -9,5 +9,5 @@ package server
 
 // AuthSignInPath returns the URL path to the SignIn service auth HTTP endpoint.
 func AuthSignInPath() string {
-	return "/sign-in/auth"
+	return "/"
 }

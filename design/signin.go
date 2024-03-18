@@ -26,21 +26,18 @@ var _ = Service("SignIn", func() {
 
 		Payload(func() {
 			Description("Credentials used to authenticate to retrieve JWT token")
-			UsernameField(1, "username",
-				String, "Username used to perform sign-in", func() {
-					Example("user")
-				})
-			PasswordField(2, "password",
-				String, "Password used to perform sign-in", func() {
-					Example("password")
-				})
-			Required("username", "password")
+			UsernameField(1, "username", String, "Username used to perform signin", func() {
+				Example("user")
+			})
+			PasswordField(2, "password", String, "Password used to perform signin", func() {
+				Example("password")
+			})
 		})
 
 		Result(Creds)
 
 		HTTP(func() {
-			POST("/sign-in")
+			POST("/")
 			Response(StatusOK)
 		})
 	})

@@ -11,9 +11,11 @@ import (
 	"bytes"
 	"context"
 	searchservice "film-lib/gen/search_service"
+	searchserviceviews "film-lib/gen/search_service/views"
 	"io"
 	"net/http"
 	"net/url"
+	"strings"
 
 	goahttp "goa.design/goa/v3/http"
 )
@@ -41,12 +43,18 @@ func EncodeSearchLibraryRequest(encoder func(*http.Request) goahttp.Encoder) fun
 		if !ok {
 			return goahttp.ErrInvalidType("SearchService", "searchLibrary", "*searchservice.SearchLibraryPayload", v)
 		}
-		{
-			head := p.Token
-			req.Header.Set("X-Authorization", head)
+		if p.Token != nil {
+			head := *p.Token
+			if !strings.Contains(head, " ") {
+				req.Header.Set("Authorization", "Bearer "+head)
+			} else {
+				req.Header.Set("Authorization", head)
+			}
 		}
 		values := req.URL.Query()
-		values.Add("QueryString", p.QueryString)
+		if p.QueryString != nil {
+			values.Add("QueryString", *p.QueryString)
+		}
 		req.URL.RawQuery = values.Encode()
 		return nil
 	}
@@ -116,6 +124,212 @@ func DecodeSearchLibraryResponse(decoder func(*http.Response) goahttp.Decoder, r
 	}
 }
 
+// BuildGetAllActorsRequest instantiates a HTTP request object with method and
+// path set to call the "SearchService" service "getAllActors" endpoint
+func (c *Client) BuildGetAllActorsRequest(ctx context.Context, v any) (*http.Request, error) {
+	u := &url.URL{Scheme: c.scheme, Host: c.host, Path: GetAllActorsSearchServicePath()}
+	req, err := http.NewRequest("GET", u.String(), nil)
+	if err != nil {
+		return nil, goahttp.ErrInvalidURL("SearchService", "getAllActors", u.String(), err)
+	}
+	if ctx != nil {
+		req = req.WithContext(ctx)
+	}
+
+	return req, nil
+}
+
+// EncodeGetAllActorsRequest returns an encoder for requests sent to the
+// SearchService getAllActors server.
+func EncodeGetAllActorsRequest(encoder func(*http.Request) goahttp.Encoder) func(*http.Request, any) error {
+	return func(req *http.Request, v any) error {
+		p, ok := v.(*searchservice.GetAllActorsPayload)
+		if !ok {
+			return goahttp.ErrInvalidType("SearchService", "getAllActors", "*searchservice.GetAllActorsPayload", v)
+		}
+		if p.Token != nil {
+			head := *p.Token
+			if !strings.Contains(head, " ") {
+				req.Header.Set("Authorization", "Bearer "+head)
+			} else {
+				req.Header.Set("Authorization", head)
+			}
+		}
+		return nil
+	}
+}
+
+// DecodeGetAllActorsResponse returns a decoder for responses returned by the
+// SearchService getAllActors endpoint. restoreBody controls whether the
+// response body should be restored after having been read.
+// DecodeGetAllActorsResponse may return the following errors:
+//   - "invalid-scopes" (type searchservice.InvalidScopes): http.StatusForbidden
+//   - "unauthorized" (type searchservice.Unauthorized): http.StatusUnauthorized
+//   - error: internal error
+func DecodeGetAllActorsResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody bool) func(*http.Response) (any, error) {
+	return func(resp *http.Response) (any, error) {
+		if restoreBody {
+			b, err := io.ReadAll(resp.Body)
+			if err != nil {
+				return nil, err
+			}
+			resp.Body = io.NopCloser(bytes.NewBuffer(b))
+			defer func() {
+				resp.Body = io.NopCloser(bytes.NewBuffer(b))
+			}()
+		} else {
+			defer resp.Body.Close()
+		}
+		switch resp.StatusCode {
+		case http.StatusOK:
+			var (
+				body GetAllActorsResponseBody
+				err  error
+			)
+			err = decoder(resp).Decode(&body)
+			if err != nil {
+				return nil, goahttp.ErrDecodingError("SearchService", "getAllActors", err)
+			}
+			p := NewGetAllActorsActorResultCollectionOK(body)
+			view := "default"
+			vres := searchserviceviews.ActorResultCollection{Projected: p, View: view}
+			if err = searchserviceviews.ValidateActorResultCollection(vres); err != nil {
+				return nil, goahttp.ErrValidationError("SearchService", "getAllActors", err)
+			}
+			res := searchservice.NewActorResultCollection(vres)
+			return res, nil
+		case http.StatusForbidden:
+			var (
+				body string
+				err  error
+			)
+			err = decoder(resp).Decode(&body)
+			if err != nil {
+				return nil, goahttp.ErrDecodingError("SearchService", "getAllActors", err)
+			}
+			return nil, NewGetAllActorsInvalidScopes(body)
+		case http.StatusUnauthorized:
+			var (
+				body string
+				err  error
+			)
+			err = decoder(resp).Decode(&body)
+			if err != nil {
+				return nil, goahttp.ErrDecodingError("SearchService", "getAllActors", err)
+			}
+			return nil, NewGetAllActorsUnauthorized(body)
+		default:
+			body, _ := io.ReadAll(resp.Body)
+			return nil, goahttp.ErrInvalidResponse("SearchService", "getAllActors", resp.StatusCode, string(body))
+		}
+	}
+}
+
+// BuildGetAllFilmsRequest instantiates a HTTP request object with method and
+// path set to call the "SearchService" service "getAllFilms" endpoint
+func (c *Client) BuildGetAllFilmsRequest(ctx context.Context, v any) (*http.Request, error) {
+	u := &url.URL{Scheme: c.scheme, Host: c.host, Path: GetAllFilmsSearchServicePath()}
+	req, err := http.NewRequest("GET", u.String(), nil)
+	if err != nil {
+		return nil, goahttp.ErrInvalidURL("SearchService", "getAllFilms", u.String(), err)
+	}
+	if ctx != nil {
+		req = req.WithContext(ctx)
+	}
+
+	return req, nil
+}
+
+// EncodeGetAllFilmsRequest returns an encoder for requests sent to the
+// SearchService getAllFilms server.
+func EncodeGetAllFilmsRequest(encoder func(*http.Request) goahttp.Encoder) func(*http.Request, any) error {
+	return func(req *http.Request, v any) error {
+		p, ok := v.(*searchservice.GetAllFilmsPayload)
+		if !ok {
+			return goahttp.ErrInvalidType("SearchService", "getAllFilms", "*searchservice.GetAllFilmsPayload", v)
+		}
+		if p.Token != nil {
+			head := *p.Token
+			if !strings.Contains(head, " ") {
+				req.Header.Set("Authorization", "Bearer "+head)
+			} else {
+				req.Header.Set("Authorization", head)
+			}
+		}
+		body := NewGetAllFilmsRequestBody(p)
+		if err := encoder(req).Encode(&body); err != nil {
+			return goahttp.ErrEncodingError("SearchService", "getAllFilms", err)
+		}
+		return nil
+	}
+}
+
+// DecodeGetAllFilmsResponse returns a decoder for responses returned by the
+// SearchService getAllFilms endpoint. restoreBody controls whether the
+// response body should be restored after having been read.
+// DecodeGetAllFilmsResponse may return the following errors:
+//   - "invalid-scopes" (type searchservice.InvalidScopes): http.StatusForbidden
+//   - "unauthorized" (type searchservice.Unauthorized): http.StatusUnauthorized
+//   - error: internal error
+func DecodeGetAllFilmsResponse(decoder func(*http.Response) goahttp.Decoder, restoreBody bool) func(*http.Response) (any, error) {
+	return func(resp *http.Response) (any, error) {
+		if restoreBody {
+			b, err := io.ReadAll(resp.Body)
+			if err != nil {
+				return nil, err
+			}
+			resp.Body = io.NopCloser(bytes.NewBuffer(b))
+			defer func() {
+				resp.Body = io.NopCloser(bytes.NewBuffer(b))
+			}()
+		} else {
+			defer resp.Body.Close()
+		}
+		switch resp.StatusCode {
+		case http.StatusOK:
+			var (
+				body GetAllFilmsResponseBody
+				err  error
+			)
+			err = decoder(resp).Decode(&body)
+			if err != nil {
+				return nil, goahttp.ErrDecodingError("SearchService", "getAllFilms", err)
+			}
+			p := NewGetAllFilmsFilmResultCollectionOK(body)
+			view := "default"
+			vres := searchserviceviews.FilmResultCollection{Projected: p, View: view}
+			if err = searchserviceviews.ValidateFilmResultCollection(vres); err != nil {
+				return nil, goahttp.ErrValidationError("SearchService", "getAllFilms", err)
+			}
+			res := searchservice.NewFilmResultCollection(vres)
+			return res, nil
+		case http.StatusForbidden:
+			var (
+				body string
+				err  error
+			)
+			err = decoder(resp).Decode(&body)
+			if err != nil {
+				return nil, goahttp.ErrDecodingError("SearchService", "getAllFilms", err)
+			}
+			return nil, NewGetAllFilmsInvalidScopes(body)
+		case http.StatusUnauthorized:
+			var (
+				body string
+				err  error
+			)
+			err = decoder(resp).Decode(&body)
+			if err != nil {
+				return nil, goahttp.ErrDecodingError("SearchService", "getAllFilms", err)
+			}
+			return nil, NewGetAllFilmsUnauthorized(body)
+		default:
+			body, _ := io.ReadAll(resp.Body)
+			return nil, goahttp.ErrInvalidResponse("SearchService", "getAllFilms", resp.StatusCode, string(body))
+		}
+	}
+}
+
 // unmarshalFilmInfoResponseBodyToSearchserviceFilmInfo builds a value of type
 // *searchservice.FilmInfo from a value of type *FilmInfoResponseBody.
 func unmarshalFilmInfoResponseBodyToSearchserviceFilmInfo(v *FilmInfoResponseBody) *searchservice.FilmInfo {
@@ -125,32 +339,61 @@ func unmarshalFilmInfoResponseBodyToSearchserviceFilmInfo(v *FilmInfoResponseBod
 		ReleaseDate: *v.ReleaseDate,
 		Rating:      *v.Rating,
 	}
-	res.Actors = make([]*searchservice.Actor, len(v.Actors))
+	res.Actors = make([]uint64, len(v.Actors))
 	for i, val := range v.Actors {
-		res.Actors[i] = unmarshalActorResponseBodyToSearchserviceActor(val)
+		res.Actors[i] = val
 	}
 
 	return res
 }
 
-// unmarshalActorResponseBodyToSearchserviceActor builds a value of type
-// *searchservice.Actor from a value of type *ActorResponseBody.
-func unmarshalActorResponseBodyToSearchserviceActor(v *ActorResponseBody) *searchservice.Actor {
-	res := &searchservice.Actor{
-		ActorID: *v.ActorID,
+// unmarshalActorResultResponseToSearchserviceviewsActorResultView builds a
+// value of type *searchserviceviews.ActorResultView from a value of type
+// *ActorResultResponse.
+func unmarshalActorResultResponseToSearchserviceviewsActorResultView(v *ActorResultResponse) *searchserviceviews.ActorResultView {
+	res := &searchserviceviews.ActorResultView{
+		ActorID:        v.ActorID,
+		ActorName:      v.ActorName,
+		ActorSex:       v.ActorSex,
+		ActorBirthdate: v.ActorBirthdate,
 	}
-	res.ActorInfo = unmarshalActorInfoResponseBodyToSearchserviceActorInfo(v.ActorInfo)
 
 	return res
 }
 
-// unmarshalActorInfoResponseBodyToSearchserviceActorInfo builds a value of
-// type *searchservice.ActorInfo from a value of type *ActorInfoResponseBody.
-func unmarshalActorInfoResponseBodyToSearchserviceActorInfo(v *ActorInfoResponseBody) *searchservice.ActorInfo {
-	res := &searchservice.ActorInfo{
-		ActorName:      *v.ActorName,
-		ActorSex:       *v.ActorSex,
-		ActorBirthdate: *v.ActorBirthdate,
+// marshalSearchserviceSortByToSortByRequestBody builds a value of type
+// *SortByRequestBody from a value of type *searchservice.SortBy.
+func marshalSearchserviceSortByToSortByRequestBody(v *searchservice.SortBy) *SortByRequestBody {
+	res := &SortByRequestBody{
+		Field:    v.Field,
+		Ordering: v.Ordering,
+	}
+
+	return res
+}
+
+// marshalSortByRequestBodyToSearchserviceSortBy builds a value of type
+// *searchservice.SortBy from a value of type *SortByRequestBody.
+func marshalSortByRequestBodyToSearchserviceSortBy(v *SortByRequestBody) *searchservice.SortBy {
+	res := &searchservice.SortBy{
+		Field:    v.Field,
+		Ordering: v.Ordering,
+	}
+
+	return res
+}
+
+// unmarshalFilmResultResponseToSearchserviceviewsFilmResultView builds a value
+// of type *searchserviceviews.FilmResultView from a value of type
+// *FilmResultResponse.
+func unmarshalFilmResultResponseToSearchserviceviewsFilmResultView(v *FilmResultResponse) *searchserviceviews.FilmResultView {
+	res := &searchserviceviews.FilmResultView{
+		FilmID:      v.FilmID,
+		Title:       v.Title,
+		Description: v.Description,
+		ReleaseDate: v.ReleaseDate,
+		Rating:      v.Rating,
+		Actors:      v.Actors,
 	}
 
 	return res

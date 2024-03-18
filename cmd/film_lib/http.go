@@ -4,10 +4,10 @@ import (
 	"context"
 	actorservice "film-lib/gen/actor_service"
 	filmservice "film-lib/gen/film_service"
-	actorsvr "film-lib/gen/http/actor_service/server"
-	filmsvr "film-lib/gen/http/film_service/server"
+	actorservicesvr "film-lib/gen/http/actor_service/server"
+	filmservicesvr "film-lib/gen/http/film_service/server"
 	isalivesvr "film-lib/gen/http/is_alive/server"
-	searchsvr "film-lib/gen/http/search_service/server"
+	searchservicesvr "film-lib/gen/http/search_service/server"
 	signinsvr "film-lib/gen/http/sign_in/server"
 	isalive "film-lib/gen/is_alive"
 	searchservice "film-lib/gen/search_service"
@@ -26,7 +26,7 @@ import (
 
 // handleHTTPServer starts configures and starts a HTTP server on the given
 // URL. It shuts down the server if any error is received in the error channel.
-func handleHTTPServer(ctx context.Context, u *url.URL, actorServiceEndpoints *actorservice.Endpoints, filmServiceEndpoints *filmservice.Endpoints, searchServiceEndpoints *searchservice.Endpoints, signInEndpoints *signin.Endpoints, isAliveEndPoints *isalive.Endpoints, wg *sync.WaitGroup, errc chan error, logger *log.Logger, debug bool) {
+func handleHTTPServer(ctx context.Context, u *url.URL, isAliveEndpoints *isalive.Endpoints, actorServiceEndpoints *actorservice.Endpoints, filmServiceEndpoints *filmservice.Endpoints, searchServiceEndpoints *searchservice.Endpoints, signInEndpoints *signin.Endpoints, wg *sync.WaitGroup, errc chan error, logger *log.Logger, debug bool) {
 
 	// Setup goa log adapter.
 	var (
@@ -57,36 +57,36 @@ func handleHTTPServer(ctx context.Context, u *url.URL, actorServiceEndpoints *ac
 	// the service input and output data structures to HTTP requests and
 	// responses.
 	var (
-		actorServiceServer  *actorsvr.Server
-		filmServiceServer   *filmsvr.Server
-		searchServiceServer *searchsvr.Server
-		signInServer        *signinsvr.Server
 		isAliveServer       *isalivesvr.Server
+		actorServiceServer  *actorservicesvr.Server
+		filmServiceServer   *filmservicesvr.Server
+		searchServiceServer *searchservicesvr.Server
+		signInServer        *signinsvr.Server
 	)
 	{
 		eh := errorHandler(logger)
-		actorServiceServer = actorsvr.New(actorServiceEndpoints, mux, dec, enc, eh, nil)
-		filmServiceServer = filmsvr.New(filmServiceEndpoints, mux, dec, enc, eh, nil)
-		searchServiceServer = searchsvr.New(searchServiceEndpoints, mux, dec, enc, eh, nil)
+		isAliveServer = isalivesvr.New(isAliveEndpoints, mux, dec, enc, eh, nil)
+		actorServiceServer = actorservicesvr.New(actorServiceEndpoints, mux, dec, enc, eh, nil)
+		filmServiceServer = filmservicesvr.New(filmServiceEndpoints, mux, dec, enc, eh, nil)
+		searchServiceServer = searchservicesvr.New(searchServiceEndpoints, mux, dec, enc, eh, nil)
 		signInServer = signinsvr.New(signInEndpoints, mux, dec, enc, eh, nil)
-		isAliveServer = isalivesvr.New(isAliveEndPoints, mux, dec, enc, eh, nil)
 		if debug {
 			servers := goahttp.Servers{
+				isAliveServer,
 				actorServiceServer,
 				filmServiceServer,
 				searchServiceServer,
 				signInServer,
-				isAliveServer,
 			}
 			servers.Use(httpmdlwr.Debug(mux, os.Stdout))
 		}
 	}
 	// Configure the mux.
-	actorsvr.Mount(mux, actorServiceServer)
-	filmsvr.Mount(mux, filmServiceServer)
-	searchsvr.Mount(mux, searchServiceServer)
-	signinsvr.Mount(mux, signInServer)
 	isalivesvr.Mount(mux, isAliveServer)
+	actorservicesvr.Mount(mux, actorServiceServer)
+	filmservicesvr.Mount(mux, filmServiceServer)
+	searchservicesvr.Mount(mux, searchServiceServer)
+	signinsvr.Mount(mux, signInServer)
 
 	// Wrap the multiplexer with additional middlewares. Middlewares mounted
 	// here apply to all the service endpoints.
@@ -99,6 +99,9 @@ func handleHTTPServer(ctx context.Context, u *url.URL, actorServiceEndpoints *ac
 	// Start HTTP server using default configuration, change the code to
 	// configure the server as required by your service.
 	srv := &http.Server{Addr: u.Host, Handler: handler, ReadHeaderTimeout: time.Second * 60}
+	for _, m := range isAliveServer.Mounts {
+		logger.Printf("HTTP %q mounted on %s %s", m.Method, m.Verb, m.Pattern)
+	}
 	for _, m := range actorServiceServer.Mounts {
 		logger.Printf("HTTP %q mounted on %s %s", m.Method, m.Verb, m.Pattern)
 	}
@@ -109,9 +112,6 @@ func handleHTTPServer(ctx context.Context, u *url.URL, actorServiceEndpoints *ac
 		logger.Printf("HTTP %q mounted on %s %s", m.Method, m.Verb, m.Pattern)
 	}
 	for _, m := range signInServer.Mounts {
-		logger.Printf("HTTP %q mounted on %s %s", m.Method, m.Verb, m.Pattern)
-	}
-	for _, m := range isAliveServer.Mounts {
 		logger.Printf("HTTP %q mounted on %s %s", m.Method, m.Verb, m.Pattern)
 	}
 

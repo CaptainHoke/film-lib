@@ -44,7 +44,15 @@ func NewAuthEndpoint(s Service, authBasicFn security.AuthBasicFunc) goa.Endpoint
 			Scopes:         []string{"api:read"},
 			RequiredScopes: []string{},
 		}
-		ctx, err = authBasicFn(ctx, p.Username, p.Password, &sc)
+		var user string
+		if p.Username != nil {
+			user = *p.Username
+		}
+		var pass string
+		if p.Password != nil {
+			pass = *p.Password
+		}
+		ctx, err = authBasicFn(ctx, user, pass, &sc)
 		if err != nil {
 			return nil, err
 		}

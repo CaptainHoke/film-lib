@@ -17,10 +17,6 @@ import (
 
 // Client lists the FilmService service endpoint HTTP clients.
 type Client struct {
-	// GetAllFilms Doer is the HTTP client used to make requests to the getAllFilms
-	// endpoint.
-	GetAllFilmsDoer goahttp.Doer
-
 	// AddFilm Doer is the HTTP client used to make requests to the addFilm
 	// endpoint.
 	AddFilmDoer goahttp.Doer
@@ -53,7 +49,6 @@ func NewClient(
 	restoreBody bool,
 ) *Client {
 	return &Client{
-		GetAllFilmsDoer:     doer,
 		AddFilmDoer:         doer,
 		UpdateFilmInfoDoer:  doer,
 		DeleteFilmDoer:      doer,
@@ -62,30 +57,6 @@ func NewClient(
 		host:                host,
 		decoder:             dec,
 		encoder:             enc,
-	}
-}
-
-// GetAllFilms returns an endpoint that makes HTTP requests to the FilmService
-// service getAllFilms server.
-func (c *Client) GetAllFilms() goa.Endpoint {
-	var (
-		encodeRequest  = EncodeGetAllFilmsRequest(c.encoder)
-		decodeResponse = DecodeGetAllFilmsResponse(c.decoder, c.RestoreResponseBody)
-	)
-	return func(ctx context.Context, v any) (any, error) {
-		req, err := c.BuildGetAllFilmsRequest(ctx, v)
-		if err != nil {
-			return nil, err
-		}
-		err = encodeRequest(req, v)
-		if err != nil {
-			return nil, err
-		}
-		resp, err := c.GetAllFilmsDoer.Do(req)
-		if err != nil {
-			return nil, goahttp.ErrRequestError("FilmService", "getAllFilms", err)
-		}
-		return decodeResponse(resp)
 	}
 }
 

@@ -11,15 +11,6 @@ import (
 	goa "goa.design/goa/v3/pkg"
 )
 
-// FilmResultCollection is the viewed result type that is projected based on a
-// view.
-type FilmResultCollection struct {
-	// Type to project
-	Projected FilmResultCollectionView
-	// View to render
-	View string
-}
-
 // FilmResult is the viewed result type that is projected based on a view.
 type FilmResult struct {
 	// Type to project
@@ -27,9 +18,6 @@ type FilmResult struct {
 	// View to render
 	View string
 }
-
-// FilmResultCollectionView is a type that runs validations on a projected type.
-type FilmResultCollectionView []*FilmResultView
 
 // FilmResultView is a type that runs validations on a projected type.
 type FilmResultView struct {
@@ -43,18 +31,6 @@ type FilmResultView struct {
 }
 
 var (
-	// FilmResultCollectionMap is a map indexing the attribute names of
-	// FilmResultCollection by view name.
-	FilmResultCollectionMap = map[string][]string{
-		"default": {
-			"FilmID",
-			"Title",
-			"Description",
-			"ReleaseDate",
-			"Rating",
-			"Actors",
-		},
-	}
 	// FilmResultMap is a map indexing the attribute names of FilmResult by view
 	// name.
 	FilmResultMap = map[string][]string{
@@ -69,18 +45,6 @@ var (
 	}
 )
 
-// ValidateFilmResultCollection runs the validations defined on the viewed
-// result type FilmResultCollection.
-func ValidateFilmResultCollection(result FilmResultCollection) (err error) {
-	switch result.View {
-	case "default", "":
-		err = ValidateFilmResultCollectionView(result.Projected)
-	default:
-		err = goa.InvalidEnumValueError("view", result.View, []any{"default"})
-	}
-	return
-}
-
 // ValidateFilmResult runs the validations defined on the viewed result type
 // FilmResult.
 func ValidateFilmResult(result *FilmResult) (err error) {
@@ -89,17 +53,6 @@ func ValidateFilmResult(result *FilmResult) (err error) {
 		err = ValidateFilmResultView(result.Projected)
 	default:
 		err = goa.InvalidEnumValueError("view", result.View, []any{"default"})
-	}
-	return
-}
-
-// ValidateFilmResultCollectionView runs the validations defined on
-// FilmResultCollectionView using the "default" view.
-func ValidateFilmResultCollectionView(result FilmResultCollectionView) (err error) {
-	for _, item := range result {
-		if err2 := ValidateFilmResultView(item); err2 != nil {
-			err = goa.MergeErrors(err, err2)
-		}
 	}
 	return
 }

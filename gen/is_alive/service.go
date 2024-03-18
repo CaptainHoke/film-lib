@@ -21,7 +21,7 @@ type Service interface {
 const APIName = "film-lib"
 
 // APIVersion is the version of the API as defined in the design.
-const APIVersion = "0.0.1"
+const APIVersion = "1.0"
 
 // ServiceName is the name of the service as defined in the design. This is the
 // same value that is set in the endpoint request contexts under the ServiceKey

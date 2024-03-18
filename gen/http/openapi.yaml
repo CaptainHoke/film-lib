@@ -2,7 +2,7 @@ swagger: "2.0"
 info:
     title: Film Library
     description: BiS Service for querying and managing films and actors info
-    version: 0.0.1
+    version: "1.0"
 host: localhost:3239
 consumes:
     - application/json
@@ -24,26 +24,49 @@ paths:
                     description: OK response.
             schemes:
                 - http
-    /actors:
-        get:
+        post:
             tags:
-                - ActorService
-            summary: getAllActors ActorService
-            description: |4-
-                **Required security scopes for jwt**:
-                  * `api:read`
-            operationId: ActorService#getAllActors
+                - SignIn
+            summary: auth SignIn
+            description: Creates a valid JWT
+            operationId: SignIn#auth
             parameters:
-                - name: X-Authorization
+                - name: Authorization
                   in: header
-                  description: JWT used for authentication
-                  required: true
+                  description: Basic Auth security using Basic scheme (https://tools.ietf.org/html/rfc7617)
+                  required: false
                   type: string
             responses:
                 "200":
                     description: OK response.
                     schema:
-                        $ref: '#/definitions/ActorServiceActorResultResponseCollection'
+                        $ref: '#/definitions/SignInAuthResponseBody'
+                        required:
+                            - jwt
+            schemes:
+                - http
+            security:
+                - basic_header_Authorization: []
+    /actors:
+        get:
+            tags:
+                - SearchService
+            summary: getAllActors SearchService
+            description: |4-
+                **Required security scopes for jwt**:
+                  * `api:read`
+            operationId: SearchService#getAllActors
+            parameters:
+                - name: Authorization
+                  in: header
+                  description: JWT used for authentication
+                  required: false
+                  type: string
+            responses:
+                "200":
+                    description: OK response.
+                    schema:
+                        $ref: '#/definitions/SearchServiceActorResultResponseCollection'
                 "401":
                     description: Unauthorized response.
                     schema:
@@ -55,7 +78,7 @@ paths:
             schemes:
                 - http
             security:
-                - jwt_header_X-Authorization: []
+                - jwt_header_Authorization: []
         post:
             tags:
                 - ActorService
@@ -65,10 +88,10 @@ paths:
                   * `api:write`
             operationId: ActorService#addActor
             parameters:
-                - name: X-Authorization
+                - name: Authorization
                   in: header
                   description: JWT used for authentication
-                  required: true
+                  required: false
                   type: string
                 - name: AddActorRequestBody
                   in: body
@@ -81,7 +104,8 @@ paths:
                 "201":
                     description: Created response.
                     schema:
-                        $ref: '#/definitions/ActorServiceAddActorResponseBody'
+                        type: integer
+                        format: int64
                 "400":
                     description: Bad Request response.
                     schema:
@@ -89,10 +113,6 @@ paths:
                         required:
                             - message
                             - id
-                "401":
-                    description: Unauthorized response.
-                    schema:
-                        type: string
                 "403":
                     description: Forbidden response.
                     schema:
@@ -100,7 +120,7 @@ paths:
             schemes:
                 - http
             security:
-                - jwt_header_X-Authorization: []
+                - jwt_header_Authorization: []
     /actors/{ActorID}:
         put:
             tags:
@@ -115,10 +135,10 @@ paths:
                   in: path
                   required: true
                   type: integer
-                - name: X-Authorization
+                - name: Authorization
                   in: header
                   description: JWT used for authentication
-                  required: true
+                  required: false
                   type: string
                 - name: UpdateActorInfoRequestBody
                   in: body
@@ -130,10 +150,6 @@ paths:
             responses:
                 "201":
                     description: Created response.
-                "401":
-                    description: Unauthorized response.
-                    schema:
-                        type: string
                 "403":
                     description: Forbidden response.
                     schema:
@@ -141,7 +157,7 @@ paths:
             schemes:
                 - http
             security:
-                - jwt_header_X-Authorization: []
+                - jwt_header_Authorization: []
         delete:
             tags:
                 - ActorService
@@ -156,18 +172,14 @@ paths:
                   description: Actor ID
                   required: true
                   type: integer
-                - name: X-Authorization
+                - name: Authorization
                   in: header
                   description: JWT used for authentication
-                  required: true
+                  required: false
                   type: string
             responses:
                 "204":
                     description: No Content response.
-                "401":
-                    description: Unauthorized response.
-                    schema:
-                        type: string
                 "403":
                     description: Forbidden response.
                     schema:
@@ -175,34 +187,34 @@ paths:
             schemes:
                 - http
             security:
-                - jwt_header_X-Authorization: []
+                - jwt_header_Authorization: []
     /films:
         get:
             tags:
-                - FilmService
-            summary: getAllFilms FilmService
+                - SearchService
+            summary: getAllFilms SearchService
             description: |4-
                 **Required security scopes for jwt**:
                   * `api:read`
-            operationId: FilmService#getAllFilms
+            operationId: SearchService#getAllFilms
             parameters:
-                - name: X-Authorization
+                - name: Authorization
                   in: header
                   description: JWT used for authentication
-                  required: true
+                  required: false
                   type: string
                 - name: GetAllFilmsRequestBody
                   in: body
                   required: true
                   schema:
-                    $ref: '#/definitions/FilmServiceGetAllFilmsRequestBody'
+                    $ref: '#/definitions/SearchServiceGetAllFilmsRequestBody'
                     required:
                         - SortBy
             responses:
                 "200":
                     description: OK response.
                     schema:
-                        $ref: '#/definitions/FilmServiceFilmResultResponseCollection'
+                        $ref: '#/definitions/SearchServiceFilmResultResponseCollection'
                 "401":
                     description: Unauthorized response.
                     schema:
@@ -214,7 +226,7 @@ paths:
             schemes:
                 - http
             security:
-                - jwt_header_X-Authorization: []
+                - jwt_header_Authorization: []
         post:
             tags:
                 - FilmService
@@ -224,10 +236,10 @@ paths:
                   * `api:write`
             operationId: FilmService#addFilm
             parameters:
-                - name: X-Authorization
+                - name: Authorization
                   in: header
                   description: JWT used for authentication
-                  required: true
+                  required: false
                   type: string
                 - name: AddFilmRequestBody
                   in: body
@@ -259,7 +271,7 @@ paths:
             schemes:
                 - http
             security:
-                - jwt_header_X-Authorization: []
+                - jwt_header_Authorization: []
     /films/{FilmID}:
         put:
             tags:
@@ -274,10 +286,10 @@ paths:
                   in: path
                   required: true
                   type: integer
-                - name: X-Authorization
+                - name: Authorization
                   in: header
                   description: JWT used for authentication
-                  required: true
+                  required: false
                   type: string
                 - name: UpdateFilmInfoRequestBody
                   in: body
@@ -300,7 +312,7 @@ paths:
             schemes:
                 - http
             security:
-                - jwt_header_X-Authorization: []
+                - jwt_header_Authorization: []
         delete:
             tags:
                 - FilmService
@@ -314,11 +326,11 @@ paths:
                   in: path
                   description: Film ID
                   required: true
-                  type: string
-                - name: X-Authorization
+                  type: integer
+                - name: Authorization
                   in: header
                   description: JWT used for authentication
-                  required: true
+                  required: false
                   type: string
             responses:
                 "204":
@@ -334,7 +346,7 @@ paths:
             schemes:
                 - http
             security:
-                - jwt_header_X-Authorization: []
+                - jwt_header_Authorization: []
     /search:
         get:
             tags:
@@ -348,12 +360,12 @@ paths:
                 - name: QueryString
                   in: query
                   description: Actor or Film Name
-                  required: true
+                  required: false
                   type: string
-                - name: X-Authorization
+                - name: Authorization
                   in: header
                   description: JWT used for authentication
-                  required: true
+                  required: false
                   type: string
             responses:
                 "200":
@@ -374,35 +386,7 @@ paths:
             schemes:
                 - http
             security:
-                - jwt_header_X-Authorization: []
-    /sign-in/auth:
-        post:
-            tags:
-                - SignIn
-            summary: auth SignIn
-            description: Creates a valid JWT
-            operationId: SignIn#auth
-            parameters:
-                - name: Authorization
-                  in: header
-                  description: Basic Auth security using Basic scheme (https://tools.ietf.org/html/rfc7617)
-                  required: true
-                  type: string
-            responses:
-                "200":
-                    description: OK response.
-                    schema:
-                        $ref: '#/definitions/SignInAuthResponseBody'
-                        required:
-                            - jwt
-                "401":
-                    description: Unauthorized response.
-                    schema:
-                        type: string
-            schemes:
-                - http
-            security:
-                - basic_header_Authorization: []
+                - jwt_header_Authorization: []
 definitions:
     ActorInfoRequestBody:
         title: ActorInfoRequestBody
@@ -433,84 +417,13 @@ definitions:
             - ActorName
             - ActorSex
             - ActorBirthdate
-    ActorInfoResponseBody:
-        title: ActorInfoResponseBody
-        type: object
-        properties:
-            ActorBirthdate:
-                type: string
-                description: YYYY-MM-DD
-                example: "2024-03-18"
-                pattern: ^\d{4}\-(0[1-9]|1[012])\-(0[1-9]|[12][0-9]|3[01])$
-            ActorName:
-                type: string
-                description: Name of an Actor
-                example: Margo Robbie
-                pattern: ^.*\S.*$
-                maxLength: 32
-            ActorSex:
-                type: string
-                description: Sex of an Actor
-                example: F
-                pattern: ^(M|F)$
-        description: Describes an Actor to be added
-        example:
-            ActorBirthdate: "2024-03-18"
-            ActorName: Margo Robbie
-            ActorSex: F
-        required:
-            - ActorName
-            - ActorSex
-            - ActorBirthdate
-    ActorRequestBody:
-        title: ActorRequestBody
-        type: object
-        properties:
-            ActorID:
-                type: integer
-                description: Unique ID of an Actor
-                example: 239
-                format: int64
-            ActorInfo:
-                $ref: '#/definitions/ActorInfoRequestBody'
-        description: Actor + ID
-        example:
-            ActorID: 239
-            ActorInfo:
-                ActorBirthdate: "2024-03-18"
-                ActorName: Margo Robbie
-                ActorSex: F
-        required:
-            - ActorID
-            - ActorInfo
-    ActorResponseBody:
-        title: ActorResponseBody
-        type: object
-        properties:
-            ActorID:
-                type: integer
-                description: Unique ID of an Actor
-                example: 239
-                format: int64
-            ActorInfo:
-                $ref: '#/definitions/ActorInfoResponseBody'
-        description: Actor + ID
-        example:
-            ActorID: 239
-            ActorInfo:
-                ActorBirthdate: "2024-03-18"
-                ActorName: Margo Robbie
-                ActorSex: F
-        required:
-            - ActorID
-            - ActorInfo
     ActorResultResponse:
         title: 'Mediatype identifier: application/vnd.actor; view=default'
         type: object
         properties:
             ActorBirthdate:
                 type: string
-                example: In unde quibusdam facere consequatur.
+                example: Culpa eos.
             ActorID:
                 type: integer
                 description: Unique ID of an Actor
@@ -518,37 +431,18 @@ definitions:
                 format: int64
             ActorName:
                 type: string
-                example: Et hic hic iusto.
+                example: Qui et consequatur maiores beatae magnam.
             ActorSex:
                 type: string
-                example: Rerum error eaque.
+                example: Non asperiores qui doloremque nostrum.
         description: ActorResultResponse result type (default view)
         example:
-            ActorBirthdate: Vel qui fugiat cumque.
+            ActorBirthdate: Sit est.
             ActorID: 239
-            ActorName: Autem et rem.
-            ActorSex: Enim sunt ab.
+            ActorName: Facere cupiditate consequuntur.
+            ActorSex: Occaecati et adipisci.
         required:
             - ActorID
-    ActorServiceActorResultResponseCollection:
-        title: 'Mediatype identifier: application/vnd.actor; type=collection; view=default'
-        type: array
-        items:
-            $ref: '#/definitions/ActorResultResponse'
-        description: GetAllActorsResponseBody is the result type for an array of ActorResultResponse (default view)
-        example:
-            - ActorBirthdate: Eveniet quas eligendi animi ea facere sit.
-              ActorID: 239
-              ActorName: Est perferendis sit sapiente.
-              ActorSex: Rerum laudantium cupiditate quasi perferendis aut.
-            - ActorBirthdate: Eveniet quas eligendi animi ea facere sit.
-              ActorID: 239
-              ActorName: Est perferendis sit sapiente.
-              ActorSex: Rerum laudantium cupiditate quasi perferendis aut.
-            - ActorBirthdate: Eveniet quas eligendi animi ea facere sit.
-              ActorID: 239
-              ActorName: Est perferendis sit sapiente.
-              ActorSex: Rerum laudantium cupiditate quasi perferendis aut.
     ActorServiceAddActorAlreadyExistsResponseBody:
         title: ActorServiceAddActorAlreadyExistsResponseBody
         type: object
@@ -556,14 +450,14 @@ definitions:
             id:
                 type: string
                 description: ID of existing data
-                example: Occaecati et adipisci.
+                example: Unde est omnis.
             message:
                 type: string
                 description: Error message
                 example: Entity already exists
         description: Actor already exists
         example:
-            id: Sit est.
+            id: Sed omnis laudantium aut et repellendus accusamus.
             message: Entity already exists
         required:
             - message
@@ -581,32 +475,6 @@ definitions:
                 ActorSex: F
         required:
             - ActorInfo
-    ActorServiceAddActorResponseBody:
-        title: 'Mediatype identifier: application/vnd.actor; view=default'
-        type: object
-        properties:
-            ActorBirthdate:
-                type: string
-                example: Maiores beatae magnam.
-            ActorID:
-                type: integer
-                description: Unique ID of an Actor
-                example: 239
-                format: int64
-            ActorName:
-                type: string
-                example: Molestiae et sed.
-            ActorSex:
-                type: string
-                example: Dolorum quia non est ut qui et.
-        description: AddActorResponseBody result type (default view)
-        example:
-            ActorBirthdate: Facere cupiditate consequuntur.
-            ActorID: 239
-            ActorName: Non asperiores qui doloremque nostrum.
-            ActorSex: Culpa eos.
-        required:
-            - ActorID
     ActorServiceUpdateActorInfoRequestBody:
         title: ActorServiceUpdateActorInfoRequestBody
         type: object
@@ -627,33 +495,22 @@ definitions:
             Actors:
                 type: array
                 items:
-                    $ref: '#/definitions/ActorRequestBody'
-                description: List of Actors involved in Film
+                    type: integer
+                    example: 9529624566924527815
+                    format: int64
+                description: Actors' Ids
                 example:
-                    - ActorID: 239
-                      ActorInfo:
-                        ActorBirthdate: "2024-03-18"
-                        ActorName: Margo Robbie
-                        ActorSex: F
-                    - ActorID: 239
-                      ActorInfo:
-                        ActorBirthdate: "2024-03-18"
-                        ActorName: Margo Robbie
-                        ActorSex: F
-                    - ActorID: 239
-                      ActorInfo:
-                        ActorBirthdate: "2024-03-18"
-                        ActorName: Margo Robbie
-                        ActorSex: F
+                    - 17093840019234325971
+                    - 6600348201439270407
             Description:
                 type: string
                 description: Description of a film
-                example: hke
+                example: sqk
                 maxLength: 1000
             Rating:
                 type: number
                 description: Rating (0.0 - 10.0)
-                example: 0.97711587
+                example: 2.5155373
                 format: float
                 minimum: 0
                 maximum: 10
@@ -665,26 +522,19 @@ definitions:
             Title:
                 type: string
                 description: Title of a film
-                example: c
+                example: 1n
                 minLength: 1
                 maxLength: 150
         description: Describes a Film to be added
         example:
             Actors:
-                - ActorID: 239
-                  ActorInfo:
-                    ActorBirthdate: "2024-03-18"
-                    ActorName: Margo Robbie
-                    ActorSex: F
-                - ActorID: 239
-                  ActorInfo:
-                    ActorBirthdate: "2024-03-18"
-                    ActorName: Margo Robbie
-                    ActorSex: F
-            Description: o55
-            Rating: 8.338593
+                - 3064200069962830303
+                - 904133416449501210
+                - 14229838625793017532
+            Description: i8m
+            Rating: 1.2239147
             ReleaseDate: "2024-03-18"
-            Title: a3
+            Title: "0"
         required:
             - Title
             - Description
@@ -698,28 +548,23 @@ definitions:
             Actors:
                 type: array
                 items:
-                    $ref: '#/definitions/ActorResponseBody'
-                description: List of Actors involved in Film
+                    type: integer
+                    example: 16988453537337145302
+                    format: int64
+                description: Actors' Ids
                 example:
-                    - ActorID: 239
-                      ActorInfo:
-                        ActorBirthdate: "2024-03-18"
-                        ActorName: Margo Robbie
-                        ActorSex: F
-                    - ActorID: 239
-                      ActorInfo:
-                        ActorBirthdate: "2024-03-18"
-                        ActorName: Margo Robbie
-                        ActorSex: F
+                    - 16877796547699500823
+                    - 12979045592346256590
+                    - 10586608599912588529
             Description:
                 type: string
                 description: Description of a film
-                example: 8xy
+                example: svk
                 maxLength: 1000
             Rating:
                 type: number
                 description: Rating (0.0 - 10.0)
-                example: 3.008572
+                example: 1.9080955
                 format: float
                 minimum: 0
                 maximum: 10
@@ -731,26 +576,19 @@ definitions:
             Title:
                 type: string
                 description: Title of a film
-                example: wxz
+                example: obo
                 minLength: 1
                 maxLength: 150
         description: Describes a Film to be added
         example:
             Actors:
-                - ActorID: 239
-                  ActorInfo:
-                    ActorBirthdate: "2024-03-18"
-                    ActorName: Margo Robbie
-                    ActorSex: F
-                - ActorID: 239
-                  ActorInfo:
-                    ActorBirthdate: "2024-03-18"
-                    ActorName: Margo Robbie
-                    ActorSex: F
-            Description: 7oa
-            Rating: 3.2062535
+                - 15024058550317452647
+                - 7398592627346912850
+                - 8838484960886283216
+            Description: kuu
+            Rating: 4.090775
             ReleaseDate: "2024-03-18"
-            Title: w
+            Title: "7"
         required:
             - Title
             - Description
@@ -780,7 +618,7 @@ definitions:
                 example: Quidem amet quaerat.
             Title:
                 type: string
-                example: Fugit dolores earum amet ipsum rerum quia.
+                example: Dolores earum amet ipsum rerum quia.
         description: FilmResultResponse result type (default view)
         example:
             Actors: Laboriosam voluptatem repellendus cum.
@@ -798,14 +636,14 @@ definitions:
             id:
                 type: string
                 description: ID of existing data
-                example: Doloribus facilis impedit quos saepe nulla odio.
+                example: Vel molestiae.
             message:
                 type: string
                 description: Error message
                 example: Entity already exists
         description: Film already exists
         example:
-            id: Quis quae.
+            id: Ullam repudiandae.
             message: Entity already exists
         required:
             - message
@@ -819,20 +657,12 @@ definitions:
         example:
             FilmInfo:
                 Actors:
-                    - ActorID: 239
-                      ActorInfo:
-                        ActorBirthdate: "2024-03-18"
-                        ActorName: Margo Robbie
-                        ActorSex: F
-                    - ActorID: 239
-                      ActorInfo:
-                        ActorBirthdate: "2024-03-18"
-                        ActorName: Margo Robbie
-                        ActorSex: F
-                Description: 7y9
-                Rating: 5.3355002
+                    - 15409686236987074460
+                    - 1963945278260898944
+                Description: c6v
+                Rating: 3.8577452
                 ReleaseDate: "2024-03-18"
-                Title: 3y
+                Title: y2u
         required:
             - FilmInfo
     FilmServiceAddFilmResponseBody:
@@ -841,10 +671,10 @@ definitions:
         properties:
             Actors:
                 type: string
-                example: Delectus alias est dolore nihil vero.
+                example: In nulla iure.
             Description:
                 type: string
-                example: Eos voluptatem quia dolorem cupiditate voluptate quaerat.
+                example: Sint laborum velit incidunt inventore.
             FilmID:
                 type: integer
                 description: Unique ID of a Film
@@ -852,60 +682,23 @@ definitions:
                 format: int64
             Rating:
                 type: string
-                example: Architecto qui repellat omnis.
+                example: Aut laboriosam fugiat consequuntur ab vero rem.
             ReleaseDate:
                 type: string
-                example: Et facere adipisci et consectetur soluta unde.
+                example: Eos asperiores consequatur ipsam.
             Title:
                 type: string
-                example: Et voluptate ipsam.
+                example: Sapiente qui eos impedit iste.
         description: AddFilmResponseBody result type (default view)
         example:
-            Actors: Occaecati officiis.
-            Description: Soluta molestiae natus occaecati.
+            Actors: Voluptates nesciunt.
+            Description: Qui id voluptas quas earum.
             FilmID: 239
-            Rating: Enim officiis vel perspiciatis.
-            ReleaseDate: Doloremque officiis et.
-            Title: Similique dolores rem magnam nemo.
+            Rating: Voluptas laudantium debitis expedita voluptas rerum.
+            ReleaseDate: Assumenda enim sit.
+            Title: Dolores ipsa odio.
         required:
             - FilmID
-    FilmServiceFilmResultResponseCollection:
-        title: 'Mediatype identifier: application/vnd.film; type=collection; view=default'
-        type: array
-        items:
-            $ref: '#/definitions/FilmResultResponse'
-        description: GetAllFilmsResponseBody is the result type for an array of FilmResultResponse (default view)
-        example:
-            - Actors: Eum quia.
-              Description: Occaecati dolorem aperiam.
-              FilmID: 239
-              Rating: Ducimus dolor.
-              ReleaseDate: Autem voluptatem sequi consequatur laboriosam omnis.
-              Title: Dolore dicta.
-            - Actors: Eum quia.
-              Description: Occaecati dolorem aperiam.
-              FilmID: 239
-              Rating: Ducimus dolor.
-              ReleaseDate: Autem voluptatem sequi consequatur laboriosam omnis.
-              Title: Dolore dicta.
-            - Actors: Eum quia.
-              Description: Occaecati dolorem aperiam.
-              FilmID: 239
-              Rating: Ducimus dolor.
-              ReleaseDate: Autem voluptatem sequi consequatur laboriosam omnis.
-              Title: Dolore dicta.
-    FilmServiceGetAllFilmsRequestBody:
-        title: FilmServiceGetAllFilmsRequestBody
-        type: object
-        properties:
-            SortBy:
-                $ref: '#/definitions/SortByRequestBody'
-        example:
-            SortBy:
-                Field: Provident non totam.
-                Ordering: Magnam non excepturi est id laudantium enim.
-        required:
-            - SortBy
     FilmServiceUpdateFilmInfoRequestBody:
         title: FilmServiceUpdateFilmInfoRequestBody
         type: object
@@ -915,22 +708,70 @@ definitions:
         example:
             FilmInfo:
                 Actors:
-                    - ActorID: 239
-                      ActorInfo:
-                        ActorBirthdate: "2024-03-18"
-                        ActorName: Margo Robbie
-                        ActorSex: F
-                    - ActorID: 239
-                      ActorInfo:
-                        ActorBirthdate: "2024-03-18"
-                        ActorName: Margo Robbie
-                        ActorSex: F
-                Description: 7y9
-                Rating: 5.3355002
+                    - 15409686236987074460
+                    - 1963945278260898944
+                Description: c6v
+                Rating: 3.8577452
                 ReleaseDate: "2024-03-18"
-                Title: 3y
+                Title: y2u
         required:
             - FilmInfo
+    SearchServiceActorResultResponseCollection:
+        title: 'Mediatype identifier: application/vnd.actor; type=collection; view=default'
+        type: array
+        items:
+            $ref: '#/definitions/ActorResultResponse'
+        description: GetAllActorsResponseBody is the result type for an array of ActorResultResponse (default view)
+        example:
+            - ActorBirthdate: Fuga nisi.
+              ActorID: 239
+              ActorName: Qui ut sunt eveniet non quo laudantium.
+              ActorSex: Eos maxime numquam vel dolorem beatae et.
+            - ActorBirthdate: Fuga nisi.
+              ActorID: 239
+              ActorName: Qui ut sunt eveniet non quo laudantium.
+              ActorSex: Eos maxime numquam vel dolorem beatae et.
+            - ActorBirthdate: Fuga nisi.
+              ActorID: 239
+              ActorName: Qui ut sunt eveniet non quo laudantium.
+              ActorSex: Eos maxime numquam vel dolorem beatae et.
+    SearchServiceFilmResultResponseCollection:
+        title: 'Mediatype identifier: application/vnd.film; type=collection; view=default'
+        type: array
+        items:
+            $ref: '#/definitions/FilmResultResponse'
+        description: GetAllFilmsResponseBody is the result type for an array of FilmResultResponse (default view)
+        example:
+            - Actors: Commodi provident fuga veritatis et quia neque.
+              Description: Sapiente officiis rerum laudantium cupiditate.
+              FilmID: 239
+              Rating: Facere sit eos quod nulla at aspernatur.
+              ReleaseDate: Perferendis aut quis eveniet quas eligendi animi.
+              Title: Dolores sed architecto est et est perferendis.
+            - Actors: Commodi provident fuga veritatis et quia neque.
+              Description: Sapiente officiis rerum laudantium cupiditate.
+              FilmID: 239
+              Rating: Facere sit eos quod nulla at aspernatur.
+              ReleaseDate: Perferendis aut quis eveniet quas eligendi animi.
+              Title: Dolores sed architecto est et est perferendis.
+            - Actors: Commodi provident fuga veritatis et quia neque.
+              Description: Sapiente officiis rerum laudantium cupiditate.
+              FilmID: 239
+              Rating: Facere sit eos quod nulla at aspernatur.
+              ReleaseDate: Perferendis aut quis eveniet quas eligendi animi.
+              Title: Dolores sed architecto est et est perferendis.
+    SearchServiceGetAllFilmsRequestBody:
+        title: SearchServiceGetAllFilmsRequestBody
+        type: object
+        properties:
+            SortBy:
+                $ref: '#/definitions/SortByRequestBody'
+        example:
+            SortBy:
+                Field: Rating
+                Ordering: Descending
+        required:
+            - SortBy
     SearchServiceSearchLibraryResponseBody:
         title: SearchServiceSearchLibraryResponseBody
         type: object
@@ -946,25 +787,14 @@ definitions:
             FilmID: 239
             FilmInfo:
                 Actors:
-                    - ActorID: 239
-                      ActorInfo:
-                        ActorBirthdate: "2024-03-18"
-                        ActorName: Margo Robbie
-                        ActorSex: F
-                    - ActorID: 239
-                      ActorInfo:
-                        ActorBirthdate: "2024-03-18"
-                        ActorName: Margo Robbie
-                        ActorSex: F
-                    - ActorID: 239
-                      ActorInfo:
-                        ActorBirthdate: "2024-03-18"
-                        ActorName: Margo Robbie
-                        ActorSex: F
-                Description: v7b
-                Rating: 2.8520477
+                    - 3695226575950218580
+                    - 719037649482171729
+                    - 5351042865287607572
+                    - 6217779164111896208
+                Description: ca0
+                Rating: 3.185747
                 ReleaseDate: "2024-03-18"
-                Title: 4ug
+                Title: nhb
         required:
             - FilmID
             - FilmInfo
@@ -988,16 +818,16 @@ definitions:
                 type: string
                 description: Field to sort by (Rating (default) | Title | Release Date)
                 default: Rating
-                example: Unde est omnis.
+                example: Rating
             Ordering:
                 type: string
                 description: Ascending / Descending
                 default: Descending
-                example: Sed omnis laudantium aut et repellendus accusamus.
+                example: Descending
         description: Sorting configuration
         example:
-            Field: Voluptas accusantium neque.
-            Ordering: Ut praesentium necessitatibus eius autem.
+            Field: Rating
+            Ordering: Descending
         required:
             - Field
             - Ordering
@@ -1009,7 +839,7 @@ securityDefinitions:
 
             **Security Scopes**:
               * `api:read`: Read-only access
-    jwt_header_X-Authorization:
+    jwt_header_Authorization:
         type: apiKey
         description: |-
             Secures endpoint by requiring a valid JWT token retrieved via the signin endpoint.
@@ -1017,5 +847,5 @@ securityDefinitions:
             **Security Scopes**:
               * `api:read`: Read-only access
               * `api:write`: Read and write access
-        name: X-Authorization
+        name: Authorization
         in: header

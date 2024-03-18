@@ -15,49 +15,32 @@ import (
 
 // Client is the "ActorService" service client.
 type Client struct {
-	GetAllActorsEndpoint    goa.Endpoint
 	AddActorEndpoint        goa.Endpoint
 	UpdateActorInfoEndpoint goa.Endpoint
 	DeleteActorEndpoint     goa.Endpoint
 }
 
 // NewClient initializes a "ActorService" service client given the endpoints.
-func NewClient(getAllActors, addActor, updateActorInfo, deleteActor goa.Endpoint) *Client {
+func NewClient(addActor, updateActorInfo, deleteActor goa.Endpoint) *Client {
 	return &Client{
-		GetAllActorsEndpoint:    getAllActors,
 		AddActorEndpoint:        addActor,
 		UpdateActorInfoEndpoint: updateActorInfo,
 		DeleteActorEndpoint:     deleteActor,
 	}
 }
 
-// GetAllActors calls the "getAllActors" endpoint of the "ActorService" service.
-// GetAllActors may return the following errors:
-//   - "invalid-scopes" (type InvalidScopes)
-//   - "unauthorized" (type Unauthorized)
-//   - error: internal error
-func (c *Client) GetAllActors(ctx context.Context, p *GetAllActorsPayload) (res ActorResultCollection, err error) {
-	var ires any
-	ires, err = c.GetAllActorsEndpoint(ctx, p)
-	if err != nil {
-		return
-	}
-	return ires.(ActorResultCollection), nil
-}
-
 // AddActor calls the "addActor" endpoint of the "ActorService" service.
 // AddActor may return the following errors:
 //   - "invalid-scopes" (type InvalidScopes)
 //   - "already-exists" (type *AlreadyExists): Actor already exists
-//   - "unauthorized" (type Unauthorized)
 //   - error: internal error
-func (c *Client) AddActor(ctx context.Context, p *AddActorPayload) (res *ActorResult, err error) {
+func (c *Client) AddActor(ctx context.Context, p *AddActorPayload) (res uint64, err error) {
 	var ires any
 	ires, err = c.AddActorEndpoint(ctx, p)
 	if err != nil {
 		return
 	}
-	return ires.(*ActorResult), nil
+	return ires.(uint64), nil
 }
 
 // UpdateActorInfo calls the "updateActorInfo" endpoint of the "ActorService"
@@ -65,7 +48,6 @@ func (c *Client) AddActor(ctx context.Context, p *AddActorPayload) (res *ActorRe
 // UpdateActorInfo may return the following errors:
 //   - "invalid-scopes" (type InvalidScopes)
 //   - "not-found" (type *NotFound): Actor not found
-//   - "unauthorized" (type Unauthorized)
 //   - error: internal error
 func (c *Client) UpdateActorInfo(ctx context.Context, p *UpdateActorInfoPayload) (err error) {
 	_, err = c.UpdateActorInfoEndpoint(ctx, p)
@@ -76,7 +58,6 @@ func (c *Client) UpdateActorInfo(ctx context.Context, p *UpdateActorInfoPayload)
 // DeleteActor may return the following errors:
 //   - "invalid-scopes" (type InvalidScopes)
 //   - "not-found" (type *NotFound): Actor not found
-//   - "unauthorized" (type Unauthorized)
 //   - error: internal error
 func (c *Client) DeleteActor(ctx context.Context, p *DeleteActorPayload) (err error) {
 	_, err = c.DeleteActorEndpoint(ctx, p)

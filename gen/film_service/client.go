@@ -15,34 +15,18 @@ import (
 
 // Client is the "FilmService" service client.
 type Client struct {
-	GetAllFilmsEndpoint    goa.Endpoint
 	AddFilmEndpoint        goa.Endpoint
 	UpdateFilmInfoEndpoint goa.Endpoint
 	DeleteFilmEndpoint     goa.Endpoint
 }
 
 // NewClient initializes a "FilmService" service client given the endpoints.
-func NewClient(getAllFilms, addFilm, updateFilmInfo, deleteFilm goa.Endpoint) *Client {
+func NewClient(addFilm, updateFilmInfo, deleteFilm goa.Endpoint) *Client {
 	return &Client{
-		GetAllFilmsEndpoint:    getAllFilms,
 		AddFilmEndpoint:        addFilm,
 		UpdateFilmInfoEndpoint: updateFilmInfo,
 		DeleteFilmEndpoint:     deleteFilm,
 	}
-}
-
-// GetAllFilms calls the "getAllFilms" endpoint of the "FilmService" service.
-// GetAllFilms may return the following errors:
-//   - "invalid-scopes" (type InvalidScopes)
-//   - "unauthorized" (type Unauthorized)
-//   - error: internal error
-func (c *Client) GetAllFilms(ctx context.Context, p *GetAllFilmsPayload) (res FilmResultCollection, err error) {
-	var ires any
-	ires, err = c.GetAllFilmsEndpoint(ctx, p)
-	if err != nil {
-		return
-	}
-	return ires.(FilmResultCollection), nil
 }
 
 // AddFilm calls the "addFilm" endpoint of the "FilmService" service.

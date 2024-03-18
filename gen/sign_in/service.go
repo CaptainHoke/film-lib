@@ -29,7 +29,7 @@ type Auther interface {
 const APIName = "film-lib"
 
 // APIVersion is the version of the API as defined in the design.
-const APIVersion = "0.0.1"
+const APIVersion = "1.0"
 
 // ServiceName is the name of the service as defined in the design. This is the
 // same value that is set in the endpoint request contexts under the ServiceKey
@@ -43,34 +43,14 @@ var MethodNames = [1]string{"auth"}
 
 // Credentials used to authenticate to retrieve JWT token
 type AuthPayload struct {
-	// Username used to perform sign-in
-	Username string
-	// Password used to perform sign-in
-	Password string
+	// Username used to perform signin
+	Username *string
+	// Password used to perform signin
+	Password *string
 }
 
 // Creds is the result type of the SignIn service auth method.
 type Creds struct {
 	// JWT token
 	JWT string
-}
-
-// Credentials are invalid
-type Unauthorized string
-
-// Error returns an error description.
-func (e Unauthorized) Error() string {
-	return "Credentials are invalid"
-}
-
-// ErrorName returns "unauthorized".
-//
-// Deprecated: Use GoaErrorName - https://github.com/goadesign/goa/issues/3105
-func (e Unauthorized) ErrorName() string {
-	return e.GoaErrorName()
-}
-
-// GoaErrorName returns "unauthorized".
-func (e Unauthorized) GoaErrorName() string {
-	return "unauthorized"
 }

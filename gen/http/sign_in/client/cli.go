@@ -14,13 +14,17 @@ import (
 // BuildAuthPayload builds the payload for the SignIn auth endpoint from CLI
 // flags.
 func BuildAuthPayload(signInAuthUsername string, signInAuthPassword string) (*signin.AuthPayload, error) {
-	var username string
+	var username *string
 	{
-		username = signInAuthUsername
+		if signInAuthUsername != "" {
+			username = &signInAuthUsername
+		}
 	}
-	var password string
+	var password *string
 	{
-		password = signInAuthPassword
+		if signInAuthPassword != "" {
+			password = &signInAuthPassword
+		}
 	}
 	v := &signin.AuthPayload{}
 	v.Username = username

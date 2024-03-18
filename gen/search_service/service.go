@@ -9,6 +9,7 @@ package searchservice
 
 import (
 	"context"
+	searchserviceviews "film-lib/gen/search_service/views"
 
 	"goa.design/goa/v3/security"
 )
@@ -17,6 +18,10 @@ import (
 type Service interface {
 	// SearchLibrary implements searchLibrary.
 	SearchLibrary(context.Context, *SearchLibraryPayload) (res *Film, err error)
+	// GetAllActors implements getAllActors.
+	GetAllActors(context.Context, *GetAllActorsPayload) (res ActorResultCollection, err error)
+	// GetAllFilms implements getAllFilms.
+	GetAllFilms(context.Context, *GetAllFilmsPayload) (res FilmResultCollection, err error)
 }
 
 // Auther defines the authorization functions to be implemented by the service.
@@ -29,7 +34,7 @@ type Auther interface {
 const APIName = "film-lib"
 
 // APIVersion is the version of the API as defined in the design.
-const APIVersion = "0.0.1"
+const APIVersion = "1.0"
 
 // ServiceName is the name of the service as defined in the design. This is the
 // same value that is set in the endpoint request contexts under the ServiceKey
@@ -39,25 +44,19 @@ const ServiceName = "SearchService"
 // MethodNames lists the service method names as defined in the design. These
 // are the same values that are set in the endpoint request contexts under the
 // MethodKey key.
-var MethodNames = [1]string{"searchLibrary"}
+var MethodNames = [3]string{"searchLibrary", "getAllActors", "getAllFilms"}
 
-// Actor + ID
-type Actor struct {
+type ActorResult struct {
 	// Unique ID of an Actor
-	ActorID uint64
-	// Actor Info
-	ActorInfo *ActorInfo
+	ActorID        uint64
+	ActorName      *string
+	ActorSex       *string
+	ActorBirthdate *string
 }
 
-// Describes an Actor to be added
-type ActorInfo struct {
-	// Name of an Actor
-	ActorName string
-	// Sex of an Actor
-	ActorSex string
-	// YYYY-MM-DD
-	ActorBirthdate string
-}
+// ActorResultCollection is the result type of the SearchService service
+// getAllActors method.
+type ActorResultCollection []*ActorResult
 
 // Film is the result type of the SearchService service searchLibrary method.
 type Film struct {
@@ -77,17 +76,54 @@ type FilmInfo struct {
 	ReleaseDate string
 	// Rating (0.0 - 10.0)
 	Rating float32
-	// List of Actors involved in Film
-	Actors []*Actor
+	// Actors' Ids
+	Actors []uint64
+}
+
+type FilmResult struct {
+	// Unique ID of a Film
+	FilmID      uint64
+	Title       *string
+	Description *string
+	ReleaseDate *string
+	Rating      *string
+	Actors      *string
+}
+
+// FilmResultCollection is the result type of the SearchService service
+// getAllFilms method.
+type FilmResultCollection []*FilmResult
+
+// GetAllActorsPayload is the payload type of the SearchService service
+// getAllActors method.
+type GetAllActorsPayload struct {
+	// JWT used for authentication
+	Token *string
+}
+
+// GetAllFilmsPayload is the payload type of the SearchService service
+// getAllFilms method.
+type GetAllFilmsPayload struct {
+	// JWT used for authentication
+	Token  *string
+	SortBy *SortBy
 }
 
 // SearchLibraryPayload is the payload type of the SearchService service
 // searchLibrary method.
 type SearchLibraryPayload struct {
 	// JWT used for authentication
-	Token string
+	Token *string
 	// Actor or Film Name
-	QueryString string
+	QueryString *string
+}
+
+// Sorting configuration
+type SortBy struct {
+	// Field to sort by (Rating (default) | Title | Release Date)
+	Field string
+	// Ascending / Descending
+	Ordering string
 }
 
 // Token scopes are invalid
@@ -128,4 +164,127 @@ func (e Unauthorized) ErrorName() string {
 // GoaErrorName returns "unauthorized".
 func (e Unauthorized) GoaErrorName() string {
 	return "unauthorized"
+}
+
+// NewActorResultCollection initializes result type ActorResultCollection from
+// viewed result type ActorResultCollection.
+func NewActorResultCollection(vres searchserviceviews.ActorResultCollection) ActorResultCollection {
+	return newActorResultCollection(vres.Projected)
+}
+
+// NewViewedActorResultCollection initializes viewed result type
+// ActorResultCollection from result type ActorResultCollection using the given
+// view.
+func NewViewedActorResultCollection(res ActorResultCollection, view string) searchserviceviews.ActorResultCollection {
+	p := newActorResultCollectionView(res)
+	return searchserviceviews.ActorResultCollection{Projected: p, View: "default"}
+}
+
+// NewFilmResultCollection initializes result type FilmResultCollection from
+// viewed result type FilmResultCollection.
+func NewFilmResultCollection(vres searchserviceviews.FilmResultCollection) FilmResultCollection {
+	return newFilmResultCollection(vres.Projected)
+}
+
+// NewViewedFilmResultCollection initializes viewed result type
+// FilmResultCollection from result type FilmResultCollection using the given
+// view.
+func NewViewedFilmResultCollection(res FilmResultCollection, view string) searchserviceviews.FilmResultCollection {
+	p := newFilmResultCollectionView(res)
+	return searchserviceviews.FilmResultCollection{Projected: p, View: "default"}
+}
+
+// newActorResultCollection converts projected type ActorResultCollection to
+// service type ActorResultCollection.
+func newActorResultCollection(vres searchserviceviews.ActorResultCollectionView) ActorResultCollection {
+	res := make(ActorResultCollection, len(vres))
+	for i, n := range vres {
+		res[i] = newActorResult(n)
+	}
+	return res
+}
+
+// newActorResultCollectionView projects result type ActorResultCollection to
+// projected type ActorResultCollectionView using the "default" view.
+func newActorResultCollectionView(res ActorResultCollection) searchserviceviews.ActorResultCollectionView {
+	vres := make(searchserviceviews.ActorResultCollectionView, len(res))
+	for i, n := range res {
+		vres[i] = newActorResultView(n)
+	}
+	return vres
+}
+
+// newActorResult converts projected type ActorResult to service type
+// ActorResult.
+func newActorResult(vres *searchserviceviews.ActorResultView) *ActorResult {
+	res := &ActorResult{
+		ActorName:      vres.ActorName,
+		ActorSex:       vres.ActorSex,
+		ActorBirthdate: vres.ActorBirthdate,
+	}
+	if vres.ActorID != nil {
+		res.ActorID = *vres.ActorID
+	}
+	return res
+}
+
+// newActorResultView projects result type ActorResult to projected type
+// ActorResultView using the "default" view.
+func newActorResultView(res *ActorResult) *searchserviceviews.ActorResultView {
+	vres := &searchserviceviews.ActorResultView{
+		ActorID:        &res.ActorID,
+		ActorName:      res.ActorName,
+		ActorSex:       res.ActorSex,
+		ActorBirthdate: res.ActorBirthdate,
+	}
+	return vres
+}
+
+// newFilmResultCollection converts projected type FilmResultCollection to
+// service type FilmResultCollection.
+func newFilmResultCollection(vres searchserviceviews.FilmResultCollectionView) FilmResultCollection {
+	res := make(FilmResultCollection, len(vres))
+	for i, n := range vres {
+		res[i] = newFilmResult(n)
+	}
+	return res
+}
+
+// newFilmResultCollectionView projects result type FilmResultCollection to
+// projected type FilmResultCollectionView using the "default" view.
+func newFilmResultCollectionView(res FilmResultCollection) searchserviceviews.FilmResultCollectionView {
+	vres := make(searchserviceviews.FilmResultCollectionView, len(res))
+	for i, n := range res {
+		vres[i] = newFilmResultView(n)
+	}
+	return vres
+}
+
+// newFilmResult converts projected type FilmResult to service type FilmResult.
+func newFilmResult(vres *searchserviceviews.FilmResultView) *FilmResult {
+	res := &FilmResult{
+		Title:       vres.Title,
+		Description: vres.Description,
+		ReleaseDate: vres.ReleaseDate,
+		Rating:      vres.Rating,
+		Actors:      vres.Actors,
+	}
+	if vres.FilmID != nil {
+		res.FilmID = *vres.FilmID
+	}
+	return res
+}
+
+// newFilmResultView projects result type FilmResult to projected type
+// FilmResultView using the "default" view.
+func newFilmResultView(res *FilmResult) *searchserviceviews.FilmResultView {
+	vres := &searchserviceviews.FilmResultView{
+		FilmID:      &res.FilmID,
+		Title:       res.Title,
+		Description: res.Description,
+		ReleaseDate: res.ReleaseDate,
+		Rating:      res.Rating,
+		Actors:      res.Actors,
+	}
+	return vres
 }

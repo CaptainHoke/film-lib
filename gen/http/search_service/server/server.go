@@ -20,6 +20,8 @@ import (
 type Server struct {
 	Mounts        []*MountPoint
 	SearchLibrary http.Handler
+	GetAllActors  http.Handler
+	GetAllFilms   http.Handler
 }
 
 // MountPoint holds information about the mounted endpoints.
@@ -50,8 +52,12 @@ func New(
 	return &Server{
 		Mounts: []*MountPoint{
 			{"SearchLibrary", "GET", "/search"},
+			{"GetAllActors", "GET", "/actors"},
+			{"GetAllFilms", "GET", "/films"},
 		},
 		SearchLibrary: NewSearchLibraryHandler(e.SearchLibrary, mux, decoder, encoder, errhandler, formatter),
+		GetAllActors:  NewGetAllActorsHandler(e.GetAllActors, mux, decoder, encoder, errhandler, formatter),
+		GetAllFilms:   NewGetAllFilmsHandler(e.GetAllFilms, mux, decoder, encoder, errhandler, formatter),
 	}
 }
 
@@ -61,6 +67,8 @@ func (s *Server) Service() string { return "SearchService" }
 // Use wraps the server handlers with the given middleware.
 func (s *Server) Use(m func(http.Handler) http.Handler) {
 	s.SearchLibrary = m(s.SearchLibrary)
+	s.GetAllActors = m(s.GetAllActors)
+	s.GetAllFilms = m(s.GetAllFilms)
 }
 
 // MethodNames returns the methods served.
@@ -69,6 +77,8 @@ func (s *Server) MethodNames() []string { return searchservice.MethodNames[:] }
 // Mount configures the mux to serve the SearchService endpoints.
 func Mount(mux goahttp.Muxer, h *Server) {
 	MountSearchLibraryHandler(mux, h.SearchLibrary)
+	MountGetAllActorsHandler(mux, h.GetAllActors)
+	MountGetAllFilmsHandler(mux, h.GetAllFilms)
 }
 
 // Mount configures the mux to serve the SearchService endpoints.
@@ -106,6 +116,108 @@ func NewSearchLibraryHandler(
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := context.WithValue(r.Context(), goahttp.AcceptTypeKey, r.Header.Get("Accept"))
 		ctx = context.WithValue(ctx, goa.MethodKey, "searchLibrary")
+		ctx = context.WithValue(ctx, goa.ServiceKey, "SearchService")
+		payload, err := decodeRequest(r)
+		if err != nil {
+			if err := encodeError(ctx, w, err); err != nil {
+				errhandler(ctx, w, err)
+			}
+			return
+		}
+		res, err := endpoint(ctx, payload)
+		if err != nil {
+			if err := encodeError(ctx, w, err); err != nil {
+				errhandler(ctx, w, err)
+			}
+			return
+		}
+		if err := encodeResponse(ctx, w, res); err != nil {
+			errhandler(ctx, w, err)
+		}
+	})
+}
+
+// MountGetAllActorsHandler configures the mux to serve the "SearchService"
+// service "getAllActors" endpoint.
+func MountGetAllActorsHandler(mux goahttp.Muxer, h http.Handler) {
+	f, ok := h.(http.HandlerFunc)
+	if !ok {
+		f = func(w http.ResponseWriter, r *http.Request) {
+			h.ServeHTTP(w, r)
+		}
+	}
+	mux.Handle("GET", "/actors", f)
+}
+
+// NewGetAllActorsHandler creates a HTTP handler which loads the HTTP request
+// and calls the "SearchService" service "getAllActors" endpoint.
+func NewGetAllActorsHandler(
+	endpoint goa.Endpoint,
+	mux goahttp.Muxer,
+	decoder func(*http.Request) goahttp.Decoder,
+	encoder func(context.Context, http.ResponseWriter) goahttp.Encoder,
+	errhandler func(context.Context, http.ResponseWriter, error),
+	formatter func(ctx context.Context, err error) goahttp.Statuser,
+) http.Handler {
+	var (
+		decodeRequest  = DecodeGetAllActorsRequest(mux, decoder)
+		encodeResponse = EncodeGetAllActorsResponse(encoder)
+		encodeError    = EncodeGetAllActorsError(encoder, formatter)
+	)
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx := context.WithValue(r.Context(), goahttp.AcceptTypeKey, r.Header.Get("Accept"))
+		ctx = context.WithValue(ctx, goa.MethodKey, "getAllActors")
+		ctx = context.WithValue(ctx, goa.ServiceKey, "SearchService")
+		payload, err := decodeRequest(r)
+		if err != nil {
+			if err := encodeError(ctx, w, err); err != nil {
+				errhandler(ctx, w, err)
+			}
+			return
+		}
+		res, err := endpoint(ctx, payload)
+		if err != nil {
+			if err := encodeError(ctx, w, err); err != nil {
+				errhandler(ctx, w, err)
+			}
+			return
+		}
+		if err := encodeResponse(ctx, w, res); err != nil {
+			errhandler(ctx, w, err)
+		}
+	})
+}
+
+// MountGetAllFilmsHandler configures the mux to serve the "SearchService"
+// service "getAllFilms" endpoint.
+func MountGetAllFilmsHandler(mux goahttp.Muxer, h http.Handler) {
+	f, ok := h.(http.HandlerFunc)
+	if !ok {
+		f = func(w http.ResponseWriter, r *http.Request) {
+			h.ServeHTTP(w, r)
+		}
+	}
+	mux.Handle("GET", "/films", f)
+}
+
+// NewGetAllFilmsHandler creates a HTTP handler which loads the HTTP request
+// and calls the "SearchService" service "getAllFilms" endpoint.
+func NewGetAllFilmsHandler(
+	endpoint goa.Endpoint,
+	mux goahttp.Muxer,
+	decoder func(*http.Request) goahttp.Decoder,
+	encoder func(context.Context, http.ResponseWriter) goahttp.Encoder,
+	errhandler func(context.Context, http.ResponseWriter, error),
+	formatter func(ctx context.Context, err error) goahttp.Statuser,
+) http.Handler {
+	var (
+		decodeRequest  = DecodeGetAllFilmsRequest(mux, decoder)
+		encodeResponse = EncodeGetAllFilmsResponse(encoder)
+		encodeError    = EncodeGetAllFilmsError(encoder, formatter)
+	)
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx := context.WithValue(r.Context(), goahttp.AcceptTypeKey, r.Header.Get("Accept"))
+		ctx = context.WithValue(ctx, goa.MethodKey, "getAllFilms")
 		ctx = context.WithValue(ctx, goa.ServiceKey, "SearchService")
 		payload, err := decodeRequest(r)
 		if err != nil {

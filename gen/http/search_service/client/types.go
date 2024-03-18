@@ -9,10 +9,17 @@ package client
 
 import (
 	searchservice "film-lib/gen/search_service"
+	searchserviceviews "film-lib/gen/search_service/views"
 	"unicode/utf8"
 
 	goa "goa.design/goa/v3/pkg"
 )
+
+// GetAllFilmsRequestBody is the type of the "SearchService" service
+// "getAllFilms" endpoint HTTP request body.
+type GetAllFilmsRequestBody struct {
+	SortBy *SortByRequestBody `form:"SortBy" json:"SortBy" xml:"SortBy"`
+}
 
 // SearchLibraryResponseBody is the type of the "SearchService" service
 // "searchLibrary" endpoint HTTP response body.
@@ -22,6 +29,14 @@ type SearchLibraryResponseBody struct {
 	// Film Info
 	FilmInfo *FilmInfoResponseBody `form:"FilmInfo,omitempty" json:"FilmInfo,omitempty" xml:"FilmInfo,omitempty"`
 }
+
+// GetAllActorsResponseBody is the type of the "SearchService" service
+// "getAllActors" endpoint HTTP response body.
+type GetAllActorsResponseBody []*ActorResultResponse
+
+// GetAllFilmsResponseBody is the type of the "SearchService" service
+// "getAllFilms" endpoint HTTP response body.
+type GetAllFilmsResponseBody []*FilmResultResponse
 
 // FilmInfoResponseBody is used to define fields on response body types.
 type FilmInfoResponseBody struct {
@@ -33,26 +48,46 @@ type FilmInfoResponseBody struct {
 	ReleaseDate *string `form:"ReleaseDate,omitempty" json:"ReleaseDate,omitempty" xml:"ReleaseDate,omitempty"`
 	// Rating (0.0 - 10.0)
 	Rating *float32 `form:"Rating,omitempty" json:"Rating,omitempty" xml:"Rating,omitempty"`
-	// List of Actors involved in Film
-	Actors []*ActorResponseBody `form:"Actors,omitempty" json:"Actors,omitempty" xml:"Actors,omitempty"`
+	// Actors' Ids
+	Actors []uint64 `form:"Actors,omitempty" json:"Actors,omitempty" xml:"Actors,omitempty"`
 }
 
-// ActorResponseBody is used to define fields on response body types.
-type ActorResponseBody struct {
+// ActorResultResponse is used to define fields on response body types.
+type ActorResultResponse struct {
 	// Unique ID of an Actor
-	ActorID *uint64 `form:"ActorID,omitempty" json:"ActorID,omitempty" xml:"ActorID,omitempty"`
-	// Actor Info
-	ActorInfo *ActorInfoResponseBody `form:"ActorInfo,omitempty" json:"ActorInfo,omitempty" xml:"ActorInfo,omitempty"`
+	ActorID        *uint64 `form:"ActorID,omitempty" json:"ActorID,omitempty" xml:"ActorID,omitempty"`
+	ActorName      *string `form:"ActorName,omitempty" json:"ActorName,omitempty" xml:"ActorName,omitempty"`
+	ActorSex       *string `form:"ActorSex,omitempty" json:"ActorSex,omitempty" xml:"ActorSex,omitempty"`
+	ActorBirthdate *string `form:"ActorBirthdate,omitempty" json:"ActorBirthdate,omitempty" xml:"ActorBirthdate,omitempty"`
 }
 
-// ActorInfoResponseBody is used to define fields on response body types.
-type ActorInfoResponseBody struct {
-	// Name of an Actor
-	ActorName *string `form:"ActorName,omitempty" json:"ActorName,omitempty" xml:"ActorName,omitempty"`
-	// Sex of an Actor
-	ActorSex *string `form:"ActorSex,omitempty" json:"ActorSex,omitempty" xml:"ActorSex,omitempty"`
-	// YYYY-MM-DD
-	ActorBirthdate *string `form:"ActorBirthdate,omitempty" json:"ActorBirthdate,omitempty" xml:"ActorBirthdate,omitempty"`
+// SortByRequestBody is used to define fields on request body types.
+type SortByRequestBody struct {
+	// Field to sort by (Rating (default) | Title | Release Date)
+	Field string `form:"Field" json:"Field" xml:"Field"`
+	// Ascending / Descending
+	Ordering string `form:"Ordering" json:"Ordering" xml:"Ordering"`
+}
+
+// FilmResultResponse is used to define fields on response body types.
+type FilmResultResponse struct {
+	// Unique ID of a Film
+	FilmID      *uint64 `form:"FilmID,omitempty" json:"FilmID,omitempty" xml:"FilmID,omitempty"`
+	Title       *string `form:"Title,omitempty" json:"Title,omitempty" xml:"Title,omitempty"`
+	Description *string `form:"Description,omitempty" json:"Description,omitempty" xml:"Description,omitempty"`
+	ReleaseDate *string `form:"ReleaseDate,omitempty" json:"ReleaseDate,omitempty" xml:"ReleaseDate,omitempty"`
+	Rating      *string `form:"Rating,omitempty" json:"Rating,omitempty" xml:"Rating,omitempty"`
+	Actors      *string `form:"Actors,omitempty" json:"Actors,omitempty" xml:"Actors,omitempty"`
+}
+
+// NewGetAllFilmsRequestBody builds the HTTP request body from the payload of
+// the "getAllFilms" endpoint of the "SearchService" service.
+func NewGetAllFilmsRequestBody(p *searchservice.GetAllFilmsPayload) *GetAllFilmsRequestBody {
+	body := &GetAllFilmsRequestBody{}
+	if p.SortBy != nil {
+		body.SortBy = marshalSearchserviceSortByToSortByRequestBody(p.SortBy)
+	}
+	return body
 }
 
 // NewSearchLibraryFilmOK builds a "SearchService" service "searchLibrary"
@@ -77,6 +112,60 @@ func NewSearchLibraryInvalidScopes(body string) searchservice.InvalidScopes {
 // NewSearchLibraryUnauthorized builds a SearchService service searchLibrary
 // endpoint unauthorized error.
 func NewSearchLibraryUnauthorized(body string) searchservice.Unauthorized {
+	v := searchservice.Unauthorized(body)
+
+	return v
+}
+
+// NewGetAllActorsActorResultCollectionOK builds a "SearchService" service
+// "getAllActors" endpoint result from a HTTP "OK" response.
+func NewGetAllActorsActorResultCollectionOK(body GetAllActorsResponseBody) searchserviceviews.ActorResultCollectionView {
+	v := make([]*searchserviceviews.ActorResultView, len(body))
+	for i, val := range body {
+		v[i] = unmarshalActorResultResponseToSearchserviceviewsActorResultView(val)
+	}
+
+	return v
+}
+
+// NewGetAllActorsInvalidScopes builds a SearchService service getAllActors
+// endpoint invalid-scopes error.
+func NewGetAllActorsInvalidScopes(body string) searchservice.InvalidScopes {
+	v := searchservice.InvalidScopes(body)
+
+	return v
+}
+
+// NewGetAllActorsUnauthorized builds a SearchService service getAllActors
+// endpoint unauthorized error.
+func NewGetAllActorsUnauthorized(body string) searchservice.Unauthorized {
+	v := searchservice.Unauthorized(body)
+
+	return v
+}
+
+// NewGetAllFilmsFilmResultCollectionOK builds a "SearchService" service
+// "getAllFilms" endpoint result from a HTTP "OK" response.
+func NewGetAllFilmsFilmResultCollectionOK(body GetAllFilmsResponseBody) searchserviceviews.FilmResultCollectionView {
+	v := make([]*searchserviceviews.FilmResultView, len(body))
+	for i, val := range body {
+		v[i] = unmarshalFilmResultResponseToSearchserviceviewsFilmResultView(val)
+	}
+
+	return v
+}
+
+// NewGetAllFilmsInvalidScopes builds a SearchService service getAllFilms
+// endpoint invalid-scopes error.
+func NewGetAllFilmsInvalidScopes(body string) searchservice.InvalidScopes {
+	v := searchservice.InvalidScopes(body)
+
+	return v
+}
+
+// NewGetAllFilmsUnauthorized builds a SearchService service getAllFilms
+// endpoint unauthorized error.
+func NewGetAllFilmsUnauthorized(body string) searchservice.Unauthorized {
 	v := searchservice.Unauthorized(body)
 
 	return v
@@ -145,57 +234,22 @@ func ValidateFilmInfoResponseBody(body *FilmInfoResponseBody) (err error) {
 			err = goa.MergeErrors(err, goa.InvalidRangeError("body.Rating", *body.Rating, 10, false))
 		}
 	}
-	for _, e := range body.Actors {
-		if e != nil {
-			if err2 := ValidateActorResponseBody(e); err2 != nil {
-				err = goa.MergeErrors(err, err2)
-			}
-		}
-	}
 	return
 }
 
-// ValidateActorResponseBody runs the validations defined on ActorResponseBody
-func ValidateActorResponseBody(body *ActorResponseBody) (err error) {
+// ValidateActorResultResponse runs the validations defined on
+// ActorResultResponse
+func ValidateActorResultResponse(body *ActorResultResponse) (err error) {
 	if body.ActorID == nil {
 		err = goa.MergeErrors(err, goa.MissingFieldError("ActorID", "body"))
 	}
-	if body.ActorInfo == nil {
-		err = goa.MergeErrors(err, goa.MissingFieldError("ActorInfo", "body"))
-	}
-	if body.ActorInfo != nil {
-		if err2 := ValidateActorInfoResponseBody(body.ActorInfo); err2 != nil {
-			err = goa.MergeErrors(err, err2)
-		}
-	}
 	return
 }
 
-// ValidateActorInfoResponseBody runs the validations defined on
-// ActorInfoResponseBody
-func ValidateActorInfoResponseBody(body *ActorInfoResponseBody) (err error) {
-	if body.ActorName == nil {
-		err = goa.MergeErrors(err, goa.MissingFieldError("ActorName", "body"))
-	}
-	if body.ActorSex == nil {
-		err = goa.MergeErrors(err, goa.MissingFieldError("ActorSex", "body"))
-	}
-	if body.ActorBirthdate == nil {
-		err = goa.MergeErrors(err, goa.MissingFieldError("ActorBirthdate", "body"))
-	}
-	if body.ActorName != nil {
-		err = goa.MergeErrors(err, goa.ValidatePattern("body.ActorName", *body.ActorName, "^.*\\S.*$"))
-	}
-	if body.ActorName != nil {
-		if utf8.RuneCountInString(*body.ActorName) > 32 {
-			err = goa.MergeErrors(err, goa.InvalidLengthError("body.ActorName", *body.ActorName, utf8.RuneCountInString(*body.ActorName), 32, false))
-		}
-	}
-	if body.ActorSex != nil {
-		err = goa.MergeErrors(err, goa.ValidatePattern("body.ActorSex", *body.ActorSex, "^(M|F)$"))
-	}
-	if body.ActorBirthdate != nil {
-		err = goa.MergeErrors(err, goa.ValidatePattern("body.ActorBirthdate", *body.ActorBirthdate, "^\\d{4}\\-(0[1-9]|1[012])\\-(0[1-9]|[12][0-9]|3[01])$"))
+// ValidateFilmResultResponse runs the validations defined on FilmResultResponse
+func ValidateFilmResultResponse(body *FilmResultResponse) (err error) {
+	if body.FilmID == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("FilmID", "body"))
 	}
 	return
 }

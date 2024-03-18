@@ -27,9 +27,9 @@ import (
 //	command (subcommand1|subcommand2|...)
 func UsageCommands() string {
 	return `is-alive check
-actor-service (get-all-actors|add-actor|update-actor-info|delete-actor)
-film-service (get-all-films|add-film|update-film-info|delete-film)
-search-service search-library
+actor-service (add-actor|update-actor-info|delete-actor)
+film-service (add-film|update-film-info|delete-film)
+search-service (search-library|get-all-actors|get-all-films)
 sign-in auth
 `
 }
@@ -37,14 +37,26 @@ sign-in auth
 // UsageExamples produces an example of a valid invocation of the CLI tool.
 func UsageExamples() string {
 	return os.Args[0] + ` is-alive check` + "\n" +
-		os.Args[0] + ` actor-service get-all-actors --token "Aperiam dolores sed architecto est."` + "\n" +
-		os.Args[0] + ` film-service get-all-films --body '{
-      "SortBy": {
-         "Field": "Provident non totam.",
-         "Ordering": "Magnam non excepturi est id laudantium enim."
+		os.Args[0] + ` actor-service add-actor --body '{
+      "ActorInfo": {
+         "ActorBirthdate": "2024-03-18",
+         "ActorName": "Margo Robbie",
+         "ActorSex": "F"
       }
-   }' --token "Consectetur est placeat ullam."` + "\n" +
-		os.Args[0] + ` search-service search-library --query-string "In nulla iure." --token "Dolores ipsa odio."` + "\n" +
+   }' --token "Ad necessitatibus voluptas dicta omnis fuga possimus."` + "\n" +
+		os.Args[0] + ` film-service add-film --body '{
+      "FilmInfo": {
+         "Actors": [
+            15409686236987074460,
+            1963945278260898944
+         ],
+         "Description": "c6v",
+         "Rating": 3.8577452,
+         "ReleaseDate": "2024-03-18",
+         "Title": "y2u"
+      }
+   }' --token "Ut error iste repellat placeat dicta."` + "\n" +
+		os.Args[0] + ` search-service search-library --query-string "Non totam minus magnam non." --token "Est id laudantium enim at consectetur."` + "\n" +
 		os.Args[0] + ` sign-in auth --username "user" --password "password"` + "\n" +
 		""
 }
@@ -65,70 +77,70 @@ func ParseEndpoint(
 
 		actorServiceFlags = flag.NewFlagSet("actor-service", flag.ContinueOnError)
 
-		actorServiceGetAllActorsFlags     = flag.NewFlagSet("get-all-actors", flag.ExitOnError)
-		actorServiceGetAllActorsTokenFlag = actorServiceGetAllActorsFlags.String("token", "REQUIRED", "")
-
 		actorServiceAddActorFlags     = flag.NewFlagSet("add-actor", flag.ExitOnError)
 		actorServiceAddActorBodyFlag  = actorServiceAddActorFlags.String("body", "REQUIRED", "")
-		actorServiceAddActorTokenFlag = actorServiceAddActorFlags.String("token", "REQUIRED", "")
+		actorServiceAddActorTokenFlag = actorServiceAddActorFlags.String("token", "", "")
 
 		actorServiceUpdateActorInfoFlags       = flag.NewFlagSet("update-actor-info", flag.ExitOnError)
 		actorServiceUpdateActorInfoBodyFlag    = actorServiceUpdateActorInfoFlags.String("body", "REQUIRED", "")
 		actorServiceUpdateActorInfoActorIDFlag = actorServiceUpdateActorInfoFlags.String("actor-id", "REQUIRED", "")
-		actorServiceUpdateActorInfoTokenFlag   = actorServiceUpdateActorInfoFlags.String("token", "REQUIRED", "")
+		actorServiceUpdateActorInfoTokenFlag   = actorServiceUpdateActorInfoFlags.String("token", "", "")
 
 		actorServiceDeleteActorFlags       = flag.NewFlagSet("delete-actor", flag.ExitOnError)
 		actorServiceDeleteActorActorIDFlag = actorServiceDeleteActorFlags.String("actor-id", "REQUIRED", "Actor ID")
-		actorServiceDeleteActorTokenFlag   = actorServiceDeleteActorFlags.String("token", "REQUIRED", "")
+		actorServiceDeleteActorTokenFlag   = actorServiceDeleteActorFlags.String("token", "", "")
 
 		filmServiceFlags = flag.NewFlagSet("film-service", flag.ContinueOnError)
 
-		filmServiceGetAllFilmsFlags     = flag.NewFlagSet("get-all-films", flag.ExitOnError)
-		filmServiceGetAllFilmsBodyFlag  = filmServiceGetAllFilmsFlags.String("body", "REQUIRED", "")
-		filmServiceGetAllFilmsTokenFlag = filmServiceGetAllFilmsFlags.String("token", "REQUIRED", "")
-
 		filmServiceAddFilmFlags     = flag.NewFlagSet("add-film", flag.ExitOnError)
 		filmServiceAddFilmBodyFlag  = filmServiceAddFilmFlags.String("body", "REQUIRED", "")
-		filmServiceAddFilmTokenFlag = filmServiceAddFilmFlags.String("token", "REQUIRED", "")
+		filmServiceAddFilmTokenFlag = filmServiceAddFilmFlags.String("token", "", "")
 
 		filmServiceUpdateFilmInfoFlags      = flag.NewFlagSet("update-film-info", flag.ExitOnError)
 		filmServiceUpdateFilmInfoBodyFlag   = filmServiceUpdateFilmInfoFlags.String("body", "REQUIRED", "")
 		filmServiceUpdateFilmInfoFilmIDFlag = filmServiceUpdateFilmInfoFlags.String("film-id", "REQUIRED", "")
-		filmServiceUpdateFilmInfoTokenFlag  = filmServiceUpdateFilmInfoFlags.String("token", "REQUIRED", "")
+		filmServiceUpdateFilmInfoTokenFlag  = filmServiceUpdateFilmInfoFlags.String("token", "", "")
 
 		filmServiceDeleteFilmFlags      = flag.NewFlagSet("delete-film", flag.ExitOnError)
 		filmServiceDeleteFilmFilmIDFlag = filmServiceDeleteFilmFlags.String("film-id", "REQUIRED", "Film ID")
-		filmServiceDeleteFilmTokenFlag  = filmServiceDeleteFilmFlags.String("token", "REQUIRED", "")
+		filmServiceDeleteFilmTokenFlag  = filmServiceDeleteFilmFlags.String("token", "", "")
 
 		searchServiceFlags = flag.NewFlagSet("search-service", flag.ContinueOnError)
 
 		searchServiceSearchLibraryFlags           = flag.NewFlagSet("search-library", flag.ExitOnError)
-		searchServiceSearchLibraryQueryStringFlag = searchServiceSearchLibraryFlags.String("query-string", "REQUIRED", "")
-		searchServiceSearchLibraryTokenFlag       = searchServiceSearchLibraryFlags.String("token", "REQUIRED", "")
+		searchServiceSearchLibraryQueryStringFlag = searchServiceSearchLibraryFlags.String("query-string", "", "")
+		searchServiceSearchLibraryTokenFlag       = searchServiceSearchLibraryFlags.String("token", "", "")
+
+		searchServiceGetAllActorsFlags     = flag.NewFlagSet("get-all-actors", flag.ExitOnError)
+		searchServiceGetAllActorsTokenFlag = searchServiceGetAllActorsFlags.String("token", "", "")
+
+		searchServiceGetAllFilmsFlags     = flag.NewFlagSet("get-all-films", flag.ExitOnError)
+		searchServiceGetAllFilmsBodyFlag  = searchServiceGetAllFilmsFlags.String("body", "REQUIRED", "")
+		searchServiceGetAllFilmsTokenFlag = searchServiceGetAllFilmsFlags.String("token", "", "")
 
 		signInFlags = flag.NewFlagSet("sign-in", flag.ContinueOnError)
 
 		signInAuthFlags        = flag.NewFlagSet("auth", flag.ExitOnError)
-		signInAuthUsernameFlag = signInAuthFlags.String("username", "REQUIRED", "Username used to perform sign-in")
-		signInAuthPasswordFlag = signInAuthFlags.String("password", "REQUIRED", "Password used to perform sign-in")
+		signInAuthUsernameFlag = signInAuthFlags.String("username", "", "Username used to perform signin")
+		signInAuthPasswordFlag = signInAuthFlags.String("password", "", "Password used to perform signin")
 	)
 	isAliveFlags.Usage = isAliveUsage
 	isAliveCheckFlags.Usage = isAliveCheckUsage
 
 	actorServiceFlags.Usage = actorServiceUsage
-	actorServiceGetAllActorsFlags.Usage = actorServiceGetAllActorsUsage
 	actorServiceAddActorFlags.Usage = actorServiceAddActorUsage
 	actorServiceUpdateActorInfoFlags.Usage = actorServiceUpdateActorInfoUsage
 	actorServiceDeleteActorFlags.Usage = actorServiceDeleteActorUsage
 
 	filmServiceFlags.Usage = filmServiceUsage
-	filmServiceGetAllFilmsFlags.Usage = filmServiceGetAllFilmsUsage
 	filmServiceAddFilmFlags.Usage = filmServiceAddFilmUsage
 	filmServiceUpdateFilmInfoFlags.Usage = filmServiceUpdateFilmInfoUsage
 	filmServiceDeleteFilmFlags.Usage = filmServiceDeleteFilmUsage
 
 	searchServiceFlags.Usage = searchServiceUsage
 	searchServiceSearchLibraryFlags.Usage = searchServiceSearchLibraryUsage
+	searchServiceGetAllActorsFlags.Usage = searchServiceGetAllActorsUsage
+	searchServiceGetAllFilmsFlags.Usage = searchServiceGetAllFilmsUsage
 
 	signInFlags.Usage = signInUsage
 	signInAuthFlags.Usage = signInAuthUsage
@@ -182,9 +194,6 @@ func ParseEndpoint(
 
 		case "actor-service":
 			switch epn {
-			case "get-all-actors":
-				epf = actorServiceGetAllActorsFlags
-
 			case "add-actor":
 				epf = actorServiceAddActorFlags
 
@@ -198,9 +207,6 @@ func ParseEndpoint(
 
 		case "film-service":
 			switch epn {
-			case "get-all-films":
-				epf = filmServiceGetAllFilmsFlags
-
 			case "add-film":
 				epf = filmServiceAddFilmFlags
 
@@ -216,6 +222,12 @@ func ParseEndpoint(
 			switch epn {
 			case "search-library":
 				epf = searchServiceSearchLibraryFlags
+
+			case "get-all-actors":
+				epf = searchServiceGetAllActorsFlags
+
+			case "get-all-films":
+				epf = searchServiceGetAllFilmsFlags
 
 			}
 
@@ -256,9 +268,6 @@ func ParseEndpoint(
 		case "actor-service":
 			c := actorservicec.NewClient(scheme, host, doer, enc, dec, restore)
 			switch epn {
-			case "get-all-actors":
-				endpoint = c.GetAllActors()
-				data, err = actorservicec.BuildGetAllActorsPayload(*actorServiceGetAllActorsTokenFlag)
 			case "add-actor":
 				endpoint = c.AddActor()
 				data, err = actorservicec.BuildAddActorPayload(*actorServiceAddActorBodyFlag, *actorServiceAddActorTokenFlag)
@@ -272,9 +281,6 @@ func ParseEndpoint(
 		case "film-service":
 			c := filmservicec.NewClient(scheme, host, doer, enc, dec, restore)
 			switch epn {
-			case "get-all-films":
-				endpoint = c.GetAllFilms()
-				data, err = filmservicec.BuildGetAllFilmsPayload(*filmServiceGetAllFilmsBodyFlag, *filmServiceGetAllFilmsTokenFlag)
 			case "add-film":
 				endpoint = c.AddFilm()
 				data, err = filmservicec.BuildAddFilmPayload(*filmServiceAddFilmBodyFlag, *filmServiceAddFilmTokenFlag)
@@ -291,6 +297,12 @@ func ParseEndpoint(
 			case "search-library":
 				endpoint = c.SearchLibrary()
 				data, err = searchservicec.BuildSearchLibraryPayload(*searchServiceSearchLibraryQueryStringFlag, *searchServiceSearchLibraryTokenFlag)
+			case "get-all-actors":
+				endpoint = c.GetAllActors()
+				data, err = searchservicec.BuildGetAllActorsPayload(*searchServiceGetAllActorsTokenFlag)
+			case "get-all-films":
+				endpoint = c.GetAllFilms()
+				data, err = searchservicec.BuildGetAllFilmsPayload(*searchServiceGetAllFilmsBodyFlag, *searchServiceGetAllFilmsTokenFlag)
 			}
 		case "sign-in":
 			c := signinc.NewClient(scheme, host, doer, enc, dec, restore)
@@ -339,7 +351,6 @@ Usage:
     %[1]s [globalflags] actor-service COMMAND [flags]
 
 COMMAND:
-    get-all-actors: GetAllActors implements getAllActors.
     add-actor: AddActor implements addActor.
     update-actor-info: UpdateActorInfo implements updateActorInfo.
     delete-actor: DeleteActor implements deleteActor.
@@ -348,17 +359,6 @@ Additional help:
     %[1]s actor-service COMMAND --help
 `, os.Args[0])
 }
-func actorServiceGetAllActorsUsage() {
-	fmt.Fprintf(os.Stderr, `%[1]s [flags] actor-service get-all-actors -token STRING
-
-GetAllActors implements getAllActors.
-    -token STRING: 
-
-Example:
-    %[1]s actor-service get-all-actors --token "Aperiam dolores sed architecto est."
-`, os.Args[0])
-}
-
 func actorServiceAddActorUsage() {
 	fmt.Fprintf(os.Stderr, `%[1]s [flags] actor-service add-actor -body JSON -token STRING
 
@@ -373,7 +373,7 @@ Example:
          "ActorName": "Margo Robbie",
          "ActorSex": "F"
       }
-   }' --token "Dolores ducimus quo iste aut."
+   }' --token "Ad necessitatibus voluptas dicta omnis fuga possimus."
 `, os.Args[0])
 }
 
@@ -392,7 +392,7 @@ Example:
          "ActorName": "Margo Robbie",
          "ActorSex": "F"
       }
-   }' --actor-id 8840708909894862886 --token "Aliquam non ut quaerat."
+   }' --actor-id 14892883948998841543 --token "Officiis minus hic."
 `, os.Args[0])
 }
 
@@ -404,7 +404,7 @@ DeleteActor implements deleteActor.
     -token STRING: 
 
 Example:
-    %[1]s actor-service delete-actor --actor-id 5295043428789127250 --token "Ut ipsa atque."
+    %[1]s actor-service delete-actor --actor-id 2465801165763529177 --token "Culpa at."
 `, os.Args[0])
 }
 
@@ -416,7 +416,6 @@ Usage:
     %[1]s [globalflags] film-service COMMAND [flags]
 
 COMMAND:
-    get-all-films: GetAllFilms implements getAllFilms.
     add-film: AddFilm implements addFilm.
     update-film-info: UpdateFilmInfo implements updateFilmInfo.
     delete-film: DeleteFilm implements deleteFilm.
@@ -425,23 +424,6 @@ Additional help:
     %[1]s film-service COMMAND --help
 `, os.Args[0])
 }
-func filmServiceGetAllFilmsUsage() {
-	fmt.Fprintf(os.Stderr, `%[1]s [flags] film-service get-all-films -body JSON -token STRING
-
-GetAllFilms implements getAllFilms.
-    -body JSON: 
-    -token STRING: 
-
-Example:
-    %[1]s film-service get-all-films --body '{
-      "SortBy": {
-         "Field": "Provident non totam.",
-         "Ordering": "Magnam non excepturi est id laudantium enim."
-      }
-   }' --token "Consectetur est placeat ullam."
-`, os.Args[0])
-}
-
 func filmServiceAddFilmUsage() {
 	fmt.Fprintf(os.Stderr, `%[1]s [flags] film-service add-film -body JSON -token STRING
 
@@ -453,29 +435,15 @@ Example:
     %[1]s film-service add-film --body '{
       "FilmInfo": {
          "Actors": [
-            {
-               "ActorID": 239,
-               "ActorInfo": {
-                  "ActorBirthdate": "2024-03-18",
-                  "ActorName": "Margo Robbie",
-                  "ActorSex": "F"
-               }
-            },
-            {
-               "ActorID": 239,
-               "ActorInfo": {
-                  "ActorBirthdate": "2024-03-18",
-                  "ActorName": "Margo Robbie",
-                  "ActorSex": "F"
-               }
-            }
+            15409686236987074460,
+            1963945278260898944
          ],
-         "Description": "7y9",
-         "Rating": 5.3355002,
+         "Description": "c6v",
+         "Rating": 3.8577452,
          "ReleaseDate": "2024-03-18",
-         "Title": "3y"
+         "Title": "y2u"
       }
-   }' --token "Nisi temporibus veniam laboriosam."
+   }' --token "Ut error iste repellat placeat dicta."
 `, os.Args[0])
 }
 
@@ -491,41 +459,27 @@ Example:
     %[1]s film-service update-film-info --body '{
       "FilmInfo": {
          "Actors": [
-            {
-               "ActorID": 239,
-               "ActorInfo": {
-                  "ActorBirthdate": "2024-03-18",
-                  "ActorName": "Margo Robbie",
-                  "ActorSex": "F"
-               }
-            },
-            {
-               "ActorID": 239,
-               "ActorInfo": {
-                  "ActorBirthdate": "2024-03-18",
-                  "ActorName": "Margo Robbie",
-                  "ActorSex": "F"
-               }
-            }
+            15409686236987074460,
+            1963945278260898944
          ],
-         "Description": "7y9",
-         "Rating": 5.3355002,
+         "Description": "c6v",
+         "Rating": 3.8577452,
          "ReleaseDate": "2024-03-18",
-         "Title": "3y"
+         "Title": "y2u"
       }
-   }' --film-id 3994106207016490147 --token "Et voluptatem incidunt minima esse perspiciatis soluta."
+   }' --film-id 13087534782466187843 --token "Voluptas aliquam ullam aliquam."
 `, os.Args[0])
 }
 
 func filmServiceDeleteFilmUsage() {
-	fmt.Fprintf(os.Stderr, `%[1]s [flags] film-service delete-film -film-id STRING -token STRING
+	fmt.Fprintf(os.Stderr, `%[1]s [flags] film-service delete-film -film-id UINT64 -token STRING
 
 DeleteFilm implements deleteFilm.
-    -film-id STRING: Film ID
+    -film-id UINT64: Film ID
     -token STRING: 
 
 Example:
-    %[1]s film-service delete-film --film-id "Voluptas molestiae aperiam voluptatem." --token "Quas possimus."
+    %[1]s film-service delete-film --film-id 15564376704775934646 --token "Enim ea."
 `, os.Args[0])
 }
 
@@ -538,6 +492,8 @@ Usage:
 
 COMMAND:
     search-library: SearchLibrary implements searchLibrary.
+    get-all-actors: GetAllActors implements getAllActors.
+    get-all-films: GetAllFilms implements getAllFilms.
 
 Additional help:
     %[1]s search-service COMMAND --help
@@ -551,7 +507,35 @@ SearchLibrary implements searchLibrary.
     -token STRING: 
 
 Example:
-    %[1]s search-service search-library --query-string "In nulla iure." --token "Dolores ipsa odio."
+    %[1]s search-service search-library --query-string "Non totam minus magnam non." --token "Est id laudantium enim at consectetur."
+`, os.Args[0])
+}
+
+func searchServiceGetAllActorsUsage() {
+	fmt.Fprintf(os.Stderr, `%[1]s [flags] search-service get-all-actors -token STRING
+
+GetAllActors implements getAllActors.
+    -token STRING: 
+
+Example:
+    %[1]s search-service get-all-actors --token "Rerum repellendus voluptas."
+`, os.Args[0])
+}
+
+func searchServiceGetAllFilmsUsage() {
+	fmt.Fprintf(os.Stderr, `%[1]s [flags] search-service get-all-films -body JSON -token STRING
+
+GetAllFilms implements getAllFilms.
+    -body JSON: 
+    -token STRING: 
+
+Example:
+    %[1]s search-service get-all-films --body '{
+      "SortBy": {
+         "Field": "Rating",
+         "Ordering": "Descending"
+      }
+   }' --token "Quo sit omnis et."
 `, os.Args[0])
 }
 
@@ -572,8 +556,8 @@ func signInAuthUsage() {
 	fmt.Fprintf(os.Stderr, `%[1]s [flags] sign-in auth -username STRING -password STRING
 
 Creates a valid JWT
-    -username STRING: Username used to perform sign-in
-    -password STRING: Password used to perform sign-in
+    -username STRING: Username used to perform signin
+    -password STRING: Password used to perform signin
 
 Example:
     %[1]s sign-in auth --username "user" --password "password"

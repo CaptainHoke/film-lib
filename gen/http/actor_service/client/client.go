@@ -17,10 +17,6 @@ import (
 
 // Client lists the ActorService service endpoint HTTP clients.
 type Client struct {
-	// GetAllActors Doer is the HTTP client used to make requests to the
-	// getAllActors endpoint.
-	GetAllActorsDoer goahttp.Doer
-
 	// AddActor Doer is the HTTP client used to make requests to the addActor
 	// endpoint.
 	AddActorDoer goahttp.Doer
@@ -53,7 +49,6 @@ func NewClient(
 	restoreBody bool,
 ) *Client {
 	return &Client{
-		GetAllActorsDoer:    doer,
 		AddActorDoer:        doer,
 		UpdateActorInfoDoer: doer,
 		DeleteActorDoer:     doer,
@@ -62,30 +57,6 @@ func NewClient(
 		host:                host,
 		decoder:             dec,
 		encoder:             enc,
-	}
-}
-
-// GetAllActors returns an endpoint that makes HTTP requests to the
-// ActorService service getAllActors server.
-func (c *Client) GetAllActors() goa.Endpoint {
-	var (
-		encodeRequest  = EncodeGetAllActorsRequest(c.encoder)
-		decodeResponse = DecodeGetAllActorsResponse(c.decoder, c.RestoreResponseBody)
-	)
-	return func(ctx context.Context, v any) (any, error) {
-		req, err := c.BuildGetAllActorsRequest(ctx, v)
-		if err != nil {
-			return nil, err
-		}
-		err = encodeRequest(req, v)
-		if err != nil {
-			return nil, err
-		}
-		resp, err := c.GetAllActorsDoer.Do(req)
-		if err != nil {
-			return nil, goahttp.ErrRequestError("ActorService", "getAllActors", err)
-		}
-		return decodeResponse(resp)
 	}
 }
 

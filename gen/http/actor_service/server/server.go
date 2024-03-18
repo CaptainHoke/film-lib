@@ -19,7 +19,6 @@ import (
 // Server lists the ActorService service endpoint HTTP handlers.
 type Server struct {
 	Mounts          []*MountPoint
-	GetAllActors    http.Handler
 	AddActor        http.Handler
 	UpdateActorInfo http.Handler
 	DeleteActor     http.Handler
@@ -52,12 +51,10 @@ func New(
 ) *Server {
 	return &Server{
 		Mounts: []*MountPoint{
-			{"GetAllActors", "GET", "/actors"},
 			{"AddActor", "POST", "/actors"},
 			{"UpdateActorInfo", "PUT", "/actors/{ActorID}"},
 			{"DeleteActor", "DELETE", "/actors/{ActorID}"},
 		},
-		GetAllActors:    NewGetAllActorsHandler(e.GetAllActors, mux, decoder, encoder, errhandler, formatter),
 		AddActor:        NewAddActorHandler(e.AddActor, mux, decoder, encoder, errhandler, formatter),
 		UpdateActorInfo: NewUpdateActorInfoHandler(e.UpdateActorInfo, mux, decoder, encoder, errhandler, formatter),
 		DeleteActor:     NewDeleteActorHandler(e.DeleteActor, mux, decoder, encoder, errhandler, formatter),
@@ -69,7 +66,6 @@ func (s *Server) Service() string { return "ActorService" }
 
 // Use wraps the server handlers with the given middleware.
 func (s *Server) Use(m func(http.Handler) http.Handler) {
-	s.GetAllActors = m(s.GetAllActors)
 	s.AddActor = m(s.AddActor)
 	s.UpdateActorInfo = m(s.UpdateActorInfo)
 	s.DeleteActor = m(s.DeleteActor)
@@ -80,7 +76,6 @@ func (s *Server) MethodNames() []string { return actorservice.MethodNames[:] }
 
 // Mount configures the mux to serve the ActorService endpoints.
 func Mount(mux goahttp.Muxer, h *Server) {
-	MountGetAllActorsHandler(mux, h.GetAllActors)
 	MountAddActorHandler(mux, h.AddActor)
 	MountUpdateActorInfoHandler(mux, h.UpdateActorInfo)
 	MountDeleteActorHandler(mux, h.DeleteActor)
@@ -89,57 +84,6 @@ func Mount(mux goahttp.Muxer, h *Server) {
 // Mount configures the mux to serve the ActorService endpoints.
 func (s *Server) Mount(mux goahttp.Muxer) {
 	Mount(mux, s)
-}
-
-// MountGetAllActorsHandler configures the mux to serve the "ActorService"
-// service "getAllActors" endpoint.
-func MountGetAllActorsHandler(mux goahttp.Muxer, h http.Handler) {
-	f, ok := h.(http.HandlerFunc)
-	if !ok {
-		f = func(w http.ResponseWriter, r *http.Request) {
-			h.ServeHTTP(w, r)
-		}
-	}
-	mux.Handle("GET", "/actors", f)
-}
-
-// NewGetAllActorsHandler creates a HTTP handler which loads the HTTP request
-// and calls the "ActorService" service "getAllActors" endpoint.
-func NewGetAllActorsHandler(
-	endpoint goa.Endpoint,
-	mux goahttp.Muxer,
-	decoder func(*http.Request) goahttp.Decoder,
-	encoder func(context.Context, http.ResponseWriter) goahttp.Encoder,
-	errhandler func(context.Context, http.ResponseWriter, error),
-	formatter func(ctx context.Context, err error) goahttp.Statuser,
-) http.Handler {
-	var (
-		decodeRequest  = DecodeGetAllActorsRequest(mux, decoder)
-		encodeResponse = EncodeGetAllActorsResponse(encoder)
-		encodeError    = EncodeGetAllActorsError(encoder, formatter)
-	)
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ctx := context.WithValue(r.Context(), goahttp.AcceptTypeKey, r.Header.Get("Accept"))
-		ctx = context.WithValue(ctx, goa.MethodKey, "getAllActors")
-		ctx = context.WithValue(ctx, goa.ServiceKey, "ActorService")
-		payload, err := decodeRequest(r)
-		if err != nil {
-			if err := encodeError(ctx, w, err); err != nil {
-				errhandler(ctx, w, err)
-			}
-			return
-		}
-		res, err := endpoint(ctx, payload)
-		if err != nil {
-			if err := encodeError(ctx, w, err); err != nil {
-				errhandler(ctx, w, err)
-			}
-			return
-		}
-		if err := encodeResponse(ctx, w, res); err != nil {
-			errhandler(ctx, w, err)
-		}
-	})
 }
 
 // MountAddActorHandler configures the mux to serve the "ActorService" service

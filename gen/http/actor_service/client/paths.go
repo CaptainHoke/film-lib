@@ -11,11 +11,6 @@ import (
 	"fmt"
 )
 
-// GetAllActorsActorServicePath returns the URL path to the ActorService service getAllActors HTTP endpoint.
-func GetAllActorsActorServicePath() string {
-	return "/actors"
-}
-
 // AddActorActorServicePath returns the URL path to the ActorService service addActor HTTP endpoint.
 func AddActorActorServicePath() string {
 	return "/actors"

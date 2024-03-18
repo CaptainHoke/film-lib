@@ -11,7 +11,6 @@ import (
 	"context"
 	"errors"
 	actorservice "film-lib/gen/actor_service"
-	actorserviceviews "film-lib/gen/actor_service/views"
 	"io"
 	"net/http"
 	"strconv"
@@ -21,83 +20,13 @@ import (
 	goa "goa.design/goa/v3/pkg"
 )
 
-// EncodeGetAllActorsResponse returns an encoder for responses returned by the
-// ActorService getAllActors endpoint.
-func EncodeGetAllActorsResponse(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) func(context.Context, http.ResponseWriter, any) error {
-	return func(ctx context.Context, w http.ResponseWriter, v any) error {
-		res := v.(actorserviceviews.ActorResultCollection)
-		enc := encoder(ctx, w)
-		body := NewActorResultResponseCollection(res.Projected)
-		w.WriteHeader(http.StatusOK)
-		return enc.Encode(body)
-	}
-}
-
-// DecodeGetAllActorsRequest returns a decoder for requests sent to the
-// ActorService getAllActors endpoint.
-func DecodeGetAllActorsRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.Decoder) func(*http.Request) (any, error) {
-	return func(r *http.Request) (any, error) {
-		var (
-			token string
-			err   error
-		)
-		token = r.Header.Get("X-Authorization")
-		if token == "" {
-			err = goa.MergeErrors(err, goa.MissingFieldError("token", "header"))
-		}
-		if err != nil {
-			return nil, err
-		}
-		payload := NewGetAllActorsPayload(token)
-		if strings.Contains(payload.Token, " ") {
-			// Remove authorization scheme prefix (e.g. "Bearer")
-			cred := strings.SplitN(payload.Token, " ", 2)[1]
-			payload.Token = cred
-		}
-
-		return payload, nil
-	}
-}
-
-// EncodeGetAllActorsError returns an encoder for errors returned by the
-// getAllActors ActorService endpoint.
-func EncodeGetAllActorsError(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder, formatter func(ctx context.Context, err error) goahttp.Statuser) func(context.Context, http.ResponseWriter, error) error {
-	encodeError := goahttp.ErrorEncoder(encoder, formatter)
-	return func(ctx context.Context, w http.ResponseWriter, v error) error {
-		var en goa.GoaErrorNamer
-		if !errors.As(v, &en) {
-			return encodeError(ctx, w, v)
-		}
-		switch en.GoaErrorName() {
-		case "invalid-scopes":
-			var res actorservice.InvalidScopes
-			errors.As(v, &res)
-			enc := encoder(ctx, w)
-			body := res
-			w.Header().Set("goa-error", res.GoaErrorName())
-			w.WriteHeader(http.StatusForbidden)
-			return enc.Encode(body)
-		case "unauthorized":
-			var res actorservice.Unauthorized
-			errors.As(v, &res)
-			enc := encoder(ctx, w)
-			body := res
-			w.Header().Set("goa-error", res.GoaErrorName())
-			w.WriteHeader(http.StatusUnauthorized)
-			return enc.Encode(body)
-		default:
-			return encodeError(ctx, w, v)
-		}
-	}
-}
-
 // EncodeAddActorResponse returns an encoder for responses returned by the
 // ActorService addActor endpoint.
 func EncodeAddActorResponse(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) func(context.Context, http.ResponseWriter, any) error {
 	return func(ctx context.Context, w http.ResponseWriter, v any) error {
-		res := v.(*actorserviceviews.ActorResult)
+		res, _ := v.(uint64)
 		enc := encoder(ctx, w)
-		body := NewAddActorResponseBody(res.Projected)
+		body := res
 		w.WriteHeader(http.StatusCreated)
 		return enc.Encode(body)
 	}
@@ -124,20 +53,19 @@ func DecodeAddActorRequest(mux goahttp.Muxer, decoder func(*http.Request) goahtt
 		}
 
 		var (
-			token string
+			token *string
 		)
-		token = r.Header.Get("X-Authorization")
-		if token == "" {
-			err = goa.MergeErrors(err, goa.MissingFieldError("token", "header"))
-		}
-		if err != nil {
-			return nil, err
+		tokenRaw := r.Header.Get("Authorization")
+		if tokenRaw != "" {
+			token = &tokenRaw
 		}
 		payload := NewAddActorPayload(&body, token)
-		if strings.Contains(payload.Token, " ") {
-			// Remove authorization scheme prefix (e.g. "Bearer")
-			cred := strings.SplitN(payload.Token, " ", 2)[1]
-			payload.Token = cred
+		if payload.Token != nil {
+			if strings.Contains(*payload.Token, " ") {
+				// Remove authorization scheme prefix (e.g. "Bearer")
+				cred := strings.SplitN(*payload.Token, " ", 2)[1]
+				payload.Token = &cred
+			}
 		}
 
 		return payload, nil
@@ -174,14 +102,6 @@ func EncodeAddActorError(encoder func(context.Context, http.ResponseWriter) goah
 			body := res
 			w.Header().Set("goa-error", res.GoaErrorName())
 			w.WriteHeader(http.StatusForbidden)
-			return enc.Encode(body)
-		case "unauthorized":
-			var res actorservice.Unauthorized
-			errors.As(v, &res)
-			enc := encoder(ctx, w)
-			body := res
-			w.Header().Set("goa-error", res.GoaErrorName())
-			w.WriteHeader(http.StatusUnauthorized)
 			return enc.Encode(body)
 		default:
 			return encodeError(ctx, w, v)
@@ -220,7 +140,7 @@ func DecodeUpdateActorInfoRequest(mux goahttp.Muxer, decoder func(*http.Request)
 
 		var (
 			actorID uint64
-			token   string
+			token   *string
 
 			params = mux.Vars(r)
 		)
@@ -232,18 +152,20 @@ func DecodeUpdateActorInfoRequest(mux goahttp.Muxer, decoder func(*http.Request)
 			}
 			actorID = v
 		}
-		token = r.Header.Get("X-Authorization")
-		if token == "" {
-			err = goa.MergeErrors(err, goa.MissingFieldError("token", "header"))
+		tokenRaw := r.Header.Get("Authorization")
+		if tokenRaw != "" {
+			token = &tokenRaw
 		}
 		if err != nil {
 			return nil, err
 		}
 		payload := NewUpdateActorInfoPayload(&body, actorID, token)
-		if strings.Contains(payload.Token, " ") {
-			// Remove authorization scheme prefix (e.g. "Bearer")
-			cred := strings.SplitN(payload.Token, " ", 2)[1]
-			payload.Token = cred
+		if payload.Token != nil {
+			if strings.Contains(*payload.Token, " ") {
+				// Remove authorization scheme prefix (e.g. "Bearer")
+				cred := strings.SplitN(*payload.Token, " ", 2)[1]
+				payload.Token = &cred
+			}
 		}
 
 		return payload, nil
@@ -268,14 +190,6 @@ func EncodeUpdateActorInfoError(encoder func(context.Context, http.ResponseWrite
 			w.Header().Set("goa-error", res.GoaErrorName())
 			w.WriteHeader(http.StatusForbidden)
 			return enc.Encode(body)
-		case "unauthorized":
-			var res actorservice.Unauthorized
-			errors.As(v, &res)
-			enc := encoder(ctx, w)
-			body := res
-			w.Header().Set("goa-error", res.GoaErrorName())
-			w.WriteHeader(http.StatusUnauthorized)
-			return enc.Encode(body)
 		default:
 			return encodeError(ctx, w, v)
 		}
@@ -297,7 +211,7 @@ func DecodeDeleteActorRequest(mux goahttp.Muxer, decoder func(*http.Request) goa
 	return func(r *http.Request) (any, error) {
 		var (
 			actorID uint64
-			token   string
+			token   *string
 			err     error
 
 			params = mux.Vars(r)
@@ -310,18 +224,20 @@ func DecodeDeleteActorRequest(mux goahttp.Muxer, decoder func(*http.Request) goa
 			}
 			actorID = v
 		}
-		token = r.Header.Get("X-Authorization")
-		if token == "" {
-			err = goa.MergeErrors(err, goa.MissingFieldError("token", "header"))
+		tokenRaw := r.Header.Get("Authorization")
+		if tokenRaw != "" {
+			token = &tokenRaw
 		}
 		if err != nil {
 			return nil, err
 		}
 		payload := NewDeleteActorPayload(actorID, token)
-		if strings.Contains(payload.Token, " ") {
-			// Remove authorization scheme prefix (e.g. "Bearer")
-			cred := strings.SplitN(payload.Token, " ", 2)[1]
-			payload.Token = cred
+		if payload.Token != nil {
+			if strings.Contains(*payload.Token, " ") {
+				// Remove authorization scheme prefix (e.g. "Bearer")
+				cred := strings.SplitN(*payload.Token, " ", 2)[1]
+				payload.Token = &cred
+			}
 		}
 
 		return payload, nil
@@ -346,32 +262,10 @@ func EncodeDeleteActorError(encoder func(context.Context, http.ResponseWriter) g
 			w.Header().Set("goa-error", res.GoaErrorName())
 			w.WriteHeader(http.StatusForbidden)
 			return enc.Encode(body)
-		case "unauthorized":
-			var res actorservice.Unauthorized
-			errors.As(v, &res)
-			enc := encoder(ctx, w)
-			body := res
-			w.Header().Set("goa-error", res.GoaErrorName())
-			w.WriteHeader(http.StatusUnauthorized)
-			return enc.Encode(body)
 		default:
 			return encodeError(ctx, w, v)
 		}
 	}
-}
-
-// marshalActorserviceviewsActorResultViewToActorResultResponse builds a value
-// of type *ActorResultResponse from a value of type
-// *actorserviceviews.ActorResultView.
-func marshalActorserviceviewsActorResultViewToActorResultResponse(v *actorserviceviews.ActorResultView) *ActorResultResponse {
-	res := &ActorResultResponse{
-		ActorID:        *v.ActorID,
-		ActorName:      v.ActorName,
-		ActorSex:       v.ActorSex,
-		ActorBirthdate: v.ActorBirthdate,
-	}
-
-	return res
 }
 
 // unmarshalActorInfoRequestBodyToActorserviceActorInfo builds a value of type

@@ -49,7 +49,7 @@ func New(
 ) *Server {
 	return &Server{
 		Mounts: []*MountPoint{
-			{"Auth", "POST", "/sign-in/auth"},
+			{"Auth", "POST", "/"},
 		},
 		Auth: NewAuthHandler(e.Auth, mux, decoder, encoder, errhandler, formatter),
 	}
@@ -85,7 +85,7 @@ func MountAuthHandler(mux goahttp.Muxer, h http.Handler) {
 			h.ServeHTTP(w, r)
 		}
 	}
-	mux.Handle("POST", "/sign-in/auth", f)
+	mux.Handle("POST", "/", f)
 }
 
 // NewAuthHandler creates a HTTP handler which loads the HTTP request and calls
@@ -101,7 +101,7 @@ func NewAuthHandler(
 	var (
 		decodeRequest  = DecodeAuthRequest(mux, decoder)
 		encodeResponse = EncodeAuthResponse(encoder)
-		encodeError    = EncodeAuthError(encoder, formatter)
+		encodeError    = goahttp.ErrorEncoder(encoder, formatter)
 	)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := context.WithValue(r.Context(), goahttp.AcceptTypeKey, r.Header.Get("Accept"))

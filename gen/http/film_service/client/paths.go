@@ -11,11 +11,6 @@ import (
 	"fmt"
 )
 
-// GetAllFilmsFilmServicePath returns the URL path to the FilmService service getAllFilms HTTP endpoint.
-func GetAllFilmsFilmServicePath() string {
-	return "/films"
-}
-
 // AddFilmFilmServicePath returns the URL path to the FilmService service addFilm HTTP endpoint.
 func AddFilmFilmServicePath() string {
 	return "/films"
@@ -27,6 +22,6 @@ func UpdateFilmInfoFilmServicePath(filmID uint64) string {
 }
 
 // DeleteFilmFilmServicePath returns the URL path to the FilmService service deleteFilm HTTP endpoint.
-func DeleteFilmFilmServicePath(filmID string) string {
+func DeleteFilmFilmServicePath(filmID uint64) string {
 	return fmt.Sprintf("/films/%v", filmID)
 }

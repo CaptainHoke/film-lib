@@ -17,6 +17,8 @@ import (
 // Endpoints wraps the "SearchService" service endpoints.
 type Endpoints struct {
 	SearchLibrary goa.Endpoint
+	GetAllActors  goa.Endpoint
+	GetAllFilms   goa.Endpoint
 }
 
 // NewEndpoints wraps the methods of the "SearchService" service with endpoints.
@@ -25,6 +27,8 @@ func NewEndpoints(s Service) *Endpoints {
 	a := s.(Auther)
 	return &Endpoints{
 		SearchLibrary: NewSearchLibraryEndpoint(s, a.JWTAuth),
+		GetAllActors:  NewGetAllActorsEndpoint(s, a.JWTAuth),
+		GetAllFilms:   NewGetAllFilmsEndpoint(s, a.JWTAuth),
 	}
 }
 
@@ -32,6 +36,8 @@ func NewEndpoints(s Service) *Endpoints {
 // endpoints.
 func (e *Endpoints) Use(m func(goa.Endpoint) goa.Endpoint) {
 	e.SearchLibrary = m(e.SearchLibrary)
+	e.GetAllActors = m(e.GetAllActors)
+	e.GetAllFilms = m(e.GetAllFilms)
 }
 
 // NewSearchLibraryEndpoint returns an endpoint function that calls the method
@@ -45,10 +51,70 @@ func NewSearchLibraryEndpoint(s Service, authJWTFn security.AuthJWTFunc) goa.End
 			Scopes:         []string{"api:read", "api:write"},
 			RequiredScopes: []string{"api:read"},
 		}
-		ctx, err = authJWTFn(ctx, p.Token, &sc)
+		var token string
+		if p.Token != nil {
+			token = *p.Token
+		}
+		ctx, err = authJWTFn(ctx, token, &sc)
 		if err != nil {
 			return nil, err
 		}
 		return s.SearchLibrary(ctx, p)
+	}
+}
+
+// NewGetAllActorsEndpoint returns an endpoint function that calls the method
+// "getAllActors" of service "SearchService".
+func NewGetAllActorsEndpoint(s Service, authJWTFn security.AuthJWTFunc) goa.Endpoint {
+	return func(ctx context.Context, req any) (any, error) {
+		p := req.(*GetAllActorsPayload)
+		var err error
+		sc := security.JWTScheme{
+			Name:           "jwt",
+			Scopes:         []string{"api:read", "api:write"},
+			RequiredScopes: []string{"api:read"},
+		}
+		var token string
+		if p.Token != nil {
+			token = *p.Token
+		}
+		ctx, err = authJWTFn(ctx, token, &sc)
+		if err != nil {
+			return nil, err
+		}
+		res, err := s.GetAllActors(ctx, p)
+		if err != nil {
+			return nil, err
+		}
+		vres := NewViewedActorResultCollection(res, "default")
+		return vres, nil
+	}
+}
+
+// NewGetAllFilmsEndpoint returns an endpoint function that calls the method
+// "getAllFilms" of service "SearchService".
+func NewGetAllFilmsEndpoint(s Service, authJWTFn security.AuthJWTFunc) goa.Endpoint {
+	return func(ctx context.Context, req any) (any, error) {
+		p := req.(*GetAllFilmsPayload)
+		var err error
+		sc := security.JWTScheme{
+			Name:           "jwt",
+			Scopes:         []string{"api:read", "api:write"},
+			RequiredScopes: []string{"api:read"},
+		}
+		var token string
+		if p.Token != nil {
+			token = *p.Token
+		}
+		ctx, err = authJWTFn(ctx, token, &sc)
+		if err != nil {
+			return nil, err
+		}
+		res, err := s.GetAllFilms(ctx, p)
+		if err != nil {
+			return nil, err
+		}
+		vres := NewViewedFilmResultCollection(res, "default")
+		return vres, nil
 	}
 }

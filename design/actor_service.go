@@ -5,35 +5,6 @@ import . "goa.design/goa/v3/dsl"
 var _ = Service("ActorService", func() {
 	Description("API for actor-related requests")
 
-	Error("unauthorized", String, "Credentials are invalid")
-	HTTP(func() {
-		Response("unauthorized", StatusUnauthorized)
-	})
-
-	Method("getAllActors", func() {
-		Payload(func() {
-			TokenField(1, "token", String, func() {
-				Description("JWT used for authentication")
-			})
-			Required("token")
-		})
-
-		Security(JWTAuth, func() {
-			Scope("api:read")
-		})
-
-		Result(CollectionOf(ActorResult))
-
-		Error("invalid-scopes", String, "Token scopes are invalid")
-
-		HTTP(func() {
-			GET("/actors")
-			Header("token:X-Authorization")
-			Response("invalid-scopes", StatusForbidden)
-			Response(StatusOK)
-		})
-	})
-
 	Method("addActor", func() {
 		Payload(func() {
 			TokenField(1, "token", String, func() {
@@ -41,22 +12,20 @@ var _ = Service("ActorService", func() {
 			})
 			Attribute("ActorInfo", ActorInfo)
 
-			Required("token", "ActorInfo")
+			Required("ActorInfo")
 		})
 
 		Security(JWTAuth, func() {
 			Scope("api:write")
 		})
 
-		// TODO: Return ID only ?
-		Result(ActorResult)
+		Result(UInt64)
 
 		Error("invalid-scopes", String, "Token scopes are invalid")
 		Error("already-exists", AlreadyExists, "Actor already exists")
 
 		HTTP(func() {
 			POST("/actors")
-			Header("token:X-Authorization")
 			Response("invalid-scopes", StatusForbidden)
 			Response("already-exists", StatusBadRequest)
 			Response(StatusCreated)
@@ -71,7 +40,7 @@ var _ = Service("ActorService", func() {
 			Attribute("ActorID", UInt64)
 			Attribute("ActorInfo", ActorInfo)
 
-			Required("token", "ActorID", "ActorInfo")
+			Required("ActorID", "ActorInfo")
 		})
 
 		Security(JWTAuth, func() {
@@ -83,7 +52,6 @@ var _ = Service("ActorService", func() {
 
 		HTTP(func() {
 			PUT("/actors/{ActorID}")
-			Header("token:X-Authorization")
 			Response("invalid-scopes", StatusForbidden)
 			Response(StatusCreated)
 		})
@@ -96,7 +64,7 @@ var _ = Service("ActorService", func() {
 			})
 			Attribute("ActorID", UInt64, "Actor ID")
 
-			Required("token", "ActorID")
+			Required("ActorID")
 		})
 
 		Security(JWTAuth, func() {
@@ -108,7 +76,6 @@ var _ = Service("ActorService", func() {
 
 		HTTP(func() {
 			DELETE("/actors/{ActorID}")
-			Header("token:X-Authorization")
 			Response("invalid-scopes", StatusForbidden)
 			Response(StatusNoContent)
 		})

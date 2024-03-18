@@ -11,3 +11,13 @@ package client
 func SearchLibrarySearchServicePath() string {
 	return "/search"
 }
+
+// GetAllActorsSearchServicePath returns the URL path to the SearchService service getAllActors HTTP endpoint.
+func GetAllActorsSearchServicePath() string {
+	return "/actors"
+}
+
+// GetAllFilmsSearchServicePath returns the URL path to the SearchService service getAllFilms HTTP endpoint.
+func GetAllFilmsSearchServicePath() string {
+	return "/films"
+}
