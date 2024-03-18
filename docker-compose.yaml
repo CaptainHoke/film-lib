@@ -1,0 +1,48 @@
+version: '3'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: film_db
+    container_name: film_db_container
+    environment:
+      FL_DBUSER: film_db
+      FL_DBPASS: film_db
+      FL_DBHOST: postgres
+      FL_DBPORT: 5432
+      FL_DBNAME: film_db
+    networks:
+      - film_net
+    ports:
+      - "3239:3239"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:16.2
+    container_name: postgres
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: film_db
+      POSTGRES_USER: film_db
+      POSTGRES_PASSWORD: film_db
+      PGDATA: "/var/lib/postgresql/data/pgdata"
+    networks:
+      - film_net
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U film_db"]
+      interval: 1s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  pgdata:
+
+networks:
+  film_net:
+    driver: bridge

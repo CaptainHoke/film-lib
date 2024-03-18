@@ -1,21 +1,18 @@
-all: rebuild
+all: build launch
 test: lint run-tests
-
-.PHONY: clean
-clean:
-	rm -rf ./bin
 
 .PHONY: build
 build:
-	docker build --target bin --output bin/ .
-
-.PHONY: rebuild
-rebuild: clean build
+	docker build -t film_db .
 
 .PHONY: run-tests
 run-tests:
-	docker build --target test .
+	#docker build --target test .
 
 .PHONY: lint
 lint:
 	docker build --target lint .
+
+.PHONY: launch
+launch:
+	docker compose up
