@@ -2,7 +2,6 @@ package repo
 
 import (
 	"context"
-	"film-lib/internal/config"
 	"fmt"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"sync"
@@ -17,10 +16,7 @@ var (
 	pgOnce     sync.Once
 )
 
-func NewPostgresDB(ctx context.Context, dbCfg config.DbConfig) (*Postgres, error) {
-	connString := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s&pool_max_conns=%d",
-		dbCfg.User, dbCfg.Password, dbCfg.Host, dbCfg.Port, dbCfg.DBName, dbCfg.SSLMode, dbCfg.PoolMaxConns)
-
+func NewPostgresDB(ctx context.Context, connString string) (*Postgres, error) {
 	pgOnce.Do(func() {
 		db, err := pgxpool.New(ctx, connString)
 		if err != nil {

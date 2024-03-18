@@ -8,11 +8,11 @@ services:
     image: film_db
     container_name: film_db_container
     environment:
-      HOST: db
-      PORT: 5432
-      DB: film_db
-      DB_USER: film_db
-      DB_PASSWORD: film_db
+      FL_DBUSER: film_db
+      FL_DBPASS: film_db
+      FL_DBHOST: postgres
+      FL_DBPORT: 5432
+      FL_DBNAME: film_db
     networks:
       - film_net
     depends_on:
@@ -25,16 +25,17 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     environment:
-      POSTGRES_DB: file_db
-      POSTGRES_USER: file_db
-      POSTGRES_PASSWORD: file_db
+      POSTGRES_DB: film_db
+      POSTGRES_USER: film_db
+      POSTGRES_PASSWORD: film_db
       PGDATA: "/var/lib/postgresql/data/pgdata"
     networks:
       - film_net
     ports:
       - "5432:5432"
+    restart: always
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
+      test: ["CMD-SHELL", "pg_isready -U film_db"]
       interval: 1s
       timeout: 5s
       retries: 10
@@ -44,3 +45,4 @@ volumes:
 
 networks:
   film_net:
+    driver: bridge

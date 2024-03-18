@@ -4,9 +4,8 @@ import (
 	"context"
 	filmservice "film-lib/gen/film_service"
 	"github.com/golang-jwt/jwt/v5"
-	"log"
-
 	"goa.design/goa/v3/security"
+	"log"
 )
 
 // FilmService service example implementation.

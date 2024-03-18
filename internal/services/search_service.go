@@ -5,9 +5,8 @@ import (
 	searchservice "film-lib/gen/search_service"
 	"fmt"
 	"github.com/golang-jwt/jwt/v5"
-	"log"
-
 	"goa.design/goa/v3/security"
+	"log"
 )
 
 // SearchService service example implementation.

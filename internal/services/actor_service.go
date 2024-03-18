@@ -4,9 +4,8 @@ import (
 	"context"
 	actorservice "film-lib/gen/actor_service"
 	"github.com/golang-jwt/jwt/v5"
-	"log"
-
 	"goa.design/goa/v3/security"
+	"log"
 )
 
 // ActorService service example implementation.
