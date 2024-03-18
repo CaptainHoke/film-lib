@@ -2,6 +2,8 @@
 
 Using Goa to "generate docs faster" was a terrible mistake
 
+I'd rather rewrite this shit from scratch
+
 ## TODO
 - [x] Goa API for Actors + JWT Auth
 - [x] API for Films

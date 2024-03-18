@@ -7,7 +7,7 @@ var _ = API("film-lib", func() {
 	Description("BiS Service for querying and managing films and actors info")
 	Server("film-lib", func() {
 		Host("localhost", func() {
-			URI("http://localhost:3239/api/v1")
+			URI("http://localhost:3239")
 		})
 	})
 })
