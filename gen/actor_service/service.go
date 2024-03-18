@@ -67,9 +67,14 @@ type ActorResult struct {
 	ActorBirthdate *string
 }
 
+type ActorWithFilms struct {
+	ActorResult ActorResult
+	FilmIds []uint64
+}
+
 // ActorResultCollection is the result type of the ActorService service
 // getAllActors method.
-type ActorResultCollection []*ActorResult
+type ActorResultCollection []*ActorWithFilms
 
 // AddActorPayload is the payload type of the ActorService service addActor
 // method.
@@ -222,12 +227,15 @@ func NewViewedActorResult(res *ActorResult, view string) *actorserviceviews.Acto
 	return &actorserviceviews.ActorResult{Projected: p, View: "default"}
 }
 
+
+
 // newActorResultCollection converts projected type ActorResultCollection to
 // service type ActorResultCollection.
 func newActorResultCollection(vres actorserviceviews.ActorResultCollectionView) ActorResultCollection {
 	res := make(ActorResultCollection, len(vres))
 	for i, n := range vres {
-		res[i] = newActorResult(n)
+		r := newActorResult(n)
+		res[i] = &ActorWithFilms{ActorResult: *r, FilmIds: nil}
 	}
 	return res
 }
@@ -237,7 +245,7 @@ func newActorResultCollection(vres actorserviceviews.ActorResultCollectionView) 
 func newActorResultCollectionView(res ActorResultCollection) actorserviceviews.ActorResultCollectionView {
 	vres := make(actorserviceviews.ActorResultCollectionView, len(res))
 	for i, n := range res {
-		vres[i] = newActorResultView(n)
+		vres[i] = newActorResultView(&n.ActorResult)
 	}
 	return vres
 }

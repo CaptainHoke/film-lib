@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	actorservice "film-lib/gen/actor_service"
+	"film-lib/internal/repo"
 	"github.com/golang-jwt/jwt/v5"
 	"goa.design/goa/v3/security"
 	"log"
@@ -63,13 +64,19 @@ func (s *actorService) JWTAuth(ctx context.Context, token string, scheme *securi
 // GetAllActors implements getAllActors.
 func (s *actorService) GetAllActors(ctx context.Context, p *actorservice.GetAllActorsPayload) (res actorservice.ActorResultCollection, err error) {
 	s.logger.Print("actorService.getAllActors")
-	return
+
+	actors := repo.PgInstance.GetAllActors(ctx)
+
+	return actors, nil
 }
 
 // AddActor implements addActor.
 func (s *actorService) AddActor(ctx context.Context, p *actorservice.AddActorPayload) (res *actorservice.ActorResult, err error) {
 	res = &actorservice.ActorResult{}
 	s.logger.Print("actorService.addActor")
+
+	res = repo.PgInstance.AddActor(ctx, *p.ActorInfo)
+
 	return
 }
 
