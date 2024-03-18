@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	signin "film-lib/gen/sign_in"
+	"film-lib/internal/utils"
 	"github.com/golang-jwt/jwt/v5"
 	"log"
 	"time"
@@ -33,11 +34,6 @@ func (s *signInsrvc) BasicAuth(ctx context.Context, user, pass string, scheme *s
 	return ctx, nil
 }
 
-var (
-	// JWTKey is the key used in JWT authentication
-	JWTKey = []byte("TODO: FIXME")
-)
-
 // Auth Creates a valid JWT
 func (s *signInsrvc) Auth(ctx context.Context, p *signin.AuthPayload) (res *signin.Creds, err error) {
 	s.logger.Print("signIn.auth")
@@ -54,7 +50,7 @@ func (s *signInsrvc) Auth(ctx context.Context, p *signin.AuthPayload) (res *sign
 
 	// note that if "SignedString" returns an error then it is returned as
 	// an internal error to the client
-	t, err := token.SignedString(JWTKey)
+	t, err := token.SignedString(utils.JWTKey)
 	if err != nil {
 		return nil, err
 	}

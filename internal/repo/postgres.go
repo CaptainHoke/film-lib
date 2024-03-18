@@ -3,6 +3,7 @@ package repo
 import (
 	"context"
 	"errors"
+	actorservice "film-lib/gen/actor_service"
 	"fmt"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -88,23 +89,23 @@ func (pg *Postgres) TableExists(ctx context.Context, tableName string) (bool, er
 //
 //	return actors
 //}
-//
-//func (pg *Postgres) AddActor(ctx context.Context, info actorservice.ActorInfo) *actorservice.ActorResult {
-//	query := `
-//		INSERT INTO actors (name, sex, birthdate)
-//		VALUES (@actorName, @actorSex, @actorDate)
-//		RETURNING actor_id;`
-//	args := pgx.NamedArgs{
-//		"actorName": info.ActorName,
-//		"actorSex":  info.ActorSex,
-//		"actorDate": info.ActorBirthdate,
-//	}
-//	res := pg.Db.QueryRow(ctx, query, args)
-//	var actorId uint64
-//	_ = res.Scan(&actorId)
-//
-//	return &actorservice.ActorResult{actorId, &info.ActorName, &info.ActorSex, &info.ActorBirthdate}
-//}
+
+func (pg *Postgres) AddActor(ctx context.Context, info actorservice.ActorInfo) uint64 {
+	query := `
+		INSERT INTO actors (name, sex, birthdate)
+		VALUES (@actorName, @actorSex, @actorDate)
+		RETURNING actor_id;`
+	args := pgx.NamedArgs{
+		"actorName": info.ActorName,
+		"actorSex":  info.ActorSex,
+		"actorDate": info.ActorBirthdate,
+	}
+	res := pg.Db.QueryRow(ctx, query, args)
+	var actorId uint64
+	_ = res.Scan(&actorId)
+
+	return actorId
+}
 
 func (pg *Postgres) Close() {
 	pg.Db.Close()

@@ -131,11 +131,11 @@ func main() {
 	// TODO: Should've been fixed in api.go
 	case "docker":
 		{
-			addr = "http://0.0.0.0:3239/api/v1"
+			addr = "http://0.0.0.0:3239"
 		}
 	case "localhost":
 		{
-			addr = "http://localhost:3239/api/v1"
+			addr = "http://localhost:3239"
 		}
 	default:
 		logger.Fatalf("invalid host argument: %q (valid hosts: docker, localhost)\n", *hostF)
