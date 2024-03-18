@@ -23,3 +23,5 @@
   - Store users in-memory for now
   - Users table later
 - [x] Fix docs not working as intended, probably will need to regenerate the whole thing
+- [ ] Error handling sucks
+- [ ] No tests

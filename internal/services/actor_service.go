@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	actorservice "film-lib/gen/actor_service"
+	"film-lib/internal/repo"
 	"film-lib/internal/utils"
 	"log"
 
@@ -29,6 +30,10 @@ func (s *actorServicesrvc) JWTAuth(ctx context.Context, token string, scheme *se
 // AddActor implements addActor.
 func (s *actorServicesrvc) AddActor(ctx context.Context, p *actorservice.AddActorPayload) (res uint64, err error) {
 	s.logger.Print("actorService.addActor")
+
+	res = repo.PgInstance.AddActor(ctx, *p.ActorInfo)
+	err = nil
+
 	return
 }
 

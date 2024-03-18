@@ -3,7 +3,6 @@ package utils
 import (
 	"context"
 	searchservice "film-lib/gen/search_service"
-	"fmt"
 	"github.com/golang-jwt/jwt/v5"
 	"goa.design/goa/v3/security"
 	"log"
@@ -49,5 +48,5 @@ func JWTAuth(ctx context.Context, token string, scheme *security.JWTScheme, logg
 		return ctx, searchservice.InvalidScopes(err.Error())
 	}
 
-	return ctx, fmt.Errorf("not implemented")
+	return ctx, nil
 }
