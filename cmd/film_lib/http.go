@@ -4,9 +4,9 @@ import (
 	"context"
 	actorservice "film-lib/gen/actor_service"
 	filmservice "film-lib/gen/film_service"
-	actorservicesvr "film-lib/gen/http/actor_service/server"
-	filmservicesvr "film-lib/gen/http/film_service/server"
-	searchservicesvr "film-lib/gen/http/search_service/server"
+	actorsvr "film-lib/gen/http/actor_service/server"
+	filmsvr "film-lib/gen/http/film_service/server"
+	searchsvr "film-lib/gen/http/search_service/server"
 	signinsvr "film-lib/gen/http/sign_in/server"
 	searchservice "film-lib/gen/search_service"
 	signin "film-lib/gen/sign_in"
@@ -55,16 +55,16 @@ func handleHTTPServer(ctx context.Context, u *url.URL, actorServiceEndpoints *ac
 	// the service input and output data structures to HTTP requests and
 	// responses.
 	var (
-		actorServiceServer  *actorservicesvr.Server
-		filmServiceServer   *filmservicesvr.Server
-		searchServiceServer *searchservicesvr.Server
+		actorServiceServer  *actorsvr.Server
+		filmServiceServer   *filmsvr.Server
+		searchServiceServer *searchsvr.Server
 		signInServer        *signinsvr.Server
 	)
 	{
 		eh := errorHandler(logger)
-		actorServiceServer = actorservicesvr.New(actorServiceEndpoints, mux, dec, enc, eh, nil)
-		filmServiceServer = filmservicesvr.New(filmServiceEndpoints, mux, dec, enc, eh, nil)
-		searchServiceServer = searchservicesvr.New(searchServiceEndpoints, mux, dec, enc, eh, nil)
+		actorServiceServer = actorsvr.New(actorServiceEndpoints, mux, dec, enc, eh, nil)
+		filmServiceServer = filmsvr.New(filmServiceEndpoints, mux, dec, enc, eh, nil)
+		searchServiceServer = searchsvr.New(searchServiceEndpoints, mux, dec, enc, eh, nil)
 		signInServer = signinsvr.New(signInEndpoints, mux, dec, enc, eh, nil)
 		if debug {
 			servers := goahttp.Servers{
@@ -77,9 +77,9 @@ func handleHTTPServer(ctx context.Context, u *url.URL, actorServiceEndpoints *ac
 		}
 	}
 	// Configure the mux.
-	actorservicesvr.Mount(mux, actorServiceServer)
-	filmservicesvr.Mount(mux, filmServiceServer)
-	searchservicesvr.Mount(mux, searchServiceServer)
+	actorsvr.Mount(mux, actorServiceServer)
+	filmsvr.Mount(mux, filmServiceServer)
+	searchsvr.Mount(mux, searchServiceServer)
 	signinsvr.Mount(mux, signInServer)
 
 	// Wrap the multiplexer with additional middlewares. Middlewares mounted
